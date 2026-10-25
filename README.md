@@ -116,6 +116,12 @@ Saat ini semua data masuk ke satu pengguna demo karena belum ada autentikasi. Ya
 
 ## Tim
 
-Dikembangkan oleh Mhd. Ridwan ([@mhdridwannst](https://github.com/mhdridwannst)) dan tim UKM Software Development.
+Dikembangkan oleh kelompok 2 tim UKM Software Development 2026-2027:
+Mhd. Ridwan
 
-<!-- tambahkan nama anggota tim di sini -->
+
+<!-- Hervina Alivia Fitri
+Muhammad Slamet Ridho
+M Zaki Edi
+Fahry Ibrahim
+Hamzah Asadullah -->
