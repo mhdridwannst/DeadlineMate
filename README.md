@@ -114,15 +114,55 @@ Saat ini semua data masuk ke satu pengguna demo karena belum ada autentikasi. Ya
 - PWA dan notifikasi deadline
 - Integrasi Google Calendar
 
-## Tim
+## 👥 Tim
 
-Dikembangkan oleh kelompok 2 tim UKM Software Development 2026-2027:
+Dikembangkan oleh **Kelompok 2** Tim UKM Software Development 2026-2027:
 
-| Nama | Divisi | Akun Github |
-| :--- | :--- | :---: |
-| **Mhd. Ridwan** | Hacker | [![GitHub](https://github.com/mhdridwannst) |
-| **Muhammad Slamet Ridho** | Hipster | [![GitHub](https://shields.io)](https://github.com) |
-| **Hervina Alivia Fitri** | Hustler | [![GitHub](https://shields.io)](https://github.com) |
-| **M Zaki Edi** | Hacker | [![GitHub](https://shields.io)](https://github.com) |
-| **Fahry Ibrahim** | Hipster | [![GitHub](https://shields.io)](https://github.com) |
-| **Hamzah Asadullah** | Hustler | [![GitHub](https://shields.io)](https://github.com) |
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/mhdridwannst">
+        <img src="https://github.com/mhdridwannst.png" width="100" style="border-radius:50%" alt="Mhd. Ridwan"/><br />
+        <sub><b>Mhd. Ridwan</b></sub>
+      </a><br />
+      Hacker
+    </td>
+    <td align="center">
+      <a href="https://github.com/username2">
+        <img src="https://github.com/username2.png" width="100" style="border-radius:50%" alt="Muhammad Slamet Ridho"/><br />
+        <sub><b>Muhammad Slamet Ridho</b></sub>
+      </a><br />
+      Hipster
+    </td>
+    <td align="center">
+      <a href="https://github.com/username3">
+        <img src="https://github.com/username3.png" width="100" style="border-radius:50%" alt="Hervina Alivia Fitri"/><br />
+        <sub><b>Hervina Alivia Fitri</b></sub>
+      </a><br />
+      Hustler
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/username4">
+        <img src="https://github.com/username4.png" width="100" style="border-radius:50%" alt="M Zaki Edi"/><br />
+        <sub><b>M Zaki Edi</b></sub>
+      </a><br />
+      Hacker
+    </td>
+    <td align="center">
+      <a href="https://github.com/username5">
+        <img src="https://github.com/username5.png" width="100" style="border-radius:50%" alt="Fahry Ibrahim"/><br />
+        <sub><b>Fahry Ibrahim</b></sub>
+      </a><br />
+      Hipster
+    </td>
+    <td align="center">
+      <a href="https://github.com/username6">
+        <img src="https://github.com/username6.png" width="100" style="border-radius:50%" alt="Hamzah Asadullah"/><br />
+        <sub><b>Hamzah Asadullah</b></sub>
+      </a><br />
+      Hustler
+    </td>
+  </tr>
+</table>
