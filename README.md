@@ -1,14 +1,14 @@
 # DeadlineMate
 
-Teman yang ngejar deadline bareng lu.
+Teman yang ngejar deadline bareng kamu.
 
-DeadlineMate adalah aplikasi web untuk mahasiswa dan pelajar yang sering menunda. Masalah utamanya jarang soal lupa tugas. Yang bikin telat biasanya menunda, salah memperkirakan waktu, dan semangat yang hilang di tengah jalan. Karena itu DeadlineMate tidak berhenti di daftar tugas: ada Mate, partner AI yang memecah tugas besar jadi langkah kecil dengan tenggatnya sendiri, lalu menemani lu lewat streak, level, dan peringatan deadline.
+DeadlineMate adalah aplikasi web untuk mahasiswa dan pelajar yang sering menunda. Masalah utamanya jarang soal lupa tugas. Yang bikin telat biasanya menunda, salah memperkirakan waktu, dan semangat yang hilang di tengah jalan. Karena itu DeadlineMate tidak berhenti di daftar tugas: ada Mate, partner AI yang memecah tugas besar jadi langkah kecil dengan tenggatnya sendiri, lalu menemani kamu lewat streak, level, dan peringatan deadline.
 
-Proyek ini dibuat untuk Final Project UKM Software Development, tema *Smart Student Productivity*.
+Proyek ini dibuat untuk Final Project UKM Software Development, tema _Smart Student Productivity_.
 
 ## Cara kerjanya
 
-Lu cukup menulis bebas, misalnya:
+Kamu cukup menulis bebas, misalnya:
 
 > laporan kimia Jumat, makalah sosiologi Senin depan jam 12
 
@@ -73,14 +73,14 @@ Versi Prisma dikunci di 7.x. Jangan memperbaruinya dengan `npm i prisma@latest` 
 
 ### Variabel lingkungan
 
-| Variabel | Keterangan |
-| --- | --- |
-| `DATABASE_URL` | Connection string PostgreSQL. Pakai koneksi langsung, bukan pooled. |
-| `AI_PROVIDER` | `google` atau `groq`. |
-| `AI_MODEL` | Nama model persis seperti tertulis di dashboard penyedia. Nama model sering berganti, jadi tidak ditulis di kode. |
-| `GOOGLE_GENERATIVE_AI_API_KEY` | Dipakai kalau `AI_PROVIDER=google`. |
-| `GROQ_API_KEY` | Dipakai kalau `AI_PROVIDER=groq`. |
-| `DEMO_MODE` | Isi `1` untuk menampilkan panel Mode demo di production. Saat development panel selalu tampil. |
+| Variabel                       | Keterangan                                                                                                        |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                 | Connection string PostgreSQL. Pakai koneksi langsung, bukan pooled.                                               |
+| `AI_PROVIDER`                  | `google` atau `groq`.                                                                                             |
+| `AI_MODEL`                     | Nama model persis seperti tertulis di dashboard penyedia. Nama model sering berganti, jadi tidak ditulis di kode. |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Dipakai kalau `AI_PROVIDER=google`.                                                                               |
+| `GROQ_API_KEY`                 | Dipakai kalau `AI_PROVIDER=groq`.                                                                                 |
+| `DEMO_MODE`                    | Isi `1` untuk menampilkan panel Mode demo di production. Saat development panel selalu tampil.                    |
 
 ## Mode demo
 
