@@ -1,36 +1,121 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DeadlineMate
 
-## Getting Started
+Teman yang ngejar deadline bareng lu.
 
-First, run the development server:
+DeadlineMate adalah aplikasi web untuk mahasiswa dan pelajar yang sering menunda. Masalah utamanya jarang soal lupa tugas. Yang bikin telat biasanya menunda, salah memperkirakan waktu, dan semangat yang hilang di tengah jalan. Karena itu DeadlineMate tidak berhenti di daftar tugas: ada Mate, partner AI yang memecah tugas besar jadi langkah kecil dengan tenggatnya sendiri, lalu menemani lu lewat streak, level, dan peringatan deadline.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Proyek ini dibuat untuk Final Project UKM Software Development, tema *Smart Student Productivity*.
+
+## Cara kerjanya
+
+Lu cukup menulis bebas, misalnya:
+
+> laporan kimia Jumat, makalah sosiologi Senin depan jam 12
+
+Mate memisahkan kalimat itu menjadi dua tugas, memecah masing-masing menjadi langkah yang tidak lebih dari 90 menit, lalu memberi tenggat internal untuk tiap langkah. Dengan begitu pengerjaan tersebar dari awal dan tidak menumpuk di malam sebelum deadline.
+
+AI di sini punya fungsi yang jelas dalam alur aplikasi, bukan fitur tempelan:
+
+- **Smart Scheduler** mengubah teks bebas menjadi tugas terstruktur: judul, kategori, prioritas, estimasi, tenggat, dan daftar langkah. Keluarannya divalidasi dengan skema Zod sebelum disimpan ke database.
+- **Catatan Mate** adalah komentar pendek yang menyesuaikan dengan tugas yang sedang dikerjakan.
+- Penyedia dan model AI dipilih lewat variabel lingkungan, jadi bisa diganti tanpa mengubah kode.
+
+## Fitur
+
+- Daftar tugas yang diurutkan berdasarkan prioritas, lengkap dengan kategori, estimasi, dan sisa waktu
+- Tambah tugas manual (nama, tanggal, jam, kategori, estimasi), dengan input suara bila browser mendukung Web Speech API
+- Edit dan hapus tugas, serta centang langkah satu per satu
+- Streak, level, dan EXP, beserta peringatan "streak terancam" saat deadline mendekat
+- Halaman Progress dengan grafik tugas selesai 7 hari terakhir
+- Kalender deadline per bulan
+- Tema terang, gelap, atau mengikuti sistem
+- Tampilan mobile dengan navigasi bawah, dan sidebar di desktop
+- Mode demo untuk memperagakan alur streak tanpa menunggu berhari-hari
+
+## Aturan streak dan EXP
+
+- Streak bertambah satu setiap tugas selesai sebelum tenggatnya.
+- Streak kembali ke nol kalau tenggat terlewat sebelum tugas selesai, atau tugas diselesaikan terlambat.
+- Setiap tugas atau langkah yang selesai bernilai 10 EXP. Setiap 100 EXP naik satu level.
+- Semua nilai ini dihitung dari data tugas yang ada, tidak disimpan sebagai angka terpisah.
+- Tanggal dan jam dihitung dalam WIB (Asia/Jakarta).
+
+## Teknologi
+
+- Next.js (App Router) dan TypeScript
+- Tailwind CSS v4
+- Prisma 7 dengan PostgreSQL (kami memakai Neon)
+- Vercel AI SDK, dengan penyedia Google Gemini atau Groq
+- Zod untuk validasi input dan keluaran AI
+
+## Menjalankan di lokal
+
+Dibutuhkan Node.js (dikembangkan dengan v24), sebuah database PostgreSQL, dan API key dari salah satu penyedia AI (Google AI Studio atau Groq).
+
+```powershell
+git clone https://github.com/mhdridwannst/DeadlineMate.git
+cd DeadlineMate
+npm install
+Copy-Item .env.example .env
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Isi `.env` (penjelasannya di tabel bawah), lalu siapkan database dan jalankan aplikasinya:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```powershell
+npx prisma migrate deploy
+npx prisma generate
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Aplikasi berjalan di http://localhost:3000.
 
-## Learn More
+Versi Prisma dikunci di 7.x. Jangan memperbaruinya dengan `npm i prisma@latest` tanpa memeriksa versinya dulu, karena tag `latest` sudah mengarah ke generasi berikutnya yang cara kerjanya berbeda.
 
-To learn more about Next.js, take a look at the following resources:
+### Variabel lingkungan
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Variabel | Keterangan |
+| --- | --- |
+| `DATABASE_URL` | Connection string PostgreSQL. Pakai koneksi langsung, bukan pooled. |
+| `AI_PROVIDER` | `google` atau `groq`. |
+| `AI_MODEL` | Nama model persis seperti tertulis di dashboard penyedia. Nama model sering berganti, jadi tidak ditulis di kode. |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Dipakai kalau `AI_PROVIDER=google`. |
+| `GROQ_API_KEY` | Dipakai kalau `AI_PROVIDER=groq`. |
+| `DEMO_MODE` | Isi `1` untuk menampilkan panel Mode demo di production. Saat development panel selalu tampil. |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Mode demo
 
-## Deploy on Vercel
+Panel di pojok kanan bawah punya tiga tombol:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Isi data contoh** mengganti isi database dengan riwayat dan tugas contoh, lengkap dengan streak.
+- **Majukan waktu 1 hari** menggeser semua tanggal mundur sehari, seolah waktu berjalan maju.
+- **Lewati deadline #1** membuat tugas dengan deadline terdekat jadi terlambat, sehingga modal streak putus muncul.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Tombol-tombol ini mengubah data di database, jadi jangan diaktifkan pada data yang sungguhan.
+
+## Struktur folder
+
+```
+prisma/                  skema dan migrasi database
+src/app/(app)/           halaman today, progress, kalender, profil
+src/components/shell/    sidebar, header, navigasi bawah, tema
+src/components/tugas/    daftar tugas, form, kalender, kartu statistik
+src/server/              server actions: tugas, Smart Scheduler, mode demo
+src/lib/                 koneksi database, waktu WIB, statistik, pemilih model AI
+```
+
+## Status dan rencana
+
+Saat ini semua data masuk ke satu pengguna demo karena belum ada autentikasi. Yang direncanakan berikutnya:
+
+- Login dengan Google dan data per pengguna
+- Mode fokus (Pomodoro) yang terhubung ke tugas
+- Rapor mingguan
+- Unggah silabus atau materi untuk dibuat rencana belajar
+- PWA dan notifikasi deadline
+- Integrasi Google Calendar
+
+## Tim
+
+Dikembangkan oleh Mhd. Ridwan ([@mhdridwannst](https://github.com/mhdridwannst)) dan tim UKM Software Development.
+
+<!-- tambahkan nama anggota tim di sini -->
