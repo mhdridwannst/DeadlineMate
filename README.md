@@ -118,10 +118,8 @@ Saat ini semua data masuk ke satu pengguna demo karena belum ada autentikasi. Ya
 
 Dikembangkan oleh kelompok 2 tim UKM Software Development 2026-2027:
 Mhd. Ridwan
-
-
-<!-- Hervina Alivia Fitri
+Hervina Alivia Fitri
 Muhammad Slamet Ridho
 M Zaki Edi
 Fahry Ibrahim
-Hamzah Asadullah -->
+Hamzah Asadullah
