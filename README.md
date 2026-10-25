@@ -120,7 +120,7 @@ Dikembangkan oleh kelompok 2 tim UKM Software Development 2026-2027:
 
 | Nama | Divisi | Akun Github |
 | :--- | :--- | :---: |
-| **Mhd. Ridwan** | Hacker | [![GitHub](https://shields.io)](https://github.com/mhdridwannst) |
+| **Mhd. Ridwan** | Hacker | [![GitHub](https://github.com/mhdridwannst) |
 | **Muhammad Slamet Ridho** | Hipster | [![GitHub](https://shields.io)](https://github.com) |
 | **Hervina Alivia Fitri** | Hustler | [![GitHub](https://shields.io)](https://github.com) |
 | **M Zaki Edi** | Hacker | [![GitHub](https://shields.io)](https://github.com) |
