@@ -144,8 +144,8 @@ Dikembangkan oleh **Kelompok 2** Tim UKM Software Development 2026-2027:
   </tr>
   <tr>
     <td align="center">
-      <a href="https://github.com/username4">
-        <img src="https://github.com/username4.png" width="100" style="border-radius:50%" alt="M Zaki Edi"/><br />
+      <a href="https://github.com/username7">
+        <img src="https://github.com/username7.png" width="100" style="border-radius:50%" alt="M Zaki Edi"/><br />
         <sub><b>M Zaki Edi</b></sub>
       </a><br />
       Hacker
