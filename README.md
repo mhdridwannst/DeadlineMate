@@ -117,9 +117,12 @@ Saat ini semua data masuk ke satu pengguna demo karena belum ada autentikasi. Ya
 ## Tim
 
 Dikembangkan oleh kelompok 2 tim UKM Software Development 2026-2027:
-Mhd. Ridwan
-Hervina Alivia Fitri
-Muhammad Slamet Ridho
-M Zaki Edi
-Fahry Ibrahim
-Hamzah Asadullah
+
+| Nama | Peran / Kontribusi | Kontak |
+| :--- | :--- | :---: |
+| **Mhd. Ridwan** | Hacker | [![GitHub](https://shields.io)](https://github.com) |
+| **Muhammad Slamet Ridho** | Hipster | [![GitHub](https://shields.io)](https://github.com) |
+| **Hervina Alivia Fitri** | Hustler | [![GitHub](https://shields.io)](https://github.com) |
+| **M Zaki Edi** | Hacker | [![GitHub](https://shields.io)](https://github.com) |
+| **Fahry Ibrahim** | Hipster | [![GitHub](https://shields.io)](https://github.com) |
+| **Hamzah Asadullah** | Hustler | [![GitHub](https://shields.io)](https://github.com) |
