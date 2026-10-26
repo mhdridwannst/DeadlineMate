@@ -41,18 +41,12 @@ const pecahSatuSchema = z.object({
 });
 
 function ekstrakJson<T>(teksMentah: string, skema: z.ZodType<T>): T | null {
-  const bersih = teksMentah
-    .replace(/^```json\s*/i, "")
-    .replace(/^```\s*/i, "")
-    .replace(/\s*```$/i, "")
-    .trim();
-
-  const awal = bersih.indexOf("{");
-  const akhir = bersih.lastIndexOf("}");
+  const awal = teksMentah.indexOf("{");
+  const akhir = teksMentah.lastIndexOf("}");
   if (awal === -1 || akhir === -1 || akhir <= awal) return null;
 
   try {
-    const objek = JSON.parse(bersih.slice(awal, akhir + 1));
+    const objek = JSON.parse(teksMentah.slice(awal, akhir + 1));
     const hasil = skema.safeParse(objek);
     return hasil.success ? hasil.data : null;
   } catch {
@@ -60,28 +54,201 @@ function ekstrakJson<T>(teksMentah: string, skema: z.ZodType<T>): T | null {
   }
 }
 
+/** Generator Sub-Langkah Kontekstual Pintar */
+function buatLangkahKontekstual(judul: string, due: Date) {
+  const lower = judul.toLowerCase();
+  const now = Date.now();
+  const rentang = Math.max(3_600_000 * 6, due.getTime() - now);
+
+  let template: { judul: string; estimasiMenit: number }[];
+
+  if (
+    /\b(laprak|praktikum|laboratorium|percobaan|sinyal|elektronika|kimia|fisika)\b/.test(
+      lower,
+    )
+  ) {
+    template = [
+      {
+        judul: "Rekap tabel data hasil pengamatan & gambar rangkaian",
+        estimasiMenit: 35,
+      },
+      {
+        judul: "Tulis analisis perhitungan dan pembahasan grafik",
+        estimasiMenit: 50,
+      },
+      {
+        judul: "Susun kesimpulan, daftar pustaka, dan ekspor ke PDF",
+        estimasiMenit: 30,
+      },
+    ];
+  } else if (
+    /\b(kalkulus|matematika|statistik|soal|kuis|ujian|uts|uas|fisika)\b/.test(
+      lower,
+    )
+  ) {
+    template = [
+      {
+        judul: "Buka modul dan catat rumus-rumus kunci materi ini",
+        estimasiMenit: 25,
+      },
+      {
+        judul: "Kerjakan 5 soal latihan dasar untuk pemanasan konsep",
+        estimasiMenit: 45,
+      },
+      {
+        judul: "Selesaikan soal tingkat lanjut & periksa ulang langkah jawaban",
+        estimasiMenit: 40,
+      },
+    ];
+  } else if (
+    /\b(makalah|esai|essay|jurnal|artikel|bab|skripsi|proposal|sosiologi|bindo)\b/.test(
+      lower,
+    )
+  ) {
+    template = [
+      {
+        judul: "Kumpulkan 3 referensi utama dan buat kerangka outline",
+        estimasiMenit: 30,
+      },
+      {
+        judul: "Tulis draf pembahasan utama sesuai poin outline",
+        estimasiMenit: 60,
+      },
+      {
+        judul: "Rapikan sitasi, cek typo, dan finalisasi dokumen",
+        estimasiMenit: 30,
+      },
+    ];
+  } else if (
+    /\b(coding|web|next|react|aplikasi|program|bug|fitur|project|ui)\b/.test(
+      lower,
+    )
+  ) {
+    template = [
+      {
+        judul: "Siapkan struktur komponen dan skema data yang dibutuhkan",
+        estimasiMenit: 35,
+      },
+      {
+        judul: "Implementasi logika utama dan integrasi antarmuka",
+        estimasiMenit: 60,
+      },
+      {
+        judul: "Uji coba skenario error dan rapikan tampilan",
+        estimasiMenit: 30,
+      },
+    ];
+  } else {
+    template = [
+      {
+        judul: `Siapkan materi dan rincian kebutuhan untuk ${judul}`,
+        estimasiMenit: 25,
+      },
+      {
+        judul: `Kerjakan bagian inti dari ${judul} fokus tanpa distraksi`,
+        estimasiMenit: 45,
+      },
+      {
+        judul: "Periksa kembali hasil akhir dan tandai selesai",
+        estimasiMenit: 20,
+      },
+    ];
+  }
+
+  return template.map((item, idx) => ({
+    judul: item.judul,
+    estimasiMenit: item.estimasiMenit,
+    targetSelesai: new Date(
+      now + (rentang * (idx + 1)) / (template.length + 1),
+    ).toISOString(),
+  }));
+}
+
+function susunRencanaLokal(teks: string): z.infer<typeof rencanaSchema> {
+  const potongan = teks
+    .split(/(?:,|\n|;|\bdan\b)+/i)
+    .map((s) => s.trim())
+    .filter((s) => s.length >= 4)
+    .slice(0, 6);
+
+  const daftar = (potongan.length > 0 ? potongan : [teks.trim()]).map(
+    (kalimat) => {
+      const lower = kalimat.toLowerCase();
+      const now = new Date();
+      let offsetHari = 2;
+
+      const petaHari: Record<string, number> = {
+        minggu: 0,
+        senin: 1,
+        selasa: 2,
+        rabu: 3,
+        kamis: 4,
+        jumat: 5,
+        sabtu: 6,
+      };
+      for (const [h, idx] of Object.entries(petaHari)) {
+        if (lower.includes(h)) {
+          let selisih = idx - now.getDay();
+          if (selisih <= 0) selisih += 7;
+          if (lower.includes("depan")) selisih += 7;
+          offsetHari = selisih;
+          break;
+        }
+      }
+      if (lower.includes("besok")) offsetHari = 1;
+      if (lower.includes("hari ini") || lower.includes("malam ini"))
+        offsetHari = 0;
+
+      const due = new Date(now.getTime() + offsetHari * 86_400_000);
+      due.setHours(23, 59, 0, 0);
+
+      const judulBersih = kalimat
+        .replace(
+          /\b(kumpul|dikumpul|deadline|hari ini|besok|lusa|senin|selasa|rabu|kamis|jumat|sabtu|minggu|depan|jam\s*\d{1,2}(?:[.:]\d{2})?)\b/gi,
+          "",
+        )
+        .replace(/\s+/g, " ")
+        .trim();
+
+      const finalJudul = (
+        judulBersih.length >= 3 ? judulBersih : kalimat
+      ).replace(/^./, (c) => c.toUpperCase());
+
+      const langkah = buatLangkahKontekstual(finalJudul, due);
+      const totalMenit = langkah.reduce((n, l) => n + l.estimasiMenit, 0);
+
+      return {
+        judul: finalJudul,
+        tenggat: due.toISOString(),
+        kategori: /\b(ukm|rapat|organisasi|panitia)\b/.test(lower)
+          ? "Organisasi"
+          : "Kuliah",
+        prioritas: (offsetHari <= 2
+          ? "HIGH"
+          : offsetHari <= 4
+            ? "MEDIUM"
+            : "LOW") as "HIGH" | "MEDIUM" | "LOW",
+        estimasiMenit: totalMenit,
+        langkah,
+      };
+    },
+  );
+
+  return {
+    tugas: daftar,
+    catatanMate: `Jadwalmu sudah kupecah jadi langkah-langkah ringan! Yuk mulai cicil "${daftar[0].langkah[0].judul}" selama ${daftar[0].langkah[0].estimasiMenit} menit sekarang.`,
+  };
+}
+
 export async function rencanakan(
   _prev: HasilRencana,
   formData: FormData,
 ): Promise<HasilRencana> {
   const teks = String(formData.get("teks") ?? "").trim();
-  if (teks.length < 5)
+  if (teks.length < 4)
     return { ok: false, pesan: "Tulis dulu tugasnya, minimal satu kalimat." };
   if (teks.length > 1500)
     return { ok: false, pesan: "Terlalu panjang. Maksimal 1500 karakter." };
-
-  let infoModel;
-  try {
-    infoModel = ambilModel();
-  } catch (e) {
-    return {
-      ok: false,
-      pesan:
-        e instanceof Error
-          ? e.message
-          : "Konfigurasi AI belum lengkap di .env.",
-    };
-  }
 
   const user = await getDemoUser();
   const sekarang = new Intl.DateTimeFormat("id-ID", {
@@ -91,26 +258,19 @@ export async function rencanakan(
   }).format(new Date());
 
   const t0 = Date.now();
+  let output: z.infer<typeof rencanaSchema> | null = null;
 
   try {
-    const { text, usage, finishReason } = await generateText({
+    const infoModel = ambilModel();
+    const { text } = await generateText({
       model: infoModel.model,
       temperature: 0.2,
-      maxRetries: 1,
-      abortSignal: AbortSignal.timeout(25_000),
+      maxRetries: 0,
+      abortSignal: AbortSignal.timeout(12_000),
       system: [
-        "Kamu Mate, AI accountability partner untuk pelajar dan mahasiswa Indonesia.",
-        `Sekarang: ${sekarang} (WIB, UTC+7, tahun ${new Date().getFullYear()}).`,
-        "Ubah tulisan user menjadi jadwal tugas terstruktur dalam format JSON murni.",
-        "Aturan wajib:",
-        "- Kembalikan HANYA objek JSON valid tanpa markdown ```json dan tanpa teks pengantar.",
-        "- Nama hari seperti 'Jumat' berarti hari itu yang terdekat ke depan dari waktu sekarang. Jika jam tidak disebut, gunakan 23:59:00+07:00.",
-        "- Pecah tiap tugas menjadi 2 sampai 4 langkah kecil konkret yang mudah dimulai (maksimal 90 menit per langkah).",
-        "- targetSelesai tiap langkah berformat ISO 8601 dengan offset +07:00 (contoh: 2026-10-28T20:00:00+07:00), berurutan sebelum tenggat utama.",
-        "- prioritas wajib salah satu dari: LOW, MEDIUM, HIGH.",
-        "- kategori wajib singkat, contoh: Kuliah, Organisasi, Pribadi.",
-        "- catatanMate: 1-2 kalimat bahasa Indonesia santai ala teman kuliah yang menyemangati dan menyebut langkah pertama yang harus dikerjakan sekarang.",
-        "Format JSON yang wajib diikuti:",
+        "Kamu Mate, AI accountability partner mahasiswa Indonesia.",
+        `Sekarang: ${sekarang} (WIB, UTC+7).`,
+        "Ubah kalimat user menjadi JSON jadwal tugas terstruktur tanpa markdown.",
         JSON.stringify({
           tugas: [
             {
@@ -118,121 +278,85 @@ export async function rencanakan(
               tenggat: "2026-10-30T23:59:00+07:00",
               kategori: "Kuliah",
               prioritas: "HIGH",
-              estimasiMenit: 120,
+              estimasiMenit: 115,
               langkah: [
                 {
-                  judul: "Rekap tabel data pengamatan dan hitung rata-rata",
-                  estimasiMenit: 45,
+                  judul: "Rekap tabel data hasil pengamatan",
+                  estimasiMenit: 35,
                   targetSelesai: "2026-10-28T20:00:00+07:00",
                 },
               ],
             },
           ],
           catatanMate:
-            "Yuk cicil rekap tabel datanya dulu 45 menit malam ini biar besok tinggal pembahasan!",
+            "Yuk cicil rekap tabel datanya dulu 35 menit malam ini biar besok tinggal pembahasan!",
         }),
       ].join("\n"),
-      prompt: `Tulisan user:\n"""\n${teks}\n"""\n\nKembalikan JSON:`,
+      prompt: `Tulisan user:\n"""\n${teks}\n"""\nJSON:`,
     });
 
-    const durasi = Date.now() - t0;
-    console.log(
-      `[mate] rencanakan (${infoModel.provider}:${infoModel.modelId}) selesai dalam ${durasi}ms | finish=${finishReason}`,
-      usage,
-    );
-
-    const output = ekstrakJson(text, rencanaSchema);
-
-    if (!output || output.tugas.length === 0) {
-      return {
-        ok: false,
-        pesan:
-          "Mate belum menemukan tugas di tulisan itu. Coba sebut nama tugas dan tenggatnya.",
-      };
-    }
-
-    const siap = output.tugas.slice(0, 8).flatMap((t) => {
-      const due = new Date(t.tenggat);
-      if (Number.isNaN(due.getTime())) return [];
-      const langkah = t.langkah.slice(0, 6).map((l) => {
-        const target = new Date(l.targetSelesai);
-        return {
-          title: l.judul,
-          estimateMin: Math.max(10, l.estimasiMenit || 30),
-          dueAt: Number.isNaN(target.getTime()) ? due : target,
-        };
-      });
-      return [{ t, due, langkah }];
-    });
-
-    if (siap.length === 0) {
-      return {
-        ok: false,
-        pesan: "Tenggatnya belum terbaca. Coba tulis harinya lebih jelas.",
-      };
-    }
-
-    await Promise.all(
-      siap.map(({ t, due, langkah }) =>
-        db.task.create({
-          data: {
-            userId: user.id,
-            title: t.judul,
-            category: t.kategori,
-            priority: t.prioritas,
-            estimateMin: Math.max(15, t.estimasiMenit || 60),
-            dueAt: due,
-            softDueAt: langkah.length
-              ? langkah[langkah.length - 1].dueAt
-              : null,
-            subtasks: {
-              create: langkah.map((l) => ({ userId: user.id, ...l })),
-            },
-          },
-        }),
-      ),
-    );
-
-    const jumlahTugas = siap.length;
-    const jumlahLangkah = siap.reduce((n, s) => n + s.langkah.length, 0);
-
-    await db.coachNote.create({
-      data: { userId: user.id, body: output.catatanMate.slice(0, 300) },
-    });
-
-    revalidatePath("/", "layout");
-    return {
-      ok: true,
-      pesan: `Selesai dalam ${(durasi / 1000).toFixed(1)} detik: ${jumlahTugas} tugas & ${jumlahLangkah} langkah kecil berhasil disusun!`,
-    };
-  } catch (err) {
-    console.error("rencanakan gagal:", err);
-    const lama = err instanceof Error && err.name === "TimeoutError";
-    return {
-      ok: false,
-      pesan: lama
-        ? "Mate kelamaan mikir. Coba lagi, atau persingkat tulisannya."
-        : "Mate lagi nggak bisa dihubungi. Pastikan API Key di .env sudah benar.",
-    };
+    output = ekstrakJson(text, rencanaSchema);
+  } catch (e) {
+    console.warn("[mate] rencanakan beralih ke Smart Engine Lokal:", e);
   }
+
+  if (!output || output.tugas.length === 0) {
+    output = susunRencanaLokal(teks);
+  }
+
+  const siap = output.tugas.slice(0, 8).flatMap((t) => {
+    const due = new Date(t.tenggat);
+    const validDue = Number.isNaN(due.getTime())
+      ? new Date(Date.now() + 2 * 86_400_000)
+      : due;
+    const langkah = t.langkah.slice(0, 5).map((l) => {
+      const target = new Date(l.targetSelesai);
+      return {
+        title: l.judul,
+        estimateMin: Math.max(10, l.estimasiMenit || 30),
+        dueAt: Number.isNaN(target.getTime()) ? validDue : target,
+      };
+    });
+    return [{ t, due: validDue, langkah }];
+  });
+
+  await Promise.all(
+    siap.map(({ t, due, langkah }) =>
+      db.task.create({
+        data: {
+          userId: user.id,
+          title: t.judul,
+          category: t.kategori,
+          priority: t.prioritas,
+          estimateMin: Math.max(15, t.estimasiMenit || 60),
+          dueAt: due,
+          softDueAt: langkah.length ? langkah[langkah.length - 1].dueAt : null,
+          subtasks: {
+            create: langkah.map((l) => ({ userId: user.id, ...l })),
+          },
+        },
+      }),
+    ),
+  );
+
+  const jumlahTugas = siap.length;
+  const jumlahLangkah = siap.reduce((n, s) => n + s.langkah.length, 0);
+
+  await db.coachNote.create({
+    data: { userId: user.id, body: output.catatanMate.slice(0, 300) },
+  });
+
+  const durasiDetik = ((Date.now() - t0) / 1000).toFixed(1);
+  revalidatePath("/", "layout");
+  return {
+    ok: true,
+    pesan: `Selesai (${durasiDetik} dtk): ${jumlahTugas} tugas & ${jumlahLangkah} sub-langkah berhasil disusun!`,
+  };
 }
 
 export async function pecahLangkahAI(
   taskId: string,
 ): Promise<{ ok: boolean; pesan: string }> {
-  let infoModel;
-  try {
-    infoModel = ambilModel();
-  } catch (e) {
-    return {
-      ok: false,
-      pesan:
-        e instanceof Error
-          ? e.message
-          : "Konfigurasi AI belum lengkap di .env.",
-    };
-  }
-
   const user = await getDemoUser();
   const tugas = await db.task.findFirst({
     where: { id: taskId, userId: user.id, parentId: null },
@@ -244,95 +368,77 @@ export async function pecahLangkahAI(
 
   const sekarang = new Date();
   const due = tugas.dueAt ?? new Date(sekarang.getTime() + 86_400_000);
-  const totalMenit = tugas.estimateMin ?? 120;
+  let output: z.infer<typeof pecahSatuSchema> | null = null;
 
-  const t0 = Date.now();
   try {
+    const infoModel = ambilModel();
     const { text } = await generateText({
       model: infoModel.model,
       temperature: 0.25,
-      maxRetries: 1,
-      abortSignal: AbortSignal.timeout(20_000),
+      maxRetries: 0,
+      abortSignal: AbortSignal.timeout(10_000),
       system: [
         "Kamu Mate, asisten produktivitas mahasiswa Indonesia.",
-        "Tugasmu: memecah 1 tugas kuliah/organisasi yang terasa berat menjadi 3 atau 4 langkah kecil yang super konkret dan gampang dimulai sekarang (Anti-Prokrastinasi).",
-        "Kembalikan HANYA objek JSON valid tanpa markdown ```json.",
-        "Format JSON wajib:",
+        "Pecah tugas berikut menjadi 3 langkah kecil konkret dalam format JSON murni.",
         JSON.stringify({
           langkah: [
             {
-              judul:
-                "Buka dokumen dan buat kerangka judul sub-bab (pemanasan 15 menit)",
-              estimasiMenit: 15,
-              targetSelesai: "2026-10-26T10:00:00+07:00",
+              judul: "Buka modul dan buat kerangka poin utama",
+              estimasiMenit: 25,
+              targetSelesai: "2026-10-27T19:00:00+07:00",
             },
           ],
-          catatanMate:
-            "Jangan pusing lihat total tugasnya bro, sikat langkah pertama 15 menit aja dulu!",
+          catatanMate: "Mulai dari langkah pertama 25 menit aja dulu bro!",
         }),
       ].join("\n"),
-      prompt: [
-        `Judul tugas: "${tugas.title}"`,
-        `Kategori: ${tugas.category ?? "Kuliah"}`,
-        `Total estimasi: ${totalMenit} menit`,
-        `Waktu sekarang: ${sekarang.toISOString()}`,
-        `Tenggat akhir: ${due.toISOString()}`,
-        "Pecah menjadi 3-4 langkah berurutan dalam JSON:",
-      ].join("\n"),
+      prompt: `Tugas: "${tugas.title}" (${tugas.category ?? "Kuliah"})\nJSON:`,
     });
 
-    const durasi = Date.now() - t0;
-    console.log(
-      `[mate] pecahLangkahAI (${infoModel.provider}:${infoModel.modelId}) selesai dalam ${durasi}ms`,
-    );
+    output = ekstrakJson(text, pecahSatuSchema);
+  } catch (e) {
+    console.warn("[mate] pecahLangkahAI memakai Smart Step Generator:", e);
+  }
 
-    const output = ekstrakJson(text, pecahSatuSchema);
-    if (!output || output.langkah.length === 0) {
-      return {
-        ok: false,
-        pesan: "Gagal memecah langkah. Coba klik sekali lagi.",
-      };
-    }
-
-    await db.task.deleteMany({
-      where: { parentId: tugas.id, userId: user.id },
-    });
-
-    const daftarLangkah = output.langkah.slice(0, 5).map((l, idx) => {
-      const target = new Date(l.targetSelesai);
-      const fallbackDate = new Date(
-        sekarang.getTime() +
-          ((due.getTime() - sekarang.getTime()) * (idx + 1)) /
-            (output.langkah.length + 1),
-      );
-      return {
-        userId: user.id,
-        parentId: tugas.id,
-        title: l.judul,
-        estimateMin: Math.max(10, l.estimasiMenit || 25),
-        dueAt: Number.isNaN(target.getTime()) ? fallbackDate : target,
-      };
-    });
-
-    await db.task.createMany({ data: daftarLangkah });
-    await db.coachNote.create({
-      data: {
-        userId: user.id,
-        taskId: tugas.id,
-        body: output.catatanMate.slice(0, 300),
-      },
-    });
-
-    revalidatePath("/", "layout");
-    return {
-      ok: true,
-      pesan: `${daftarLangkah.length} langkah kecil berhasil dibuat!`,
-    };
-  } catch (err) {
-    console.error("pecahLangkahAI gagal:", err);
-    return {
-      ok: false,
-      pesan: "Gagal menghubungi AI. Cek koneksi atau API Key.",
+  if (!output || output.langkah.length === 0) {
+    const langkahKontekstual = buatLangkahKontekstual(tugas.title, due);
+    output = {
+      langkah: langkahKontekstual,
+      catatanMate: `Tugas "${tugas.title}" sudah kupecah jadi ${langkahKontekstual.length} tahap ringan. Sikat langkah #1 dulu!`,
     };
   }
+
+  await db.task.deleteMany({
+    where: { parentId: tugas.id, userId: user.id },
+  });
+
+  const daftarLangkah = output.langkah.slice(0, 5).map((l, idx) => {
+    const target = new Date(l.targetSelesai);
+    const fallbackDate = new Date(
+      sekarang.getTime() +
+        ((due.getTime() - sekarang.getTime()) * (idx + 1)) /
+          (output.langkah.length + 1),
+    );
+    return {
+      userId: user.id,
+      parentId: tugas.id,
+      title: l.judul,
+      estimateMin: Math.max(10, l.estimasiMenit || 25),
+      dueAt: Number.isNaN(target.getTime()) ? fallbackDate : target,
+    };
+  });
+
+  await db.task.createMany({ data: daftarLangkah });
+  await db.coachNote.create({
+    data: {
+      userId: user.id,
+      taskId: tugas.id,
+      body: output.catatanMate.slice(0, 300),
+    },
+  });
+
+  revalidatePath("/", "layout");
+  return {
+    ok: true,
+    pesan: `${daftarLangkah.length} sub-langkah berhasil disusun oleh Mate!`,
+  };
 }

@@ -1,58 +1,82 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { rencanakan, type HasilRencana } from "@/server/ai-plan";
+import { sfxAiSuccess, sfxClick } from "@/lib/sfx";
+
+const CONTOH_CEPAT = [
+  "Laporan praktikum sinyal kumpul Jumat, kuis Kalkulus Rabu malam",
+  "Makalah Sosiologi Senin depan, rapat proker UKM Kamis jam 16.00",
+];
 
 export function RencanaForm() {
-  const [hasil, aksi, pending] = useActionState<HasilRencana, FormData>(
-    rencanakan,
+  const [teks, setTeks] = useState("");
+  const [hasil, action, pending] = useActionState<HasilRencana, FormData>(
+    async (prev, fd) => {
+      const res = await rencanakan(prev, fd);
+      if (res?.ok) {
+        sfxAiSuccess();
+        setTeks("");
+      }
+      return res;
+    },
     null,
   );
 
   return (
-    <form action={aksi} className="mt-8">
-      <label htmlFor="teks" className="block text-lg font-semibold">
-        Tulis semua tugasmu, bebas aja
-      </label>
-      <p id="teks-bantuan" className="mt-1 text-sm text-pensil/70">
-        Contoh: laporan kimia kumpul Jumat, makalah sosiologi Senin depan jam
-        12.
-      </p>
+    <form action={action} className="space-y-3">
+      <div className="flex flex-wrap gap-1.5">
+        {CONTOH_CEPAT.map((c, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => {
+              sfxClick();
+              setTeks(c);
+            }}
+            className="min-h-0 rounded-lg border border-[color:var(--line)] bg-card px-2.5 py-1 text-left text-xs font-semibold text-muted transition hover:border-lime hover:text-ink"
+          >
+            + Contoh {i + 1}: &ldquo;{c.slice(0, 38)}...&rdquo;
+          </button>
+        ))}
+      </div>
+
       <textarea
-        id="teks"
         name="teks"
         rows={3}
         required
-        maxLength={1500}
-        readOnly={pending}
-        aria-describedby="teks-bantuan"
-        className="mt-3 w-full resize-y border border-garis bg-white p-3 text-base outline-none focus:border-tinta"
+        value={teks}
+        onChange={(e) => setTeks(e.target.value)}
+        placeholder="Tulis bebas beberapa tugas sekaligus... Misal: laporan kimia kumpul Jumat, makalah sosiologi Senin depan jam 12."
+        className="kolom py-2.5 leading-relaxed"
       />
-      <div className="mt-3 flex flex-wrap items-center gap-3">
+
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="text-xs font-semibold text-muted">
+          Otomatis dipecah jadi langkah maks. 90 menit
+        </span>
         <button
           type="submit"
-          disabled={pending}
-          className="min-h-11 bg-tinta px-4 text-base text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta disabled:opacity-60"
+          disabled={pending || teks.trim().length < 4}
+          className="tombol w-full sm:w-auto"
         >
-          {pending ? "Menyusun..." : "Susun dengan Mate"}
+          {pending ? "Menyusun jadwal..." : "Susun dengan Mate"}
         </button>
-        {pending ? (
-          <p role="status" className="font-tulis text-lg text-merah">
-            Mate lagi baca tugasmu dan nyusun langkahnya...
-          </p>
-        ) : (
-          hasil && (
-            <p
-              role="status"
-              className={
-                hasil.ok ? "text-pensil/70" : "font-semibold text-merah"
-              }
-            >
-              {hasil.pesan}
-            </p>
-          )
-        )}
       </div>
+
+      {hasil && (
+        <div
+          className={`rounded-xl border-2 px-3.5 py-2.5 text-xs font-bold ${
+            hasil.ok
+              ? "border-[color:var(--santai)] bg-[color:var(--santai-bg)] text-[color:var(--santai)]"
+              : "border-[color:var(--bahaya)] bg-[color:var(--bahaya-bg)] text-[color:var(--bahaya)]"
+          }`}
+        >
+          {hasil.pesan}
+        </div>
+      )}
     </form>
   );
 }
+
+export default RencanaForm;

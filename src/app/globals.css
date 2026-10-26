@@ -1,53 +1,53 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f3f4ef;
-  --bg-dot: #d5d8ce;
+  --bg: #f4f6fb;
+  --bg-dot: #cbd5e1;
   --card: #ffffff;
-  --ink: #141513;
-  --line: #181a17;
-  --sh: #181a17;
-  --muted: #5b5e57;
-  --lime: #a6f000;
-  --lime-soft: #ecf9c8;
-  --lime-soft-ink: #141513;
-  --warn: #fff1b8;
-  --warn-line: #d99000;
-  --warn-ink: #1c1605;
-  --biru: #2563eb;
-  --bahaya-bg: #ffe2df;
-  --bahaya: #c92519;
-  --sedang-bg: #fff0b3;
-  --sedang: #855500;
-  --santai-bg: #d9f7e0;
-  --santai: #146c37;
-  --ai-bg: #efe8ff;
-  --ai-ink: #5218ad;
+  --ink: #0f172a;
+  --line: #1e293b;
+  --sh: #0f172a;
+  --muted: #64748b;
+  --lime: #a3e635;
+  --lime-soft: #ecfccb;
+  --lime-soft-ink: #1a2e05;
+  --warn: #fef3c7;
+  --warn-line: #d97706;
+  --warn-ink: #78350f;
+  --biru: #4f46e5;
+  --bahaya-bg: #fee2e2;
+  --bahaya: #dc2626;
+  --sedang-bg: #fef3c7;
+  --sedang: #b45309;
+  --santai-bg: #dcfce7;
+  --santai: #15803d;
+  --ai-bg: #ede9fe;
+  --ai-ink: #5b21b6;
 }
 
 [data-theme="dark"] {
-  --bg: #0d100e;
-  --bg-dot: #1d241f;
-  --card: #151a17;
-  --ink: #eef2ec;
-  --line: #2e3831;
-  --sh: #050706;
-  --muted: #95a097;
-  --lime: #aff514;
-  --lime-soft: #1d2915;
-  --lime-soft-ink: #e5f9c0;
-  --warn: #2c2410;
-  --warn-line: #d99b26;
-  --warn-ink: #fde68a;
-  --biru: #60a5fa;
-  --bahaya-bg: #3b1816;
+  --bg: #090d16;
+  --bg-dot: #1e293b;
+  --card: #111827;
+  --ink: #f8fafc;
+  --line: #334155;
+  --sh: #020617;
+  --muted: #94a3b8;
+  --lime: #a3e635;
+  --lime-soft: #172554;
+  --lime-soft-ink: #f8fafc;
+  --warn: #271c09;
+  --warn-line: #f59e0b;
+  --warn-ink: #fef3c7;
+  --biru: #818cf8;
+  --bahaya-bg: #3b1219;
   --bahaya: #fca5a5;
-  --sedang-bg: #362b10;
+  --sedang-bg: #33210a;
   --sedang: #fcd34d;
-  --santai-bg: #133020;
+  --santai-bg: #0c2e1f;
   --santai: #86efac;
-  --ai-bg: #251a3d;
-  --ai-ink: #ddd6fe;
+  --ai-bg: #2e1065;
+  --ai-ink: #e9d5ff;
   color-scheme: dark;
 }
 
@@ -63,7 +63,7 @@
   --color-pensil: var(--ink);
   --color-kertas: var(--bg);
   --color-halaman: var(--card);
-  --color-merah: #d92d20;
+  --color-merah: #ef4444;
   --color-link: var(--ink);
   --color-stabilo: var(--lime);
   --color-garis: var(--line);
@@ -77,8 +77,8 @@ html {
 
 body {
   background-color: var(--bg);
-  background-image: radial-gradient(var(--bg-dot) 1.2px, transparent 1.2px);
-  background-size: 22px 22px;
+  background-image: radial-gradient(var(--bg-dot) 1px, transparent 1px);
+  background-size: 24px 24px;
   color: var(--ink);
   font-family: var(--font-sans);
   line-height: 1.5;
@@ -103,26 +103,38 @@ summary {
 
 .kartu {
   background: var(--card);
+  color: var(--ink);
   border: 2px solid var(--line);
   border-radius: 1rem;
-  box-shadow: 0 4px 0 var(--sh);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 4px 0 var(--sh);
   transition:
-    transform 140ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    box-shadow 140ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    border-color 140ms ease;
+    transform 150ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 150ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 150ms ease;
 }
 
 .kartu-interaktif:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 0 var(--sh);
+  border-color: var(--lime);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 6px 0 var(--sh);
 }
 
 .kartu-lime {
-  background: var(--lime-soft);
-  color: var(--lime-soft-ink);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--lime) 16%, var(--card)),
+    var(--card)
+  );
+  color: var(--ink);
   border: 2px solid var(--line);
   border-radius: 1rem;
-  box-shadow: 0 4px 0 var(--sh);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 4px 0 var(--sh);
 }
 
 .tombol {
@@ -132,21 +144,22 @@ summary {
   gap: 0.5rem;
   min-height: 44px;
   padding: 0 1rem;
-  border: 2px solid var(--line);
+  border: 2px solid #0f172a;
   border-radius: 0.75rem;
   background: var(--lime);
-  color: #111310;
-  font-weight: 700;
+  color: #090d16;
+  font-weight: 800;
   box-shadow: 0 3px 0 var(--sh);
   cursor: pointer;
   transition:
     transform 80ms ease-out,
     box-shadow 80ms ease-out,
-    background-color 120ms ease;
+    filter 120ms ease;
 }
 .tombol:hover:not(:disabled) {
   transform: translateY(-1.5px);
   box-shadow: 0 4.5px 0 var(--sh);
+  filter: brightness(1.03);
 }
 .tombol:active:not(:disabled) {
   transform: translateY(2.5px);
@@ -159,10 +172,12 @@ summary {
 .tombol-putih {
   background: var(--card);
   color: var(--ink);
+  border-color: var(--line);
 }
 .tombol-ai {
   background: var(--ai-bg);
   color: var(--ai-ink);
+  border-color: var(--line);
 }
 .tombol-kecil {
   min-height: 38px;
@@ -172,9 +187,9 @@ summary {
 
 .judul-stabilo {
   background-image: linear-gradient(
-    transparent 62%,
-    color-mix(in srgb, var(--lime) 75%, transparent) 62%,
-    color-mix(in srgb, var(--lime) 75%, transparent) 92%,
+    transparent 64%,
+    color-mix(in srgb, var(--lime) 45%, transparent) 64%,
+    color-mix(in srgb, var(--lime) 45%, transparent) 92%,
     transparent 92%
   );
   padding-inline: 0.12em;
@@ -186,7 +201,7 @@ summary {
   gap: 0.3rem;
   border: 1.5px solid currentColor;
   border-radius: 9999px;
-  padding: 0.1rem 0.65rem;
+  padding: 0.12rem 0.7rem;
   font-size: 0.75rem;
   font-weight: 700;
   line-height: 1.4;
@@ -213,24 +228,20 @@ summary {
   color: var(--ai-ink);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
 .kolom {
   width: 100%;
   min-height: 46px;
   border: 2px solid var(--line);
   border-radius: 0.75rem;
-  background: color-mix(in srgb, var(--ink) 4%, var(--card));
+  background: var(--bg);
   color: var(--ink);
   padding: 0 0.875rem;
   font-weight: 600;
+  transition: border-color 120ms ease;
+}
+.kolom:focus {
+  border-color: var(--lime);
+  outline: none;
 }
 .kolom::placeholder {
   color: var(--muted);
