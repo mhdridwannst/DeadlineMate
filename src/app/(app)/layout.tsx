@@ -25,7 +25,8 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   ]);
 
   const now = Date.now();
-  const notifikasi: ItemNotif[] = tugasAktif.flatMap((t) => {
+  const telat = tugasAktif.find((t) => t.dueAt && t.dueAt.getTime() < now);
+  const notifikasi: ItemNotif[] = tugasAktif.flatMap((t): ItemNotif[] => {
     if (!t.dueAt) return [];
     const selisihMs = t.dueAt.getTime() - now;
     const selisihJam = selisihMs / 3_600_000;
@@ -79,7 +80,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       level={r.level}
       exp={r.expLevel}
       hariIni={{ selesai: r.hariIniSelesai, total: r.hariIniTotal }}
-      terlewat={r.terlewat}
+      terlewat={telat ? { id: telat.id, judul: telat.title } : null}
       demo={process.env.NODE_ENV !== "production"}
     >
       {children}
