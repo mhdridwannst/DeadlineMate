@@ -114,10 +114,6 @@ Saat ini semua data masuk ke satu pengguna demo karena belum ada autentikasi. Ya
 - PWA dan notifikasi deadline
 - Integrasi Google Calendar
 
-## Tim
-
-Dikembangkan oleh **Kelompok 2** tim UKM Software Development.
-
 ##  Tim
 
 Dikembangkan oleh **Kelompok 2** dari UKM Software Development 2026:
