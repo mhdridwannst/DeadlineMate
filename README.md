@@ -116,7 +116,7 @@ Saat ini semua data masuk ke satu pengguna demo karena belum ada autentikasi. Ya
 
 ##  Tim
 
-Dikembangkan oleh **Kelompok 2** Tim UKM Software Development 2026-2027:
+Dikembangkan oleh **Kelompok 2** dari UKM Software Development 2026-2027:
 
 <table>
   <tr>
