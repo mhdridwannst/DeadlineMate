@@ -11,8 +11,10 @@ import {
 } from "react";
 import { RencanaForm } from "@/components/paper/RencanaForm";
 import FormTugas from "@/components/tugas/FormTugas";
-import { lewatiDeadline, majukanHari } from "@/server/demo";
+import { keluarKeDemo, masukAkun, setBahasa } from "@/server/demo-user";
 import { isSfxEnabled, sfxClick, toggleSfx } from "@/lib/sfx";
+import { DICT, type Lang } from "@/lib/i18n";
+import DeadlineNotifier, { type ItemNotif } from "./DeadlineNotifier";
 import { useTema } from "./tema";
 
 const IKON: Record<string, string> = {
@@ -45,50 +47,53 @@ function I({ n, className = "size-5" }: { n: string; className?: string }) {
   );
 }
 
-const NAV = [
-  { href: "/today", label: "Home", ikon: "home" },
-  { href: "/progress", label: "Progress", ikon: "progress" },
-  { href: "/kalender", label: "Kalender", ikon: "kalender" },
-  { href: "/profil", label: "Profil", ikon: "profil" },
-];
-
-const JUDUL: Record<string, string> = {
-  "/today": "Dashboard",
-  "/progress": "Progress",
-  "/kalender": "Kalender",
-  "/profil": "Profil",
-};
-
 type Props = {
   nama: string;
+  email?: string;
+  lang?: Lang;
+  notifikasi?: ItemNotif[];
   streak: number;
   level: number;
   exp: number;
   hariIni: { selesai: number; total: number };
-  terlewat: { id: string; judul: string } | null;
-  demo: boolean;
+  terlewat?: { id: string; judul: string } | null;
+  demo?: boolean;
   children: ReactNode;
 };
 
 export default function AppShell({
   nama,
+  email = "demo@deadlinemate.app",
+  lang = "id",
+  notifikasi = [],
   streak,
   level,
   exp,
-  hariIni,
-  terlewat,
-  demo,
   children,
 }: Props) {
+  const t = DICT[lang];
   const path = usePathname();
   const dlg = useRef<HTMLDialogElement>(null);
-  const putus = useRef<HTMLDialogElement>(null);
+  const dlgAkun = useRef<HTMLDialogElement>(null);
   const [, setTema] = useTema();
-  const [pending, mulai] = useTransition();
-  const [panelDemo, setPanelDemo] = useState(true);
+  const [, mulai] = useTransition();
   const [kunci, setKunci] = useState(0);
   const [tabModal, setTabModal] = useState<"satuan" | "banyak">("satuan");
   const [sfxAktif, setSfxAktif] = useState(true);
+
+  const NAV = [
+    { href: "/today", label: t.navHome, ikon: "home" },
+    { href: "/progress", label: t.navProgress, ikon: "progress" },
+    { href: "/kalender", label: t.navCalendar, ikon: "kalender" },
+    { href: "/profil", label: t.navProfile, ikon: "profil" },
+  ];
+
+  const JUDUL: Record<string, string> = {
+    "/today": "Dashboard",
+    "/progress": t.navProgress,
+    "/kalender": t.navCalendar,
+    "/profil": t.navProfile,
+  };
 
   useEffect(() => {
     setSfxAktif(isSfxEnabled());
@@ -111,31 +116,16 @@ export default function AppShell({
     setSfxAktif(toggleSfx());
   };
 
+  const gantiBahasa = () => {
+    sfxClick();
+    const target: Lang = lang === "id" ? "en" : "id";
+    mulai(async () => {
+      await setBahasa(target);
+    });
+  };
+
   const inisial = nama.slice(0, 1).toUpperCase();
-
-  useEffect(() => {
-    if (!terlewat) return;
-    try {
-      if (localStorage.getItem(`putus:${terlewat.id}`)) return;
-    } catch {}
-    if (!putus.current?.open) putus.current?.showModal();
-  }, [terlewat]);
-
-  function tandaiPutus() {
-    if (!terlewat) return;
-    try {
-      localStorage.setItem(`putus:${terlewat.id}`, "1");
-    } catch {}
-  }
-
-  const bar = (
-    <div className="h-2.5 overflow-hidden rounded-full border-2 border-[color:var(--line)] bg-card">
-      <div
-        className="h-full bg-biru transition-all duration-300"
-        style={{ width: `${exp}%` }}
-      />
-    </div>
-  );
+  const pakaiAkunPribadi = email !== "demo@deadlinemate.app";
 
   return (
     <>
@@ -143,18 +133,18 @@ export default function AppShell({
         href="#isi"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-lime focus:px-4 focus:py-3 focus:font-bold focus:text-[#111]"
       >
-        Lompat ke isi
+        Skip to content
       </a>
 
-      {/* Sidebar desktop */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col justify-between border-r-2 border-[color:var(--line)] bg-card p-4 lg:flex">
+      {/* Sidebar Desktop Khas DeadlineMate */}
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col justify-between border-r-2 border-[color:var(--line)] bg-card p-4 pb-16 lg:flex">
         <div className="flex flex-col gap-6">
           <Link href="/today" className="flex items-center gap-2.5 px-1 py-2">
-            <span className="grid size-10 place-items-center rounded-xl border-2 border-[color:var(--line)] bg-lime text-lg font-extrabold text-[#111] shadow-[0_3px_0_var(--sh)]">
+            <span className="grid size-10 place-items-center rounded-xl border-2 border-[#141513] bg-lime text-lg font-extrabold text-[#111310] shadow-[0_3px_0_var(--sh)]">
               D
             </span>
             <div className="leading-tight">
-              <span className="block text-lg font-extrabold tracking-tight">
+              <span className="block text-lg font-extrabold tracking-tight text-ink">
                 Deadline Mate
               </span>
               <span className="text-[11px] font-bold text-muted">
@@ -167,8 +157,8 @@ export default function AppShell({
             {NAV.map((n) => {
               const aktif = path === n.href;
               const navCls = aktif
-                ? "flex min-h-12 items-center gap-3 rounded-xl border-2 border-[color:var(--line)] bg-lime px-3.5 font-bold text-[#111] shadow-[0_3px_0_var(--sh)] transition-all"
-                : "flex min-h-12 items-center gap-3 rounded-xl border-2 border-transparent px-3.5 font-bold text-ink/80 transition-all hover:border-[color:var(--line)]/40 hover:bg-bg hover:text-ink";
+                ? "flex min-h-12 items-center gap-3 rounded-xl border-2 border-[#141513] bg-lime px-3.5 font-extrabold text-[#111310] shadow-[0_3px_0_var(--sh)] transition-all"
+                : "flex min-h-12 items-center gap-3 rounded-xl border-2 border-transparent px-3.5 font-bold text-ink/80 transition-all hover:border-[color:var(--line)] hover:bg-bg hover:text-ink";
               return (
                 <Link
                   key={n.href}
@@ -185,30 +175,32 @@ export default function AppShell({
           </nav>
 
           <button type="button" onClick={bukaTugas} className="tombol w-full">
-            <I n="plus" /> Tugas baru
+            <I n="plus" /> {t.newTask}
           </button>
         </div>
 
         <div className="kartu-lime p-3.5 text-xs">
-          <div className="flex items-center gap-1.5 font-extrabold">
-            <I n="sparkle" className="size-4" />
-            <span>Tips Produktif</span>
+          <div className="flex items-center gap-1.5 font-extrabold text-ink">
+            <I n="sparkle" className="size-4 text-lime" />
+            <span>Tips Mate</span>
           </div>
           <p className="mt-1.5 leading-relaxed opacity-90">
-            Tugas terasa berat? Gunakan tombol <strong>Pecah Langkah AI</strong>{" "}
-            pada kartu tugas untuk membaginya jadi cicilan pendek.
+            {lang === "en"
+              ? "Click Pecah Langkah AI on any task card to break it into easy steps!"
+              : "Klik Pecah Langkah AI di kartu tugas kalau kamu bingung harus mulai nyicil dari mana!"}
           </p>
         </div>
       </aside>
 
       <div className="lg:pl-56">
-        {/* Header desktop */}
+        {/* Header Desktop */}
         <header className="sticky top-0 z-20 hidden h-20 items-center justify-between border-b-2 border-[color:var(--line)] bg-card/95 px-8 backdrop-blur-sm lg:flex">
-          <h2 className="text-2xl font-extrabold">
+          <h2 className="text-2xl font-extrabold text-ink">
             <span className="judul-stabilo">
-              {JUDUL[path] ?? "DeadlineMate"}
+              {JUDUL[path] ?? "Deadline Mate"}
             </span>
           </h2>
+
           <div className="flex items-center gap-2.5">
             <span
               className="tag px-3 py-1"
@@ -219,17 +211,31 @@ export default function AppShell({
                 fontSize: "0.8125rem",
               }}
             >
-              Streak {streak}
+              🔥 Streak {streak}
             </span>
 
             <button
               type="button"
+              onClick={gantiBahasa}
+              title="Switch Language (ID / EN)"
+              className="inline-flex min-h-10 items-center gap-1 rounded-xl border-2 border-[color:var(--line)] bg-card px-3 text-xs font-extrabold text-ink transition hover:-translate-y-0.5"
+            >
+              <span className={lang === "id" ? "text-lime" : "text-muted"}>
+                ID
+              </span>
+              <span className="text-muted">/</span>
+              <span className={lang === "en" ? "text-lime" : "text-muted"}>
+                EN
+              </span>
+            </button>
+
+            <DeadlineNotifier items={notifikasi} lang={lang} />
+
+            <button
+              type="button"
               onClick={ubahSuara}
-              aria-label={
-                sfxAktif ? "Matikan efek suara" : "Nyalakan efek suara"
-              }
-              title={sfxAktif ? "Sound FX: Aktif" : "Sound FX: Mati"}
-              className="grid size-11 place-items-center rounded-xl border-2 border-[color:var(--line)] bg-card transition hover:-translate-y-0.5"
+              aria-label="Sound FX"
+              className="grid size-10 place-items-center rounded-xl border-2 border-[color:var(--line)] bg-card text-ink transition hover:-translate-y-0.5"
             >
               <I n={sfxAktif ? "suaraOn" : "suaraOff"} />
             </button>
@@ -238,79 +244,97 @@ export default function AppShell({
               type="button"
               onClick={gantiTema}
               aria-label="Ganti tema"
-              title="Ganti tema Terang/Gelap"
-              className="grid size-11 place-items-center rounded-xl border-2 border-[color:var(--line)] bg-card transition hover:-translate-y-0.5"
+              className="grid size-10 place-items-center rounded-xl border-2 border-[color:var(--line)] bg-card text-ink transition hover:-translate-y-0.5"
             >
               <I n="bulan" />
             </button>
 
-            <div className="ml-1 text-right leading-tight">
-              <p className="font-bold">Hai, {nama}!</p>
-              <p className="text-xs font-semibold text-muted">
-                Lvl {level} · {exp} EXP
-              </p>
-            </div>
-            <span className="grid size-11 place-items-center rounded-full border-2 border-[color:var(--line)] bg-lime font-extrabold text-[#111] shadow-[0_2px_0_var(--sh)]">
-              {inisial}
-            </span>
+            <button
+              type="button"
+              onClick={() => {
+                sfxClick();
+                dlgAkun.current?.showModal();
+              }}
+              className="ml-1 flex items-center gap-2.5 rounded-xl border-2 border-transparent px-2 py-1 text-right transition hover:border-[color:var(--line)] hover:bg-bg"
+            >
+              <div className="leading-tight">
+                <p className="font-extrabold text-ink">
+                  {t.hi}, {nama}!
+                </p>
+                <p className="text-xs font-semibold text-muted">
+                  Lvl {level} · {exp} EXP
+                </p>
+              </div>
+              <span className="grid size-11 place-items-center rounded-full border-2 border-[#141513] bg-lime font-extrabold text-[#111310] shadow-[0_2px_0_var(--sh)]">
+                {inisial}
+              </span>
+            </button>
           </div>
         </header>
 
-        {/* Header mobile */}
-        <header className="border-b-2 border-[color:var(--line)] bg-card px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] lg:hidden">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold text-muted">Selamat datang</p>
-              <h2 className="text-2xl font-extrabold leading-tight">
-                Hai, {nama}!
-              </h2>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span
-                className="tag"
-                style={{
-                  background: "var(--lime-soft)",
-                  color: "var(--lime-soft-ink)",
-                  borderColor: "var(--line)",
-                  fontSize: "0.8125rem",
-                }}
-              >
-                Streak {streak}
+        {/* Header Mobile */}
+        <header className="sticky top-0 z-20 border-b-2 border-[color:var(--line)] bg-card/95 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.65rem)] backdrop-blur-sm lg:hidden">
+          <div className="flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                sfxClick();
+                dlgAkun.current?.showModal();
+              }}
+              className="flex min-h-0 items-center gap-2.5 text-left"
+            >
+              <span className="grid size-10 place-items-center rounded-full border-2 border-[#141513] bg-lime font-extrabold text-[#111310] shadow-[0_2px_0_var(--sh)]">
+                {inisial}
               </span>
+              <div className="leading-tight">
+                <p className="text-xs font-semibold text-muted">{t.welcome}</p>
+                <h2 className="text-lg font-extrabold text-ink">
+                  {t.hi}, {nama}!
+                </h2>
+              </div>
+            </button>
+
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={gantiBahasa}
+                className="min-h-10 min-w-0 rounded-xl border-2 border-[color:var(--line)] bg-card px-2.5 text-xs font-extrabold text-ink"
+              >
+                {lang.toUpperCase()}
+              </button>
+
+              <DeadlineNotifier items={notifikasi} lang={lang} />
+
               <button
                 type="button"
                 onClick={ubahSuara}
-                aria-label="Efek suara"
-                className="grid size-10 place-items-center rounded-xl border-2 border-[color:var(--line)]"
+                aria-label="Sound FX"
+                className="grid size-10 min-h-0 min-w-0 place-items-center rounded-xl border-2 border-[color:var(--line)] bg-card text-ink"
               >
                 <I n={sfxAktif ? "suaraOn" : "suaraOff"} className="size-4" />
               </button>
+
               <button
                 type="button"
                 onClick={gantiTema}
                 aria-label="Ganti tema"
-                className="grid size-10 place-items-center rounded-xl border-2 border-[color:var(--line)]"
+                className="grid size-10 min-h-0 min-w-0 place-items-center rounded-xl border-2 border-[color:var(--line)] bg-card text-ink"
               >
                 <I n="bulan" className="size-4" />
               </button>
             </div>
           </div>
-          <p className="mt-2 text-sm font-bold">
-            Lvl {level}{" "}
-            <span className="font-normal text-muted">· {exp} EXP</span>
-          </p>
-          <div className="mt-1">{bar}</div>
         </header>
 
         <main
           id="isi"
-          className="mx-auto w-full max-w-6xl px-4 pb-32 pt-5 sm:px-6 lg:px-8 lg:pb-12 lg:pt-8"
+          className="mx-auto w-full max-w-6xl px-4 pb-28 pt-5 sm:px-6 lg:px-8 lg:pb-12 lg:pt-8"
         >
           {children}
         </main>
       </div>
 
-      {/* Bottom nav mobile */}
+      {/* Bottom Nav Mobile */}
       <nav
         aria-label="Utama"
         className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-[color:var(--line)] bg-card pb-[env(safe-area-inset-bottom)] lg:hidden"
@@ -323,18 +347,18 @@ export default function AppShell({
                   <button
                     type="button"
                     onClick={bukaTugas}
-                    aria-label="Tugas baru"
-                    className="-mt-8 grid size-16 place-items-center rounded-full border-2 border-[color:var(--line)] bg-lime text-[#111] shadow-[0_4px_0_var(--sh)] active:translate-y-1 active:shadow-none"
+                    aria-label={t.newTask}
+                    className="-mt-7 grid size-15 place-items-center rounded-full border-2 border-[#141513] bg-lime text-[#111310] shadow-[0_4px_0_var(--sh)] active:translate-y-1 active:shadow-none"
                   >
-                    <I n="plus" className="size-8" />
+                    <I n="plus" className="size-7" />
                   </button>
                 </li>
               );
             }
             const aktifMobile = path === n.href;
             const mobileCls = aktifMobile
-              ? "mx-auto flex min-h-14 w-full max-w-[4.5rem] flex-col items-center justify-center gap-0.5 rounded-xl border-2 border-[color:var(--line)] bg-lime text-xs font-bold text-[#111]"
-              : "mx-auto flex min-h-14 w-full max-w-[4.5rem] flex-col items-center justify-center gap-0.5 rounded-xl text-xs font-bold";
+              ? "mx-auto flex min-h-13 w-full max-w-[4.5rem] flex-col items-center justify-center gap-0.5 rounded-xl border-2 border-[#141513] bg-lime text-xs font-extrabold text-[#111310]"
+              : "mx-auto flex min-h-13 w-full max-w-[4.5rem] flex-col items-center justify-center gap-0.5 rounded-xl text-xs font-bold text-muted";
             return (
               <li key={n.href}>
                 <Link
@@ -352,7 +376,87 @@ export default function AppShell({
         </ul>
       </nav>
 
-      {/* Dialog tugas baru dengan Tab Switcher bersih */}
+      {/* Dialog Login / Akun Cloud Permanen */}
+      <dialog
+        ref={dlgAkun}
+        onClick={(e) => {
+          if (e.target === dlgAkun.current) dlgAkun.current?.close();
+        }}
+        className="m-auto w-[min(92vw,26rem)] rounded-2xl border-2 border-[color:var(--line)] bg-card p-5 text-ink shadow-[0_6px_0_var(--sh)] backdrop:bg-black/60"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-extrabold text-ink">
+              {t.accountSection}
+            </h2>
+            <p className="mt-0.5 text-xs text-muted">{t.accountDesc}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => dlgAkun.current?.close()}
+            aria-label="Close"
+            className="grid size-10 place-items-center rounded-xl border-2 border-[color:var(--line)]"
+          >
+            <I n="x" />
+          </button>
+        </div>
+
+        <form
+          action={async (fd) => {
+            await masukAkun(fd);
+            dlgAkun.current?.close();
+          }}
+          className="mt-4 space-y-3"
+        >
+          <div>
+            <label className="mb-1 block text-xs font-bold text-muted">
+              Email
+            </label>
+            <input
+              name="email"
+              type="email"
+              required
+              defaultValue={pakaiAkunPribadi ? email : ""}
+              placeholder="nama@mahasiswa.ac.id"
+              className="kolom"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-bold text-muted">
+              {t.nickname}
+            </label>
+            <input
+              name="nama"
+              type="text"
+              defaultValue={nama}
+              placeholder="Wannn"
+              className="kolom"
+            />
+          </div>
+          <button type="submit" className="tombol w-full">
+            {t.switchAccount}
+          </button>
+        </form>
+
+        {pakaiAkunPribadi && (
+          <form
+            action={async () => {
+              await keluarKeDemo();
+              dlgAkun.current?.close();
+            }}
+            className="mt-2.5"
+          >
+            <button
+              type="submit"
+              className="tombol tombol-putih tombol-kecil w-full"
+            >
+              {t.logoutDemo}
+            </button>
+          </form>
+        )}
+      </dialog>
+
+      {/* Dialog Tugas Baru */}
       <dialog
         ref={dlg}
         onClick={(e) => {
@@ -363,8 +467,8 @@ export default function AppShell({
       >
         <div className="p-5">
           <div className="flex items-start justify-between gap-3">
-            <h2 className="text-2xl font-extrabold">
-              <span className="judul-stabilo">Tugas baru</span>
+            <h2 className="text-2xl font-extrabold text-ink">
+              <span className="judul-stabilo">{t.newTask}</span>
             </h2>
             <button
               type="button"
@@ -376,7 +480,6 @@ export default function AppShell({
             </button>
           </div>
 
-          {/* Segmented Tab Switcher agar tidak menumpuk 2 kotak hijau */}
           <div className="mt-4 grid grid-cols-2 gap-1.5 rounded-xl border-2 border-[color:var(--line)] bg-bg p-1">
             <button
               type="button"
@@ -386,11 +489,11 @@ export default function AppShell({
               }}
               className={`min-h-10 rounded-lg text-xs font-extrabold transition ${
                 tabModal === "satuan"
-                  ? "border-2 border-[color:var(--line)] bg-lime text-[#111] shadow-[0_2px_0_var(--sh)]"
+                  ? "border-2 border-[#141513] bg-lime text-[#111310] shadow-[0_2px_0_var(--sh)]"
                   : "text-muted hover:text-ink"
               }`}
             >
-              Satu Tugas (Auto-Fill)
+              {t.singleTaskTab}
             </button>
             <button
               type="button"
@@ -400,11 +503,11 @@ export default function AppShell({
               }}
               className={`min-h-10 rounded-lg text-xs font-extrabold transition ${
                 tabModal === "banyak"
-                  ? "border-2 border-[color:var(--line)] bg-lime text-[#111] shadow-[0_2px_0_var(--sh)]"
+                  ? "border-2 border-[#141513] bg-lime text-[#111310] shadow-[0_2px_0_var(--sh)]"
                   : "text-muted hover:text-ink"
               }`}
             >
-              Smart Scheduler (Banyak)
+              {t.multiTaskTab}
             </button>
           </div>
 
@@ -418,16 +521,19 @@ export default function AppShell({
             ) : (
               <section className="kartu-lime p-4">
                 <div className="mb-1 flex items-center justify-between">
-                  <h3 className="font-extrabold">
-                    Tulis semua tugasmu sekaligus
+                  <h3 className="font-extrabold text-ink">
+                    {lang === "en"
+                      ? "Write all your tasks at once"
+                      : "Tulis semua tugasmu sekaligus"}
                   </h3>
                   <span className="rounded-full border border-[color:var(--line)] bg-card px-2 py-0.5 text-[11px] font-extrabold text-ink">
                     Multi-Task AI
                   </span>
                 </div>
                 <p className="mb-3 text-xs opacity-85">
-                  Ketik beberapa jadwal kuliah/organisasi dalam satu paragraf.
-                  Mate akan memecahnya jadi daftar tugas + sub-langkah otomatis.
+                  {lang === "en"
+                    ? "Mate automatically splits your paragraph into structured tasks and 90-min sub-steps."
+                    : "Ketik beberapa jadwal kuliah/organisasi dalam satu paragraf. Mate akan memecahnya jadi daftar tugas + sub-langkah otomatis."}
                 </p>
                 <RencanaForm />
               </section>
@@ -435,93 +541,6 @@ export default function AppShell({
           </div>
         </div>
       </dialog>
-
-      {/* Dialog streak putus */}
-      <dialog
-        ref={putus}
-        onClose={tandaiPutus}
-        className="m-auto w-[min(92vw,24rem)] rounded-2xl border-2 border-[color:var(--line)] bg-card p-6 text-center text-ink shadow-[0_6px_0_var(--sh)] backdrop:bg-black/60"
-      >
-        <span
-          className="mx-auto grid size-14 place-items-center rounded-full border-2 border-[color:var(--line)] text-xl font-extrabold"
-          style={{ background: "var(--bahaya-bg)", color: "var(--bahaya)" }}
-        >
-          !
-        </span>
-        <h2 className="mt-3 text-xl font-extrabold">Streak terputus</h2>
-        <p className="mt-1 text-sm text-muted">
-          Deadline terlewat pada tugas:{" "}
-          <strong className="text-ink">{terlewat?.judul}</strong>
-        </p>
-        <button
-          type="button"
-          onClick={() => {
-            sfxClick();
-            putus.current?.close();
-          }}
-          className="tombol mt-5 w-full"
-        >
-          Mulai bangkit lagi
-        </button>
-      </dialog>
-
-      {/* Mode demo */}
-      {demo &&
-        (panelDemo ? (
-          <div className="fixed bottom-24 right-3 z-50 w-56 rounded-2xl border-2 border-[color:var(--line)] bg-card p-3 shadow-[0_4px_0_var(--sh)] lg:bottom-6 lg:right-6">
-            <div className="mb-2 flex items-center justify-between">
-              <p className="text-xs font-extrabold uppercase tracking-wider text-muted">
-                Simulasi Demo
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  sfxClick();
-                  setPanelDemo(false);
-                }}
-                aria-label="Sembunyikan mode demo"
-                className="grid size-8 min-h-0 min-w-0 place-items-center rounded-lg border border-[color:var(--line)]/20 hover:bg-bg"
-              >
-                <I n="x" className="size-4" />
-              </button>
-            </div>
-            <div className="grid gap-2">
-              <button
-                type="button"
-                disabled={pending}
-                onClick={() => {
-                  sfxClick();
-                  mulai(async () => void (await majukanHari()));
-                }}
-                className="tombol tombol-putih tombol-kecil"
-              >
-                Majukan waktu 1 hari
-              </button>
-              <button
-                type="button"
-                disabled={pending}
-                onClick={() => {
-                  sfxClick();
-                  mulai(async () => void (await lewatiDeadline()));
-                }}
-                className="tombol tombol-putih tombol-kecil"
-              >
-                Lewati deadline #1
-              </button>
-            </div>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              sfxClick();
-              setPanelDemo(true);
-            }}
-            className="tombol tombol-kecil fixed bottom-24 right-3 z-50 lg:bottom-6 lg:right-6"
-          >
-            Simulasi Demo
-          </button>
-        ))}
     </>
   );
 }

@@ -1,44 +1,86 @@
-import AppShell from "@/components/shell/AppShell";
+import type { ReactNode } from "react";
 import { db } from "@/lib/db";
 import { ambilRingkasan } from "@/lib/stats";
-import { getDemoUser } from "@/server/demo-user";
+import { durasi } from "@/lib/waktu";
+import { getBahasa, getDemoUser } from "@/server/demo-user";
+import AppShell from "@/components/shell/AppShell";
+import type { ItemNotif } from "@/components/shell/DeadlineNotifier";
 
 export const dynamic = "force-dynamic";
 
-export default async function AppLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const user = await getDemoUser();
-  const now = new Date();
-
-  const [r, terlewat] = await Promise.all([
+export default async function AppLayout({ children }: { children: ReactNode }) {
+  const [user, lang] = await Promise.all([getDemoUser(), getBahasa()]);
+  const [r, tugasAktif] = await Promise.all([
     ambilRingkasan(user.id),
-    db.task.findFirst({
+    db.task.findMany({
       where: {
         userId: user.id,
         parentId: null,
         status: { not: "DONE" },
-        dueAt: { lt: now, gte: new Date(now.getTime() - 48 * 3_600_000) },
+        dueAt: { not: null },
       },
-      orderBy: { dueAt: "desc" },
-      select: { id: true, title: true },
+      orderBy: { dueAt: "asc" },
+      take: 15,
     }),
   ]);
 
-  const demo =
-    process.env.NODE_ENV !== "production" || process.env.DEMO_MODE === "1";
+  const now = Date.now();
+  const notifikasi: ItemNotif[] = tugasAktif.flatMap((t) => {
+    if (!t.dueAt) return [];
+    const selisihMs = t.dueAt.getTime() - now;
+    const selisihJam = selisihMs / 3_600_000;
+
+    if (selisihMs < 0) {
+      return [
+        {
+          id: t.id,
+          judul: t.title,
+          sisaJam: selisihJam,
+          labelWaktu:
+            lang === "en"
+              ? `${durasi(-selisihMs)} late`
+              : `Telat ${durasi(-selisihMs)}`,
+          status: "OVERDUE" as const,
+        },
+      ];
+    }
+    if (selisihJam <= 3) {
+      return [
+        {
+          id: t.id,
+          judul: t.title,
+          sisaJam: selisihJam,
+          labelWaktu: durasi(selisihMs),
+          status: "URGENT_3H" as const,
+        },
+      ];
+    }
+    if (selisihJam <= 24) {
+      return [
+        {
+          id: t.id,
+          judul: t.title,
+          sisaJam: selisihJam,
+          labelWaktu: durasi(selisihMs),
+          status: "H_MINUS_1" as const,
+        },
+      ];
+    }
+    return [];
+  });
 
   return (
     <AppShell
-      nama={user.name ?? "Wan"}
+      nama={user.name ?? "Wannn"}
+      email={user.email}
+      lang={lang}
+      notifikasi={notifikasi}
       streak={r.streak}
       level={r.level}
       exp={r.expLevel}
       hariIni={{ selesai: r.hariIniSelesai, total: r.hariIniTotal }}
-      terlewat={terlewat ? { id: terlewat.id, judul: terlewat.title } : null}
-      demo={demo}
+      terlewat={r.terlewat}
+      demo={process.env.NODE_ENV !== "production"}
     >
       {children}
     </AppShell>
