@@ -6,6 +6,7 @@ import {
   simpanTugas,
   type HasilForm,
 } from "@/server/tugas-form";
+import { sfxAiSuccess, sfxClick } from "@/lib/sfx";
 
 export type DataAwalTugas = {
   id?: string;
@@ -52,6 +53,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
     async (prev, fd) => {
       const hasil = await simpanTugas(prev, fd);
       if (hasil.ok) {
+        sfxAiSuccess();
         onSelesai?.();
       }
       return hasil;
@@ -71,6 +73,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
   }, [awal]);
 
   function mulaiSuara() {
+    sfxClick();
     const Win = window as unknown as {
       SpeechRecognition?: new () => {
         lang: string;
@@ -96,7 +99,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
     if (!SR) {
       setPesanAI({
         ok: false,
-        teks: "Browser ini belum mendukung input suara. Ketik manual ya!",
+        teks: "Browser ini belum mendukung mikrofon. Ketik kalimat di atas ya!",
       });
       return;
     }
@@ -116,22 +119,25 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
     rec.start();
   }
 
-  async function prosesAutoFill() {
-    if (!inputCepat.trim()) {
+  async function prosesAutoFill(kalimatOverride?: string) {
+    const targetTeks = (kalimatOverride ?? inputCepat).trim();
+    if (!targetTeks) {
       setPesanAI({
         ok: false,
-        teks: "Ketik atau ucapkan dulu kalimat tugasnya di atas.",
+        teks: "Ketik dulu kalimat singkat tugasmu di kotak atas.",
       });
       return;
     }
+    sfxClick();
     setLoadingAI(true);
     setPesanAI(null);
     try {
-      const res = await isiOtomatisTugasAI(inputCepat);
+      const res = await isiOtomatisTugasAI(targetTeks);
       if (!res.ok) {
         setPesanAI({ ok: false, teks: res.error });
         return;
       }
+      sfxAiSuccess();
       setJudul(res.data.judul);
       setTanggal(res.data.tanggal);
       setJam(res.data.jam);
@@ -140,7 +146,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
       setPrioritas(res.data.prioritas);
       setPesanAI({
         ok: true,
-        teks: "✨ Kolom berhasil diisi otomatis oleh Mate! Silakan cek & simpan.",
+        teks: "Kolom berhasil terisi otomatis! Cek di bawah lalu klik Simpan.",
       });
     } finally {
       setLoadingAI(false);
@@ -148,6 +154,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
   }
 
   function pilihTanggalCepat(offsetHari: number) {
+    sfxClick();
     const d = new Date(Date.now() + offsetHari * 86_400_000);
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, "0");
@@ -159,17 +166,17 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
     <form action={formAction} className="space-y-4">
       {awal?.id && <input type="hidden" name="id" value={awal.id} />}
 
-      {/* Kotak AI Auto-Fill sesuai desain referensi */}
-      <div
-        className="rounded-xl border-2 border-ink p-3.5"
-        style={{ background: "var(--lime-soft)" }}
-      >
-        <label
-          htmlFor="ai-cepat"
-          className="mb-2 block text-sm font-extrabold text-[#111]"
-        >
-          Ketik atau ucapkan tugasmu
-        </label>
+      {/* Kotak AI Auto-Fill dengan kontras teks terang & gelap sempurna */}
+      <div className="kartu-lime p-3.5">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <label htmlFor="ai-cepat" className="text-sm font-extrabold text-ink">
+            Ketik atau ucapkan tugasmu
+          </label>
+          <span className="rounded-md border border-[color:var(--line)] bg-card px-2 py-0.5 text-[11px] font-bold text-muted">
+            Smart Extract
+          </span>
+        </div>
+
         <div className="flex items-stretch">
           <input
             id="ai-cepat"
@@ -182,7 +189,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
                 void prosesAutoFill();
               }
             }}
-            placeholder="Misal: Menulis Laporan Praktikum besok jam 16.00"
+            placeholder="mis. Belajar Kalkulus besok jam 19.00"
             className="kolom kolom-gabung bg-card text-ink"
           />
           <button
@@ -212,23 +219,18 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
         <button
           type="button"
           disabled={loadingAI}
-          onClick={prosesAutoFill}
-          className="tombol tombol-putih mt-2.5 w-full text-sm"
+          onClick={() => void prosesAutoFill()}
+          className="tombol mt-2.5 w-full text-sm"
         >
-          {loadingAI ? (
-            "⏳ Mate lagi mengisi kolom..."
-          ) : (
-            <>
-              <span>✨</span>
-              <span>Isi otomatis dengan AI</span>
-            </>
-          )}
+          {loadingAI ? "Mengekstrak jadwal..." : "Isi otomatis dengan AI"}
         </button>
 
         {pesanAI && (
           <p
-            className={`mt-2 text-xs font-bold ${
-              pesanAI.ok ? "text-[#17703a]" : "text-[color:var(--bahaya)]"
+            className={`mt-2.5 rounded-lg border px-2.5 py-1.5 text-xs font-bold ${
+              pesanAI.ok
+                ? "border-[color:var(--santai)] bg-[color:var(--santai-bg)] text-[color:var(--santai)]"
+                : "border-[color:var(--bahaya)] bg-[color:var(--bahaya-bg)] text-[color:var(--bahaya)]"
             }`}
           >
             {pesanAI.teks}
@@ -239,7 +241,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
       {/* Nama Tugas */}
       <div>
         <label htmlFor="f-judul" className="mb-1.5 block text-sm font-bold">
-          Nama
+          Nama Tugas
         </label>
         <input
           id="f-judul"
@@ -248,7 +250,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
           required
           value={judul}
           onChange={(e) => setJudul(e.target.value)}
-          placeholder="Misal: Tugas Matematika "
+          placeholder="Misal: Belajar & Latihan Soal Kalkulus"
           className="kolom"
         />
       </div>
@@ -256,14 +258,12 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
       {/* Tanggal & Jam */}
       <div className="grid gap-3 sm:grid-cols-[1fr_9.5rem]">
         <div>
-          <div className="mb-1.5 flex items-center justify-between">
-            <label htmlFor="f-tanggal" className="text-sm font-bold">
-              Tanggal deadline{" "}
-              <span className="text-xs font-semibold text-[color:var(--bahaya)]">
-                (wajib)
-              </span>
-            </label>
-          </div>
+          <label htmlFor="f-tanggal" className="mb-1.5 block text-sm font-bold">
+            Tanggal deadline{" "}
+            <span className="text-xs font-semibold text-[color:var(--bahaya)]">
+              (wajib)
+            </span>
+          </label>
           <input
             id="f-tanggal"
             name="tanggal"
@@ -279,21 +279,21 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
               onClick={() => pilihTanggalCepat(0)}
               className="tombol tombol-putih tombol-kecil min-h-9 text-xs"
             >
-              📅 Hari ini
+              Hari ini
             </button>
             <button
               type="button"
               onClick={() => pilihTanggalCepat(1)}
               className="tombol tombol-putih tombol-kecil min-h-9 text-xs"
             >
-              📅 Besok
+              Besok
             </button>
             <button
               type="button"
               onClick={() => pilihTanggalCepat(7)}
               className="tombol tombol-putih tombol-kecil min-h-9 text-xs"
             >
-              📅 Mingdep
+              Mingdep
             </button>
           </div>
         </div>
@@ -309,7 +309,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
             required
             value={jam}
             onChange={(e) => setJam(e.target.value)}
-            className="kolom h-[calc(100%-1.75rem)] min-h-12"
+            className="kolom min-h-[46px]"
           />
         </div>
       </div>
@@ -347,9 +347,10 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
             <button
               type="button"
               aria-label="Kurangi jam"
-              onClick={() =>
-                setEstimasi((v) => Math.max(0.5, Number((v - 0.5).toFixed(1))))
-              }
+              onClick={() => {
+                sfxClick();
+                setEstimasi((v) => Math.max(0.5, Number((v - 0.5).toFixed(1))));
+              }}
               className="tombol rounded-r-none border-r-0 px-3 text-lg"
             >
               −
@@ -368,9 +369,10 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
             <button
               type="button"
               aria-label="Tambah jam"
-              onClick={() =>
-                setEstimasi((v) => Math.min(40, Number((v + 0.5).toFixed(1))))
-              }
+              onClick={() => {
+                sfxClick();
+                setEstimasi((v) => Math.min(40, Number((v + 0.5).toFixed(1))));
+              }}
               className="tombol rounded-l-none border-l-0 px-3 text-lg"
             >
               +
@@ -405,7 +407,6 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
         </p>
       )}
 
-      {/* Tombol Aksi */}
       <div className="flex items-center justify-end gap-2.5 pt-2">
         {onBatal && (
           <button
@@ -421,7 +422,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
           disabled={pending || !judul.trim()}
           className="tombol px-6"
         >
-          {pending ? "Menyimpan..." : "Simpan"}
+          {pending ? "Menyimpan..." : "Simpan Tugas"}
         </button>
       </div>
     </form>
