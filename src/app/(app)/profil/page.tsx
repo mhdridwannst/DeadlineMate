@@ -1,60 +1,80 @@
 import { ambilRingkasan } from "@/lib/stats";
-import { getDemoUser } from "@/server/demo-user";
+import {
+  getBahasa,
+  getDemoUser,
+  keluarKeDemo,
+  masukAkun,
+  setBahasa,
+} from "@/server/demo-user";
 import { ubahProfilPreferensi } from "@/server/tugas-form";
+import { DICT } from "@/lib/i18n";
 import ThemeSwitch from "@/components/shell/ThemeSwitch";
 
 export const dynamic = "force-dynamic";
 
-const NADA_MATE = [
-  {
-    id: "SUPPORTIVE",
-    label: "Supportive Mentor",
-    badge: "Hangat",
-    ket: "Mengapresiasi setiap progres kecil dan menjaga ritme belajarmu tetap tenang.",
-  },
-  {
-    id: "SANTAI",
-    label: "Bestie Kampus",
-    badge: "Santai",
-    ket: "Gaya ngobrol teman satu tongkrongan, asik tapi tetap ngingetin tenggat.",
-  },
-  {
-    id: "TEGAS",
-    label: "Dosen Pembimbing",
-    badge: "Tegas",
-    ket: "To-the-point dan disiplin kalau kamu mulai menunda-nunda tugas prioritas.",
-  },
-] as const;
-
 export default async function ProfilPage() {
-  const user = await getDemoUser();
+  const [user, lang] = await Promise.all([getDemoUser(), getBahasa()]);
+  const t = DICT[lang];
   const r = await ambilRingkasan(user.id);
   const nama = user.name ?? "Wannn";
+  const pakaiAkunPribadi = user.email !== "demo@deadlinemate.app";
 
-  const stat = [
-    { label: "Streak Aktif", nilai: `${r.streak} hari`, aksen: "text-lime" },
-    { label: "Rekor Terbaik", nilai: `${r.rekor} hari`, aksen: "text-ink" },
-    { label: "Tugas Selesai", nilai: `${r.totalSelesai}`, aksen: "text-ink" },
-    { label: "Total EXP", nilai: `${r.exp} XP`, aksen: "text-biru" },
-  ];
+  const NADA_MATE = [
+    {
+      id: "SUPPORTIVE",
+      label: "Supportive Mentor",
+      badge: lang === "en" ? "Warm" : "Hangat",
+      ket:
+        lang === "en"
+          ? "Appreciates small wins and keeps your study rhythm calm."
+          : "Mengapresiasi progres kecil dan menjaga ritme belajarmu tetap tenang.",
+    },
+    {
+      id: "SANTAI",
+      label: "Campus Bestie",
+      badge: lang === "en" ? "Casual" : "Santai",
+      ket:
+        lang === "en"
+          ? "Friendly peer vibe—relaxed but keeps you on track."
+          : "Gaya teman satu tongkrongan, asik tapi tetap ngingetin deadline.",
+    },
+    {
+      id: "TEGAS",
+      label: "Strict Advisor",
+      badge: lang === "en" ? "Direct" : "Tegas",
+      ket:
+        lang === "en"
+          ? "Direct and firm when you procrastinate on high-priority tasks."
+          : "To-the-point dan disiplin kalau kamu mulai menunda tugas.",
+    },
+  ] as const;
 
   const lencana = [
     {
       kode: "01",
-      judul: "Langkah Pertama",
-      ket: "Menyelesaikan minimal 1 tugas hingga tuntas",
+      judul: lang === "en" ? "First Milestone" : "Langkah Pertama",
+      ket:
+        lang === "en"
+          ? "Complete at least 1 task"
+          : "Menyelesaikan minimal 1 tugas hingga tuntas",
       terbuka: r.totalSelesai >= 1,
     },
     {
       kode: "02",
-      judul: "Pejuang Konsisten",
-      ket: "Menjaga rekor streak minimal 3 hari beruntun",
+      judul: lang === "en" ? "Streak Guardian" : "Pejuang Konsisten",
+      ket:
+        lang === "en"
+          ? "Maintain a 3-day active streak"
+          : "Menjaga rekor streak minimal 3 hari beruntun",
       terbuka: r.rekor >= 3,
     },
     {
       kode: "03",
       judul: "Anti-SKS Club",
-      ket: "Menembus Level 2 dengan mengumpulkan 100+ EXP",
+      ket:
+        lang === "en"
+          ? "Reach Level 2 by earning 100+ EXP"
+          : "Menembus Level 2 dengan mengumpulkan 100+ EXP",
       terbuka: r.exp >= 100,
     },
   ];
@@ -62,180 +82,235 @@ export default async function ProfilPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <div>
-        <h1 className="text-3xl font-extrabold">
-          <span className="judul-stabilo">Profil mahasiswa</span>
+        <h1 className="text-2xl font-extrabold text-ink sm:text-3xl">
+          {t.profileTitle}
         </h1>
-        <p className="mt-1 text-base text-muted">
-          Personalisasi karakter AI Coach Mate, tema antarmuka, dan progres
-          akademikmu.
-        </p>
+        <p className="mt-1 text-sm text-muted">{t.profileSub}</p>
       </div>
 
-      {/* Kartu Identitas dengan kontras sempurna di Dark & Light Mode */}
+      {/* Kartu Identitas User */}
       <section className="kartu-lime flex flex-wrap items-center justify-between gap-4 p-5">
         <div className="flex items-center gap-4">
-          <span className="grid size-16 shrink-0 place-items-center rounded-2xl border-2 border-[#0f172a] bg-lime text-3xl font-extrabold text-[#090d16] shadow-[0_3px_0_var(--sh)]">
+          <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-lime text-2xl font-extrabold text-[#09090b] shadow-sm">
             {nama.slice(0, 1).toUpperCase()}
           </span>
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-2xl font-extrabold text-ink">{nama}</p>
-              <span className="rounded-full border border-[color:var(--line)] bg-card px-2.5 py-0.5 text-xs font-extrabold text-ink">
+              <p className="text-xl font-extrabold text-ink">{nama}</p>
+              <span className="rounded-full border border-[color:var(--line)] bg-card px-2.5 py-0.5 text-xs font-extrabold text-lime">
                 Level {r.level}
               </span>
             </div>
-            <p className="mt-0.5 text-sm font-semibold text-muted">
-              Mahasiswa · Pejuang Deadline · {r.expLevel}/100 EXP ke Level{" "}
-              {r.level + 1}
+            <p className="mt-0.5 text-xs font-semibold text-muted">
+              {user.email} · {r.exp} XP Total
             </p>
           </div>
         </div>
 
-        <span className="rounded-xl border-2 border-[color:var(--line)] bg-card px-3.5 py-2 text-xs font-extrabold text-ink shadow-[0_2px_0_var(--sh)]">
-          Mate Persona: {user.coachTone}
+        <span className="rounded-xl border border-[color:var(--line)] bg-card px-3 py-1.5 text-xs font-extrabold text-ink">
+          Persona: {user.coachTone}
         </span>
       </section>
 
-      {/* Bento Grid Statistik */}
-      <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {stat.map((s) => (
-          <div key={s.label} className="kartu p-4">
-            <p className="text-xs font-bold uppercase tracking-wider text-muted">
-              {s.label}
-            </p>
-            <p className={`mt-1.5 text-3xl font-extrabold ${s.aksen}`}>
-              {s.nilai}
-            </p>
-          </div>
-        ))}
-      </section>
-
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Pengaturan Karakter AI Coach */}
-        <section className="kartu p-5">
-          <h2 className="text-lg font-extrabold text-ink">
-            Karakter AI Coach (Mate)
-          </h2>
-          <p className="mt-1 text-xs text-muted">
-            Pilih gaya komunikasi Mate saat mengevaluasi tugas dan menyusun
-            jadwalmu.
-          </p>
-
-          <form action={ubahProfilPreferensi} className="mt-4 space-y-4">
-            <div>
-              <label
-                htmlFor="p-nama"
-                className="mb-1.5 block text-xs font-extrabold uppercase tracking-wider text-muted"
-              >
-                Nama Panggilan
-              </label>
-              <input
-                id="p-nama"
-                name="nama"
-                defaultValue={nama}
-                className="kolom"
-              />
-            </div>
-
-            <fieldset className="space-y-2.5">
-              <legend className="mb-1.5 text-xs font-extrabold uppercase tracking-wider text-muted">
-                Nada Bicara Mate
-              </legend>
-              {NADA_MATE.map((t) => {
-                const aktif = user.coachTone === t.id;
-                return (
-                  <label
-                    key={t.id}
-                    className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 p-3 transition ${
-                      aktif
-                        ? "border-lime bg-bg shadow-[0_2px_0_var(--sh)]"
-                        : "border-[color:var(--line)]/40 bg-bg/50 hover:border-[color:var(--line)]"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="coachTone"
-                      value={t.id}
-                      defaultChecked={aktif}
-                      className="mt-1 size-4 accent-lime"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-extrabold text-ink">
-                          {t.label}
-                        </span>
-                        <span className="rounded-md border border-[color:var(--line)] bg-card px-2 py-0.5 text-[10px] font-extrabold text-muted">
-                          {t.badge}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-xs leading-relaxed text-muted">
-                        {t.ket}
-                      </p>
-                    </div>
-                  </label>
-                );
-              })}
-            </fieldset>
-
-            <button type="submit" className="tombol w-full">
-              Simpan Preferensi Mate
-            </button>
-          </form>
-        </section>
-
+        {/* Kolom Kiri: Akun Permanen + Bahasa + Tema */}
         <div className="space-y-6">
-          {/* Tema */}
           <section className="kartu p-5">
-            <h2 className="text-lg font-extrabold text-ink">Tampilan & Tema</h2>
-            <p className="mb-3 mt-1 text-xs text-muted">
-              Pilih mode terang, gelap (Midnight Slate), atau ikuti sistem.
-            </p>
-            <ThemeSwitch />
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-base font-extrabold text-ink">
+                {t.accountSection}
+              </h2>
+              <span
+                className={`rounded-full px-2.5 py-0.5 text-[10px] font-extrabold ${
+                  pakaiAkunPribadi ? "bg-lime/20 text-lime" : "bg-bg text-muted"
+                }`}
+              >
+                {pakaiAkunPribadi ? "Cloud Synced" : "Demo Session"}
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-muted">{t.accountDesc}</p>
+
+            <form action={masukAkun} className="mt-4 space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-bold text-muted">
+                  Email
+                </label>
+                <input
+                  name="email"
+                  type="email"
+                  required
+                  defaultValue={pakaiAkunPribadi ? user.email : ""}
+                  placeholder="nama@mahasiswa.ac.id"
+                  className="kolom"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-bold text-muted">
+                  {t.nickname}
+                </label>
+                <input
+                  name="nama"
+                  type="text"
+                  defaultValue={nama}
+                  placeholder="Wannn"
+                  className="kolom"
+                />
+              </div>
+              <button type="submit" className="tombol w-full text-sm">
+                {t.switchAccount}
+              </button>
+            </form>
+
+            {pakaiAkunPribadi && (
+              <form action={keluarKeDemo} className="mt-2">
+                <button
+                  type="submit"
+                  className="tombol tombol-putih tombol-kecil w-full"
+                >
+                  {t.logoutDemo}
+                </button>
+              </form>
+            )}
           </section>
 
-          {/* Lencana Pencapaian dengan Teks Kontras Tinggi */}
+          {/* Pengaturan Bahasa (ID / EN) & Tema */}
+          <section className="kartu p-5 space-y-5">
+            <div>
+              <h2 className="text-base font-extrabold text-ink">
+                {t.languageLabel}
+              </h2>
+              <div className="mt-2.5 grid grid-cols-2 gap-2">
+                <form
+                  action={async () => {
+                    "use server";
+                    await setBahasa("id");
+                  }}
+                >
+                  <button
+                    type="submit"
+                    className={`w-full rounded-xl border p-2.5 text-xs font-extrabold transition ${
+                      lang === "id"
+                        ? "border-lime bg-lime text-[#09090b]"
+                        : "border-[color:var(--line)] bg-bg text-ink hover:border-lime"
+                    }`}
+                  >
+                    🇮🇩 Bahasa Indonesia
+                  </button>
+                </form>
+                <form
+                  action={async () => {
+                    "use server";
+                    await setBahasa("en");
+                  }}
+                >
+                  <button
+                    type="submit"
+                    className={`w-full rounded-xl border p-2.5 text-xs font-extrabold transition ${
+                      lang === "en"
+                        ? "border-lime bg-lime text-[#09090b]"
+                        : "border-[color:var(--line)] bg-bg text-ink hover:border-lime"
+                    }`}
+                  >
+                    🇬🇧 English (Global)
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <div className="border-t border-[color:var(--line)] pt-4">
+              <h2 className="text-base font-extrabold text-ink">
+                {t.themeTitle}
+              </h2>
+              <p className="mb-3 mt-0.5 text-xs text-muted">{t.themeSub}</p>
+              <ThemeSwitch />
+            </div>
+          </section>
+        </div>
+
+        {/* Kolom Kanan: Karakter AI Coach + Lencana */}
+        <div className="space-y-6">
+          <section className="kartu p-5">
+            <h2 className="text-base font-extrabold text-ink">
+              {t.coachTitle}
+            </h2>
+            <p className="mt-1 text-xs text-muted">{t.coachSub}</p>
+
+            <form action={ubahProfilPreferensi} className="mt-4 space-y-3">
+              <input type="hidden" name="nama" value={nama} />
+              <fieldset className="space-y-2">
+                {NADA_MATE.map((item) => {
+                  const aktif = user.coachTone === item.id;
+                  return (
+                    <label
+                      key={item.id}
+                      className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition ${
+                        aktif
+                          ? "border-lime bg-bg"
+                          : "border-[color:var(--line)] bg-bg/40 hover:border-muted"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="coachTone"
+                        value={item.id}
+                        defaultChecked={aktif}
+                        className="mt-1 size-4 accent-lime"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-extrabold text-ink">
+                            {item.label}
+                          </span>
+                          <span className="rounded border border-[color:var(--line)] bg-card px-2 py-0.5 text-[10px] font-bold text-muted">
+                            {item.badge}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-xs text-muted">{item.ket}</p>
+                      </div>
+                    </label>
+                  );
+                })}
+              </fieldset>
+
+              <button type="submit" className="tombol w-full text-sm">
+                {t.savePrefs}
+              </button>
+            </form>
+          </section>
+
           <section className="kartu p-5">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-extrabold text-ink">
-                Lencana Pencapaian
+              <h2 className="text-base font-extrabold text-ink">
+                {t.badgesTitle}
               </h2>
-              <span className="text-xs font-extrabold text-muted">
+              <span className="text-xs font-bold text-muted">
                 {lencana.filter((l) => l.terbuka).length}/{lencana.length}{" "}
-                Terbuka
+                {t.unlocked}
               </span>
             </div>
 
-            <ul className="mt-3.5 space-y-2.5">
+            <ul className="mt-3 space-y-2.5">
               {lencana.map((b) => (
                 <li
-                  key={b.judul}
-                  className={`flex items-center gap-3.5 rounded-xl border-2 p-3 transition ${
+                  key={b.kode}
+                  className={`flex items-center gap-3 rounded-xl border p-3 ${
                     b.terbuka
-                      ? "border-lime bg-bg text-ink shadow-[0_2px_0_var(--sh)]"
-                      : "border-[color:var(--line)]/30 bg-bg/30 text-muted opacity-60"
+                      ? "border-lime/60 bg-bg text-ink"
+                      : "border-[color:var(--line)] bg-bg/30 text-muted opacity-55"
                   }`}
                 >
                   <span
-                    className={`grid size-10 shrink-0 place-items-center rounded-xl border-2 font-mono text-xs font-extrabold ${
+                    className={`grid size-9 shrink-0 place-items-center rounded-lg font-mono text-xs font-extrabold ${
                       b.terbuka
-                        ? "border-[#0f172a] bg-lime text-[#090d16]"
-                        : "border-[color:var(--line)] bg-card text-muted"
+                        ? "bg-lime text-[#09090b]"
+                        : "border border-[color:var(--line)] bg-card text-muted"
                     }`}
                   >
                     {b.terbuka ? "✓" : b.kode}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-extrabold text-ink">
-                        {b.judul}
-                      </p>
-                      {b.terbuka && (
-                        <span className="rounded-full bg-lime/20 px-2 py-0.5 text-[10px] font-extrabold text-lime">
-                          Tercapai
-                        </span>
-                      )}
-                    </div>
-                    <p className="mt-0.5 text-xs text-muted">{b.ket}</p>
+                    <p className="text-xs font-extrabold text-ink">{b.judul}</p>
+                    <p className="text-[11px] text-muted">{b.ket}</p>
                   </div>
                 </li>
               ))}

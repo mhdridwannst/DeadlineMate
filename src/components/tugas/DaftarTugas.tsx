@@ -50,7 +50,7 @@ function Kotak({
 }) {
   const ukuranCls = kecil ? "size-5" : "size-7";
   const warnaCls = on
-    ? "scale-95 bg-lime text-[#111] shadow-none"
+    ? "scale-95 bg-lime text-[#111310] shadow-none"
     : "bg-card hover:border-lime shadow-[0_2px_0_var(--sh)]";
 
   return (
@@ -206,11 +206,11 @@ export default function DaftarTugas({ items }: { items: Item[] }) {
                 />
                 <div className="min-w-0 flex-1 pt-0.5">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-md border border-[color:var(--line)] bg-bg px-1.5 py-0.5 font-mono text-xs font-extrabold text-muted">
+                    <span className="rounded-md border border-[color:var(--line)] bg-bg px-1.5 py-0.5 font-mono text-xs font-extrabold text-biru">
                       #{t.no}
                     </span>
                     <p
-                      className={`text-lg font-bold leading-snug ${
+                      className={`text-lg font-extrabold leading-snug ${
                         sel ? "line-through text-muted" : ""
                       }`}
                     >
@@ -246,7 +246,7 @@ export default function DaftarTugas({ items }: { items: Item[] }) {
                     <span className={`tag tag-${t.prioritas}`}>
                       {LABEL[t.prioritas]}
                     </span>
-                    {!sel && <span className="tag tag-exp">+1 streak</span>}
+                    {!sel && <span className="tag tag-exp">🔥 +1 streak</span>}
 
                     {t.langkah.length > 0 ? (
                       <button
@@ -258,10 +258,6 @@ export default function DaftarTugas({ items }: { items: Item[] }) {
                         }}
                         className="inline-flex min-h-8 items-center gap-1.5 rounded-full border-2 border-[color:var(--line)] bg-bg px-3 py-0.5 text-xs font-extrabold text-ink transition hover:border-lime"
                       >
-                        <IkonKecil
-                          d="M9 6h11M9 12h11M9 18h11M5 6h.01M5 12h.01M5 18h.01"
-                          className="size-3.5"
-                        />
                         <span>
                           {dari}/{t.langkah.length} langkah ({persenLangkah}%)
                         </span>
@@ -279,14 +275,10 @@ export default function DaftarTugas({ items }: { items: Item[] }) {
                             color: "var(--ai-ink)",
                           }}
                         >
-                          <IkonKecil
-                            d="M12 3l1.9 5.8L20 10.8l-6.1 1.9L12 18.5l-1.9-5.8L4 10.8l6.1-2z"
-                            className="size-3.5"
-                          />
                           <span>
                             {sedangAI
                               ? "Menyusun langkah..."
-                              : "Pecah Langkah AI"}
+                              : "✦ Pecah Langkah AI"}
                           </span>
                         </button>
                       )
@@ -366,7 +358,7 @@ export default function DaftarTugas({ items }: { items: Item[] }) {
                         onClick={() => jalankanPecahAI(t)}
                         className="min-h-0 text-xs font-bold underline underline-offset-2 opacity-80 hover:opacity-100"
                       >
-                        {sedangAI ? "Menyusun ulang..." : "Susun ulang AI"}
+                        {sedangAI ? "Menyusun ulang..." : "↻ Susun ulang AI"}
                       </button>
                     )}
                   </div>
@@ -382,7 +374,7 @@ export default function DaftarTugas({ items }: { items: Item[] }) {
                       return (
                         <li
                           key={l.id}
-                          className="flex items-center gap-2 rounded-lg border border-[color:var(--line)]/10 bg-card px-2 py-1"
+                          className="flex items-center gap-2 rounded-lg border border-[color:var(--line)]/15 bg-card px-2 py-1"
                         >
                           <Kotak
                             kecil
@@ -414,7 +406,7 @@ export default function DaftarTugas({ items }: { items: Item[] }) {
         })}
       </ul>
 
-      {/* Modal Custom Konfirmasi Hapus (Menggantikan window.confirm) */}
+      {/* Modal Konfirmasi Hapus */}
       <dialog
         ref={dlgHapus}
         onClick={(e) => {
