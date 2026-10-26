@@ -25,35 +25,44 @@ export async function buatTugas(formData: FormData) {
       dueAt: new Date(parsed.data.dueAt),
     },
   });
-  revalidatePath("/today");
+  revalidatePath("/", "layout");
 }
 
-export async function ubahStatus(id: string, selesai: boolean) {
+export async function ubahStatus(
+  id: string,
+  selesai: boolean,
+  parentId?: string | null,
+) {
   const user = await getDemoUser();
   const status = selesai ? "DONE" : "TODO";
   const doneAt = selesai ? new Date() : null;
 
-  const task = await db.task.findFirst({
-    where: { id, userId: user.id },
-    select: { parentId: true },
-  });
-  if (!task) return;
+  // Jika parentId sudah diketahui (null untuk induk, string untuk sub-tugas), lewati findFirst!
+  let idInduk = parentId;
+  if (idInduk === undefined) {
+    const task = await db.task.findFirst({
+      where: { id, userId: user.id },
+      select: { parentId: true },
+    });
+    if (!task) return;
+    idInduk = task.parentId;
+  }
 
   await db.task.updateMany({
     where: { userId: user.id, OR: [{ id }, { parentId: id }] },
     data: { status, doneAt },
   });
 
-  if (task.parentId) {
+  if (idInduk) {
     const sisa = await db.task.count({
       where: {
-        parentId: task.parentId,
+        parentId: idInduk,
         userId: user.id,
         status: { not: "DONE" },
       },
     });
     await db.task.updateMany({
-      where: { id: task.parentId, userId: user.id },
+      where: { id: idInduk, userId: user.id },
       data:
         sisa === 0
           ? { status: "DONE", doneAt: new Date() }
@@ -61,11 +70,11 @@ export async function ubahStatus(id: string, selesai: boolean) {
     });
   }
 
-  revalidatePath("/today");
+  revalidatePath("/", "layout");
 }
 
 export async function hapusTugas(id: string) {
   const user = await getDemoUser();
   await db.task.deleteMany({ where: { id, userId: user.id } });
-  revalidatePath("/today");
+  revalidatePath("/", "layout");
 }

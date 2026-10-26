@@ -1,11 +1,8 @@
-import { db } from "@/lib/db";
 import { ambilRingkasan } from "@/lib/stats";
 import { getBahasa, getDemoUser } from "@/server/demo-user";
 import { hariKe, tambahHari } from "@/lib/waktu";
 import { DICT } from "@/lib/i18n";
 import StatKartu from "@/components/tugas/StatKartu";
-
-export const dynamic = "force-dynamic";
 
 const HARI_ID = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 const HARI_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -13,14 +10,7 @@ const HARI_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 export default async function ProgressPage() {
   const [user, lang] = await Promise.all([getDemoUser(), getBahasa()]);
   const t = DICT[lang];
-
-  const [r, semuaTugas] = await Promise.all([
-    ambilRingkasan(user.id),
-    db.task.findMany({
-      where: { userId: user.id, parentId: null },
-      select: { status: true, category: true, priority: true },
-    }),
-  ]);
+  const r = await ambilRingkasan(user.id);
 
   const hari = Array.from({ length: 7 }, (_, i) => tambahHari(r.today, i - 6));
   const nilai = hari.map((k) => r.perHari[k] ?? 0);
@@ -57,19 +47,11 @@ export default async function ProgressPage() {
                 : "Yuk pecah 1 tugas pakai AI hari ini biar nilaimu langsung naik!",
           };
 
-  const perKategori = ["Kuliah", "Organisasi", "Pribadi"].map((kat) => {
-    const daftar = semuaTugas.filter(
-      (item) => (item.category || "Kuliah").toLowerCase() === kat.toLowerCase(),
-    );
-    const beres = daftar.filter((item) => item.status === "DONE").length;
-    return { kat, total: daftar.length, beres };
-  });
-
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-extrabold text-ink sm:text-3xl">
-          {t.progressTitle}
+          <span className="judul-stabilo">{t.progressTitle}</span>
         </h1>
         <p className="mt-1 text-sm text-muted">{t.progressSub}</p>
       </div>
@@ -92,7 +74,7 @@ export default async function ProgressPage() {
             </p>
             <p className="font-extrabold text-ink">{r.expLevel}/100 XP</p>
           </div>
-          <div className="mt-2 h-3 overflow-hidden rounded-full border border-[color:var(--line)] bg-bg">
+          <div className="mt-2 h-3 overflow-hidden rounded-full border-2 border-[color:var(--line)] bg-bg">
             <div
               className="h-full bg-biru transition-all duration-300"
               style={{ width: `${r.expLevel}%` }}
@@ -101,13 +83,13 @@ export default async function ProgressPage() {
 
           <div className="mt-7 flex items-center justify-between">
             <h2 className="text-sm font-extrabold text-ink">{t.weeklyChart}</h2>
-            <span className="rounded-full border border-[color:var(--line)] bg-bg px-3 py-1 text-xs font-extrabold text-lime">
+            <span className="rounded-full border border-[color:var(--line)] bg-lime-soft px-3 py-1 text-xs font-extrabold text-ink">
               {t.totalDone}: {total7Hari}
             </span>
           </div>
 
           <div
-            className="mt-4 grid h-52 grid-cols-7 items-end gap-2.5 rounded-xl border border-[color:var(--line)] bg-bg p-4 sm:gap-4"
+            className="mt-4 grid h-52 grid-cols-7 items-end gap-2.5 rounded-xl border-2 border-[color:var(--line)]/20 bg-bg p-4 sm:gap-4"
             role="img"
             aria-label={`Completed per day: ${nilai.join(", ")}`}
           >
@@ -130,7 +112,7 @@ export default async function ProgressPage() {
                     style={{
                       height: `${tinggiPx}px`,
                       background: nilai[i] > 0 ? "var(--lime)" : "var(--card)",
-                      border: "1.5px solid var(--line)",
+                      border: "2px solid var(--line)",
                     }}
                   />
                   <span
@@ -147,7 +129,6 @@ export default async function ProgressPage() {
         </section>
 
         <div className="space-y-4">
-          {/* Kartu Rapor Mingguan dengan Kontras Teks Putih/Terang Sempurna */}
           <section className="kartu-lime p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -158,11 +139,11 @@ export default async function ProgressPage() {
                   {nilaiRapor.predikat}
                 </p>
               </div>
-              <span className="grid size-12 shrink-0 place-items-center rounded-2xl border border-[color:var(--line)] bg-card text-xl font-extrabold text-lime shadow-sm">
+              <span className="grid size-12 shrink-0 place-items-center rounded-2xl border-2 border-[#141513] bg-card text-xl font-extrabold text-lime shadow-[0_2px_0_var(--sh)]">
                 {nilaiRapor.huruf}
               </span>
             </div>
-            <p className="mt-3 text-xs font-medium leading-relaxed text-muted">
+            <p className="mt-3 text-xs font-semibold leading-relaxed text-ink/85">
               “{nilaiRapor.pesan}”
             </p>
           </section>
@@ -172,7 +153,7 @@ export default async function ProgressPage() {
               {t.categoryDist}
             </h2>
             <ul className="mt-3 space-y-3">
-              {perKategori.map((item) => {
+              {r.perKategori.map((item) => {
                 const persen =
                   item.total > 0
                     ? Math.round((item.beres / item.total) * 100)
@@ -185,7 +166,7 @@ export default async function ProgressPage() {
                         {item.beres}/{item.total} ({persen}%)
                       </span>
                     </div>
-                    <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-bg">
+                    <div className="mt-1.5 h-2.5 overflow-hidden rounded-full border border-[color:var(--line)] bg-bg">
                       <div
                         className="h-full bg-lime"
                         style={{ width: `${persen}%` }}

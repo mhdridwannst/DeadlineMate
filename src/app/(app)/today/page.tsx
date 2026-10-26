@@ -16,9 +16,6 @@ import DaftarTugas, { type Item } from "@/components/tugas/DaftarTugas";
 import InlineOmnibar from "@/components/tugas/InlineOmnibar";
 import StatKartu from "@/components/tugas/StatKartu";
 import MiniKalender from "@/components/tugas/MiniKalender";
-import PomodoroMini from "@/components/tugas/PomodoroMini";
-
-export const dynamic = "force-dynamic";
 
 const BOBOT = { HIGH: 0, MEDIUM: 1, LOW: 2 } as const;
 const HURUF_HARI_ID = ["M", "S", "S", "R", "K", "J", "S"];
@@ -26,7 +23,6 @@ const HURUF_HARI_EN = ["S", "M", "T", "W", "T", "F", "S"];
 const waktu = (d: Date | null) => (d ? d.getTime() : 8.64e15);
 
 function pesanDefaultMate(
-  tone: "SANTAI" | "TEGAS" | "SUPPORTIVE",
   judulTerdekat: string | undefined,
   jumlahAktif: number,
   lang: Lang,
@@ -35,25 +31,13 @@ function pesanDefaultMate(
     if (jumlahAktif === 0) {
       return "All active tasks are cleared! Type your next assignment below or click New Task.";
     }
-    if (tone === "TEGAS") {
-      return `Stop postponing! Focus on "${judulTerdekat}" for at least 25 minutes right now.`;
-    }
-    if (tone === "SANTAI") {
-      return `Take it easy bro, don't stress over ${jumlahAktif} tasks. Let's chip away at "${judulTerdekat}" for 10 minutes first!`;
-    }
-    return `Small steps build momentum! Start with the first sub-step of "${judulTerdekat}" today.`;
+    return `You have ${jumlahAktif} active task(s). Start with "${judulTerdekat}" and use AI Split if you want smaller sub-steps.`;
   }
 
   if (jumlahAktif === 0) {
-    return "Semua target aktif sudah bersih! Ketik tugas berikutnya di kolom cepat bawah atau klik Tugas baru.";
+    return "Semua target aktif sudah bersih! Ketik tugas berikutnya di kolom cepat atau klik Tugas baru.";
   }
-  if (tone === "TEGAS") {
-    return `Jangan ditunda lagi! Fokus kerjakan "${judulTerdekat}" sekarang minimal 25 menit sebelum makin mepet.`;
-  }
-  if (tone === "SANTAI") {
-    return `Santai bro, nggak perlu pusing lihat ${jumlahAktif} tugas. Kita cicil "${judulTerdekat}" 10 menit pertama dulu sekarang!`;
-  }
-  return `Langkah kecil tetap progres! Yuk mulai cicil "${judulTerdekat}" perlahan, gunakan Pecah Langkah AI bila butuh panduan.`;
+  return `Ada ${jumlahAktif} tugas aktif. Yuk cicil "${judulTerdekat}" lebih dulu—klik Pecah Langkah AI kalau ingin dibagi jadi tahap ringan.`;
 }
 
 export default async function TodayPage() {
@@ -150,24 +134,19 @@ export default async function TodayPage() {
 
   const isiCatatanMate =
     catatan?.body ||
-    pesanDefaultMate(
-      user.coachTone,
-      terdekat?.title ?? aktif[0]?.title,
-      aktif.length,
-      lang,
-    );
+    pesanDefaultMate(terdekat?.title ?? aktif[0]?.title, aktif.length, lang);
 
   const mate = (
     <section className="kartu-lime p-4" aria-label={t.mateNote}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="grid size-7 place-items-center rounded-lg border-2 border-[#141513] bg-lime text-xs font-extrabold text-[#111310]">
-            M
+            ✦
           </span>
           <h2 className="font-extrabold text-ink">{t.mateNote}</h2>
         </div>
         <span className="rounded-full border border-[color:var(--line)] bg-card px-2.5 py-0.5 text-[11px] font-extrabold text-ink">
-          {user.coachTone}
+          AI Assistant
         </span>
       </div>
       <p className="mt-2.5 text-sm font-semibold leading-relaxed text-ink">
@@ -223,7 +202,7 @@ export default async function TodayPage() {
         lang={lang}
       />
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_21rem]">
         <div className="space-y-5">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -303,10 +282,6 @@ export default async function TodayPage() {
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
           <div className="hidden lg:block">{mate}</div>
-
-          <PomodoroMini
-            judulTugas={terdekat?.title ?? aktif[0]?.title ?? null}
-          />
 
           <section className="kartu p-4" aria-label={t.nearestDeadline}>
             <div className="flex items-center gap-3">

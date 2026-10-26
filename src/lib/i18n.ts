@@ -62,14 +62,14 @@ export const DICT = {
     savePrefs: "Simpan Preferensi",
     themeTitle: "Tema Tampilan",
     themeSub:
-      "Pilih mode terang, gelap (Obsidian), atau ikuti sistem perangkat.",
+      "Pilih mode tampilan anda terang, gelap, atau ikuti sistem perangkat.",
     badgesTitle: "Pencapaian Akademik",
     unlocked: "Terbuka",
     demoMode: "Simulasi Demo",
     advance1Day: "+1 Hari",
     skipDeadline: "Lewati #1",
-    singleTaskTab: "Satu Tugas (Auto-Fill)",
-    multiTaskTab: "Smart Scheduler (Banyak)",
+    singleTaskTab: "Buat Satu Tugas",
+    multiTaskTab: "Buat Banyak Tugas",
   },
   en: {
     navHome: "Home",

@@ -5,7 +5,15 @@ import { dayKey } from "@/lib/waktu";
 export const ambilRingkasan = cache(async (userId: string) => {
   const semua = await db.task.findMany({
     where: { userId },
-    select: { parentId: true, status: true, dueAt: true, doneAt: true },
+    select: {
+      id: true,
+      title: true,
+      category: true,
+      parentId: true,
+      status: true,
+      dueAt: true,
+      doneAt: true,
+    },
   });
 
   const now = new Date();
@@ -18,8 +26,6 @@ export const ambilRingkasan = cache(async (userId: string) => {
     perHari[k] = (perHari[k] ?? 0) + 1;
   }
 
-  // Streak = tugas induk beruntun yang selesai sebelum tenggat.
-  // Selesai telat, atau tenggat lewat tanpa selesai, memutus streak.
   type Kejadian = { waktu: number; ok: boolean; hari: string };
   const kejadian: Kejadian[] = [];
   for (const t of semua) {
@@ -52,13 +58,31 @@ export const ambilRingkasan = cache(async (userId: string) => {
 
   const exp = selesai.length * 10;
   const induk = semua.filter((t) => t.parentId === null);
-  const indukAktif = induk.filter((t) => t.status !== "DONE").length;
-  const terlewat = induk.filter(
-    (t) => t.status !== "DONE" && t.dueAt && t.dueAt < now,
-  ).length;
+  const indukAktif = induk.filter((t) => t.status !== "DONE");
+  const lewatList = indukAktif.filter((t) => t.dueAt && t.dueAt < now);
   const indukSelesaiHariIni = induk.filter(
     (t) => t.status === "DONE" && t.doneAt && dayKey(t.doneAt) === hariIni,
   ).length;
+
+  // Hitung distribusi kategori langsung di memori (hemat 1 query di /progress)
+  const perKategori = ["Kuliah", "Organisasi", "Pribadi"].map((kat) => {
+    const daftar = induk.filter(
+      (item) => (item.category || "Kuliah").toLowerCase() === kat.toLowerCase(),
+    );
+    const beres = daftar.filter((item) => item.status === "DONE").length;
+    return { kat, total: daftar.length, beres };
+  });
+
+  // Siapkan daftar tugas aktif ber-deadline untuk notifikasi H-1 (hemat 1 query di layout.tsx)
+  const aktifBerTenggat = indukAktif
+    .filter((t) => t.dueAt !== null)
+    .sort((a, b) => a.dueAt!.getTime() - b.dueAt!.getTime())
+    .slice(0, 15)
+    .map((t) => ({
+      id: t.id,
+      title: t.title,
+      dueAt: t.dueAt!,
+    }));
 
   return {
     today: hariIni,
@@ -70,8 +94,12 @@ export const ambilRingkasan = cache(async (userId: string) => {
     totalSelesai: selesai.length,
     hariSukses,
     perHari,
+    perKategori,
+    aktifBerTenggat,
     hariIniSelesai: indukSelesaiHariIni,
-    hariIniTotal: indukAktif + indukSelesaiHariIni,
-    terlewat,
+    hariIniTotal: indukAktif.length + indukSelesaiHariIni,
+    terlewat: lewatList[0]
+      ? { id: lewatList[0].id, judul: lewatList[0].title }
+      : null,
   };
 });

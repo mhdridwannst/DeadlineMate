@@ -1,33 +1,16 @@
 import type { ReactNode } from "react";
-import { db } from "@/lib/db";
 import { ambilRingkasan } from "@/lib/stats";
 import { durasi } from "@/lib/waktu";
 import { getBahasa, getDemoUser } from "@/server/demo-user";
 import AppShell from "@/components/shell/AppShell";
 import type { ItemNotif } from "@/components/shell/DeadlineNotifier";
 
-export const dynamic = "force-dynamic";
-
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const [user, lang] = await Promise.all([getDemoUser(), getBahasa()]);
-  const [r, tugasAktif] = await Promise.all([
-    ambilRingkasan(user.id),
-    db.task.findMany({
-      where: {
-        userId: user.id,
-        parentId: null,
-        status: { not: "DONE" },
-        dueAt: { not: null },
-      },
-      orderBy: { dueAt: "asc" },
-      take: 15,
-    }),
-  ]);
+  const r = await ambilRingkasan(user.id);
 
   const now = Date.now();
-  const telat = tugasAktif.find((t) => t.dueAt && t.dueAt.getTime() < now);
-  const notifikasi: ItemNotif[] = tugasAktif.flatMap((t): ItemNotif[] => {
-    if (!t.dueAt) return [];
+  const notifikasi: ItemNotif[] = r.aktifBerTenggat.flatMap((t) => {
     const selisihMs = t.dueAt.getTime() - now;
     const selisihJam = selisihMs / 3_600_000;
 
@@ -80,8 +63,6 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       level={r.level}
       exp={r.expLevel}
       hariIni={{ selesai: r.hariIniSelesai, total: r.hariIniTotal }}
-      terlewat={telat ? { id: telat.id, judul: telat.title } : null}
-      demo={process.env.NODE_ENV !== "production"}
     >
       {children}
     </AppShell>
