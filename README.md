@@ -117,10 +117,8 @@ Saat ini semua data masuk ke satu pengguna demo karena belum ada autentikasi. Ya
 <<<<<<< HEAD
 ## Tim
 
-Dikembangkan oleh Mhd. Ridwan ([@mhdridwannst](https://github.com/mhdridwannst)) dan tim UKM Software Development.
+Dikembangkan oleh **Kelompok 2** tim UKM Software Development.
 
-<!-- tambahkan nama anggota tim di sini -->
-=======
 ##  Tim
 
 Dikembangkan oleh **Kelompok 2** dari UKM Software Development 2026:
@@ -173,4 +171,3 @@ Dikembangkan oleh **Kelompok 2** dari UKM Software Development 2026:
     </td>
   </tr>
 </table>
->>>>>>> f51dacec1b44c23bcf6ff361dac9a1a8fbfb849c
