@@ -1,52 +1,56 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f4f6fb;
-  --bg-dot: #cbd5e1;
+  --bg: #f4f5f0;
+  --bg-dot: #d6d9ce;
   --card: #ffffff;
-  --ink: #0f172a;
-  --line: #1e293b;
-  --sh: #0f172a;
-  --muted: #64748b;
+  --surface: #eef0e8;
+  --ink: #141513;
+  --line: #181a17;
+  --sh: #181a17;
+  --muted: #5c5f58;
   --lime: #a3e635;
+  --lime-bright: #a3e635;
   --lime-soft: #ecfccb;
-  --lime-soft-ink: #1a2e05;
-  --warn: #fef3c7;
-  --warn-line: #d97706;
-  --warn-ink: #78350f;
-  --biru: #4f46e5;
+  --lime-soft-ink: #141513;
+  --warn: #fef08a;
+  --warn-line: #ca8a04;
+  --warn-ink: #1c1917;
+  --biru: #2563eb;
   --bahaya-bg: #fee2e2;
   --bahaya: #dc2626;
   --sedang-bg: #fef3c7;
   --sedang: #b45309;
   --santai-bg: #dcfce7;
   --santai: #15803d;
-  --ai-bg: #ede9fe;
-  --ai-ink: #5b21b6;
+  --ai-bg: #f3e8ff;
+  --ai-ink: #6b21a8;
 }
 
 [data-theme="dark"] {
-  --bg: #090d16;
-  --bg-dot: #1e293b;
-  --card: #111827;
-  --ink: #f8fafc;
-  --line: #334155;
-  --sh: #020617;
-  --muted: #94a3b8;
+  --bg: #0c0e0c;
+  --bg-dot: #1f241f;
+  --card: #161916;
+  --surface: #1f241f;
+  --ink: #f4f6f3;
+  --line: #323932;
+  --sh: #040504;
+  --muted: #9ca39b;
   --lime: #a3e635;
-  --lime-soft: #172554;
-  --lime-soft-ink: #f8fafc;
-  --warn: #271c09;
-  --warn-line: #f59e0b;
-  --warn-ink: #fef3c7;
-  --biru: #818cf8;
-  --bahaya-bg: #3b1219;
+  --lime-bright: #aff514;
+  --lime-soft: #1e2916;
+  --lime-soft-ink: #f4f6f3;
+  --warn: #2e240d;
+  --warn-line: #eab308;
+  --warn-ink: #fef08a;
+  --biru: #60a5fa;
+  --bahaya-bg: #3b1515;
   --bahaya: #fca5a5;
-  --sedang-bg: #33210a;
+  --sedang-bg: #36280f;
   --sedang: #fcd34d;
-  --santai-bg: #0c2e1f;
+  --santai-bg: #123120;
   --santai: #86efac;
-  --ai-bg: #2e1065;
+  --ai-bg: #27173d;
   --ai-ink: #e9d5ff;
   color-scheme: dark;
 }
@@ -77,11 +81,12 @@ html {
 
 body {
   background-color: var(--bg);
-  background-image: radial-gradient(var(--bg-dot) 1px, transparent 1px);
-  background-size: 24px 24px;
+  background-image: radial-gradient(var(--bg-dot) 1.25px, transparent 1.25px);
+  background-size: 22px 22px;
   color: var(--ink);
   font-family: var(--font-sans);
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 input,
@@ -92,12 +97,11 @@ select {
 
 button,
 summary {
-  min-height: 44px;
-  min-width: 44px;
+  min-height: 42px;
 }
 
 :focus-visible {
-  outline: 3px solid var(--biru);
+  outline: 2px solid var(--lime);
   outline-offset: 2px;
 }
 
@@ -106,35 +110,25 @@ summary {
   color: var(--ink);
   border: 2px solid var(--line);
   border-radius: 1rem;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 4px 0 var(--sh);
+  box-shadow: 0 4px 0 var(--sh);
   transition:
-    transform 150ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    box-shadow 150ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    border-color 150ms ease;
+    transform 140ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 140ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 140ms ease;
 }
 
 .kartu-interaktif:hover {
   transform: translateY(-2px);
   border-color: var(--lime);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 6px 0 var(--sh);
+  box-shadow: 0 6px 0 var(--sh);
 }
 
 .kartu-lime {
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--lime) 16%, var(--card)),
-    var(--card)
-  );
-  color: var(--ink);
+  background: var(--lime-soft);
+  color: var(--lime-soft-ink);
   border: 2px solid var(--line);
   border-radius: 1rem;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 4px 0 var(--sh);
+  box-shadow: 0 4px 0 var(--sh);
 }
 
 .tombol {
@@ -144,10 +138,10 @@ summary {
   gap: 0.5rem;
   min-height: 44px;
   padding: 0 1rem;
-  border: 2px solid #0f172a;
+  border: 2px solid #141513;
   border-radius: 0.75rem;
   background: var(--lime);
-  color: #090d16;
+  color: #111310;
   font-weight: 800;
   box-shadow: 0 3px 0 var(--sh);
   cursor: pointer;
@@ -166,18 +160,18 @@ summary {
   box-shadow: 0 0 0 var(--sh);
 }
 .tombol:disabled {
-  opacity: 0.55;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 .tombol-putih {
   background: var(--card);
   color: var(--ink);
-  border-color: var(--line);
+  border: 2px solid var(--line);
 }
 .tombol-ai {
   background: var(--ai-bg);
   color: var(--ai-ink);
-  border-color: var(--line);
+  border: 2px solid var(--line);
 }
 .tombol-kecil {
   min-height: 38px;
@@ -187,9 +181,9 @@ summary {
 
 .judul-stabilo {
   background-image: linear-gradient(
-    transparent 64%,
-    color-mix(in srgb, var(--lime) 45%, transparent) 64%,
-    color-mix(in srgb, var(--lime) 45%, transparent) 92%,
+    transparent 62%,
+    color-mix(in srgb, var(--lime) 65%, transparent) 62%,
+    color-mix(in srgb, var(--lime) 65%, transparent) 92%,
     transparent 92%
   );
   padding-inline: 0.12em;
@@ -201,7 +195,7 @@ summary {
   gap: 0.3rem;
   border: 1.5px solid currentColor;
   border-radius: 9999px;
-  padding: 0.12rem 0.7rem;
+  padding: 0.1rem 0.65rem;
   font-size: 0.75rem;
   font-weight: 700;
   line-height: 1.4;
@@ -233,7 +227,7 @@ summary {
   min-height: 46px;
   border: 2px solid var(--line);
   border-radius: 0.75rem;
-  background: var(--bg);
+  background: color-mix(in srgb, var(--ink) 4%, var(--card));
   color: var(--ink);
   padding: 0 0.875rem;
   font-weight: 600;
