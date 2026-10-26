@@ -114,8 +114,63 @@ Saat ini semua data masuk ke satu pengguna demo karena belum ada autentikasi. Ya
 - PWA dan notifikasi deadline
 - Integrasi Google Calendar
 
+<<<<<<< HEAD
 ## Tim
 
 Dikembangkan oleh Mhd. Ridwan ([@mhdridwannst](https://github.com/mhdridwannst)) dan tim UKM Software Development.
 
 <!-- tambahkan nama anggota tim di sini -->
+=======
+##  Tim
+
+Dikembangkan oleh **Kelompok 2** dari UKM Software Development 2026:
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/mhdridwannst">
+        <img src="https://github.com/mhdridwannst.png" width="100" style="border-radius:50%" alt="Mhd. Ridwan"/><br />
+        <sub><b>Mhd. Ridwan</b></sub>
+      </a><br />
+      Hacker
+    </td>
+    <td align="center">
+      <a href="https://github.com/username2">
+        <img src="https://github.com/username2.png" width="100" style="border-radius:50%" alt="Muhammad Slamet Ridho"/><br />
+        <sub><b>Muhammad Slamet Ridho</b></sub>
+      </a><br />
+      Hipster
+    </td>
+    <td align="center">
+      <a href="https://github.com/username3">
+        <img src="https://github.com/username3.png" width="100" style="border-radius:50%" alt="Hervina Alivia Fitri"/><br />
+        <sub><b>Hervina Alivia Fitri</b></sub>
+      </a><br />
+      Hustler
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/username7">
+        <img src="https://github.com/username7.png" width="100" style="border-radius:50%" alt="M Zaki Edi"/><br />
+        <sub><b>M Zaki Edi</b></sub>
+      </a><br />
+      Hacker
+    </td>
+    <td align="center">
+      <a href="https://github.com/username5">
+        <img src="https://github.com/username5.png" width="100" style="border-radius:50%" alt="Fahry Ibrahim"/><br />
+        <sub><b>Fahry Ibrahim</b></sub>
+      </a><br />
+      Hipster
+    </td>
+    <td align="center">
+      <a href="https://github.com/username6">
+        <img src="https://github.com/username6.png" width="100" style="border-radius:50%" alt="Hamzah Asadullah"/><br />
+        <sub><b>Hamzah Asadullah</b></sub>
+      </a><br />
+      Hustler
+    </td>
+  </tr>
+</table>
+>>>>>>> f51dacec1b44c23bcf6ff361dac9a1a8fbfb849c
