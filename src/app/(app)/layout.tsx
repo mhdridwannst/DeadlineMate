@@ -10,48 +10,50 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const r = await ambilRingkasan(user.id);
 
   const now = Date.now();
-  const notifikasi: ItemNotif[] = r.aktifBerTenggat.flatMap((t) => {
-    const selisihMs = t.dueAt.getTime() - now;
-    const selisihJam = selisihMs / 3_600_000;
+  const notifikasi: ItemNotif[] = r.aktifBerTenggat.flatMap(
+    (t): ItemNotif[] => {
+      const selisihMs = t.dueAt.getTime() - now;
+      const selisihJam = selisihMs / 3_600_000;
 
-    if (selisihMs < 0) {
-      return [
-        {
-          id: t.id,
-          judul: t.title,
-          sisaJam: selisihJam,
-          labelWaktu:
-            lang === "en"
-              ? `${durasi(-selisihMs)} late`
-              : `Telat ${durasi(-selisihMs)}`,
-          status: "OVERDUE" as const,
-        },
-      ];
-    }
-    if (selisihJam <= 3) {
-      return [
-        {
-          id: t.id,
-          judul: t.title,
-          sisaJam: selisihJam,
-          labelWaktu: durasi(selisihMs),
-          status: "URGENT_3H" as const,
-        },
-      ];
-    }
-    if (selisihJam <= 24) {
-      return [
-        {
-          id: t.id,
-          judul: t.title,
-          sisaJam: selisihJam,
-          labelWaktu: durasi(selisihMs),
-          status: "H_MINUS_1" as const,
-        },
-      ];
-    }
-    return [];
-  });
+      if (selisihMs < 0) {
+        return [
+          {
+            id: t.id,
+            judul: t.title,
+            sisaJam: selisihJam,
+            labelWaktu:
+              lang === "en"
+                ? `${durasi(-selisihMs)} late`
+                : `Telat ${durasi(-selisihMs)}`,
+            status: "OVERDUE" as const,
+          },
+        ];
+      }
+      if (selisihJam <= 3) {
+        return [
+          {
+            id: t.id,
+            judul: t.title,
+            sisaJam: selisihJam,
+            labelWaktu: durasi(selisihMs),
+            status: "URGENT_3H" as const,
+          },
+        ];
+      }
+      if (selisihJam <= 24) {
+        return [
+          {
+            id: t.id,
+            judul: t.title,
+            sisaJam: selisihJam,
+            labelWaktu: durasi(selisihMs),
+            status: "H_MINUS_1" as const,
+          },
+        ];
+      }
+      return [];
+    },
+  );
 
   return (
     <AppShell

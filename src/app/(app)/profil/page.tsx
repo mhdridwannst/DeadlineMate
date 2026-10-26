@@ -189,7 +189,7 @@ export default async function ProfilPage() {
                         : "border-[color:var(--line)] bg-bg text-ink hover:border-lime"
                     }`}
                   >
-                    🇬🇧 English (Global)
+                    🇬🇧 English
                   </button>
                 </form>
               </div>
