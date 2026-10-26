@@ -236,7 +236,7 @@ function susunRencanaLokal(teks: string): z.infer<typeof rencanaSchema> {
 
   return {
     tugas: daftar,
-    catatanMate: `Jadwalmu sudah kupecah jadi langkah-langkah ringan! Yuk mulai cicil "${daftar[0].langkah[0].judul}" selama ${daftar[0].langkah[0].estimasiMenit} menit sekarang.`,
+    catatanMate: `Jadwalmu sudah kubuat menjadi langkah ringan! Yuk mulai cicil "${daftar[0].langkah[0].judul}" selama ${daftar[0].langkah[0].estimasiMenit} menit sekarang.`,
   };
 }
 
@@ -403,7 +403,7 @@ export async function pecahLangkahAI(
     const langkahKontekstual = buatLangkahKontekstual(tugas.title, due);
     output = {
       langkah: langkahKontekstual,
-      catatanMate: `Tugas "${tugas.title}" sudah kupecah jadi ${langkahKontekstual.length} tahap ringan. Sikat langkah #1 dulu!`,
+      catatanMate: `Tugas "${tugas.title}" sudah kubuat jadi ${langkahKontekstual.length} tahap ringan. Sikat langkah #1 dulu!`,
     };
   }
 

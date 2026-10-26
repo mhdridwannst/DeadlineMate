@@ -293,7 +293,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
               onClick={() => pilihTanggalCepat(7)}
               className="tombol tombol-putih tombol-kecil min-h-9 text-xs"
             >
-              Mingdep
+              Minggu depan
             </button>
           </div>
         </div>

@@ -9,7 +9,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Deadline Mate",
+  title: "Deadline Mate - App Scheduler",
   description:
     "Teman yang ngejar deadline bareng lu. Pecah tugas, jaga streak, selesaikan tepat waktu.",
 };

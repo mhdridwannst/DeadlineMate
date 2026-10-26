@@ -48,7 +48,7 @@ export const DICT = {
       "Masuk dengan email agar daftar tugas, streak, dan EXP tersimpan permanen di akunmu.",
     switchAccount: "Simpan / Ganti Akun",
     logoutDemo: "Kembali ke Akun Demo",
-    languageLabel: "Bahasa Aplikasi (Language)",
+    languageLabel: "Bahasa (Language)",
     notifTitle: "Notifikasi Deadline (H-1 & Mendesak)",
     notifDesc:
       "Kirim pengingat ke perangkat saat tugas mendekati H-1 (24 jam) atau kurang dari 3 jam.",
