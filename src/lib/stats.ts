@@ -53,6 +53,9 @@ export const ambilRingkasan = cache(async (userId: string) => {
   const exp = selesai.length * 10;
   const induk = semua.filter((t) => t.parentId === null);
   const indukAktif = induk.filter((t) => t.status !== "DONE").length;
+  const terlewat = induk.filter(
+    (t) => t.status !== "DONE" && t.dueAt && t.dueAt < now,
+  ).length;
   const indukSelesaiHariIni = induk.filter(
     (t) => t.status === "DONE" && t.doneAt && dayKey(t.doneAt) === hariIni,
   ).length;
@@ -69,5 +72,6 @@ export const ambilRingkasan = cache(async (userId: string) => {
     perHari,
     hariIniSelesai: indukSelesaiHariIni,
     hariIniTotal: indukAktif + indukSelesaiHariIni,
+    terlewat,
   };
 });
