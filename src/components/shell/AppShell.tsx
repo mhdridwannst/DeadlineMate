@@ -136,7 +136,7 @@ export default function AppShell({
         Skip to content
       </a>
 
-      {/* Sidebar Desktop Khas DeadlineMate */}
+      {/* Sidebar Desktop */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col justify-between border-r-2 border-[color:var(--line)] bg-card p-4 pb-16 lg:flex">
         <div className="flex flex-col gap-6">
           <Link href="/today" className="flex items-center gap-2.5 px-1 py-2">
@@ -145,10 +145,10 @@ export default function AppShell({
             </span>
             <div className="leading-tight">
               <span className="block text-lg font-extrabold tracking-tight text-ink">
-                Deadline Mate
+                DeadlineMate
               </span>
               <span className="text-[11px] font-bold text-muted">
-                Teman Produktifmu
+                AI Study Partner
               </span>
             </div>
           </Link>
@@ -197,7 +197,7 @@ export default function AppShell({
         <header className="sticky top-0 z-20 hidden h-20 items-center justify-between border-b-2 border-[color:var(--line)] bg-card/95 px-8 backdrop-blur-sm lg:flex">
           <h2 className="text-2xl font-extrabold text-ink">
             <span className="judul-stabilo">
-              {JUDUL[path] ?? "Deadline Mate"}
+              {JUDUL[path] ?? "DeadlineMate"}
             </span>
           </h2>
 
@@ -272,8 +272,8 @@ export default function AppShell({
           </div>
         </header>
 
-        {/* Header Mobile */}
-        <header className="sticky top-0 z-20 border-b-2 border-[color:var(--line)] bg-card/95 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.65rem)] backdrop-blur-sm lg:hidden">
+        {/* Header Mobile (Bersih & Fokus: Hanya Profil di Kiri, Notifikasi & Tema di Kanan) */}
+        <header className="sticky top-0 z-20 border-b-2 border-[color:var(--line)] bg-card/95 px-4 pb-2.5 pt-[calc(env(safe-area-inset-top)+0.6rem)] backdrop-blur-sm lg:hidden">
           <div className="flex items-center justify-between gap-2">
             <button
               type="button"
@@ -283,36 +283,21 @@ export default function AppShell({
               }}
               className="flex min-h-0 items-center gap-2.5 text-left"
             >
-              <span className="grid size-10 place-items-center rounded-full border-2 border-[#141513] bg-lime font-extrabold text-[#111310] shadow-[0_2px_0_var(--sh)]">
+              <span className="grid size-10 shrink-0 place-items-center rounded-full border-2 border-[#141513] bg-lime font-extrabold text-[#111310] shadow-[0_2px_0_var(--sh)]">
                 {inisial}
               </span>
               <div className="leading-tight">
-                <p className="text-xs font-semibold text-muted">{t.welcome}</p>
-                <h2 className="text-lg font-extrabold text-ink">
+                <h2 className="text-base font-extrabold text-ink">
                   {t.hi}, {nama}!
                 </h2>
+                <p className="text-xs font-bold text-muted">
+                  Lvl {level} · 🔥 {streak}d
+                </p>
               </div>
             </button>
 
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={gantiBahasa}
-                className="min-h-10 min-w-0 rounded-xl border-2 border-[color:var(--line)] bg-card px-2.5 text-xs font-extrabold text-ink"
-              >
-                {lang.toUpperCase()}
-              </button>
-
+            <div className="flex items-center gap-2">
               <DeadlineNotifier items={notifikasi} lang={lang} />
-
-              <button
-                type="button"
-                onClick={ubahSuara}
-                aria-label="Sound FX"
-                className="grid size-10 min-h-0 min-w-0 place-items-center rounded-xl border-2 border-[color:var(--line)] bg-card text-ink"
-              >
-                <I n={sfxAktif ? "suaraOn" : "suaraOff"} className="size-4" />
-              </button>
 
               <button
                 type="button"
@@ -523,17 +508,17 @@ export default function AppShell({
                 <div className="mb-1 flex items-center justify-between">
                   <h3 className="font-extrabold text-ink">
                     {lang === "en"
-                      ? "Write all your tasks at once"
-                      : "Tulis semua tugasmu sekaligus"}
+                      ? "Batch Task Studio (AI)"
+                      : "Susun Banyak Tugas Sekaligus"}
                   </h3>
                   <span className="rounded-full border border-[color:var(--line)] bg-card px-2 py-0.5 text-[11px] font-extrabold text-ink">
-                    Multi-Task AI
+                    Mate AI
                   </span>
                 </div>
                 <p className="mb-3 text-xs opacity-85">
                   {lang === "en"
-                    ? "Mate automatically splits your paragraph into structured tasks and 90-min sub-steps."
-                    : "Ketik beberapa jadwal kuliah/organisasi dalam satu paragraf. Mate akan memecahnya jadi daftar tugas + sub-langkah otomatis."}
+                    ? "Enter multiple assignments below. Mate will create all tasks and break them into sub-steps in one click."
+                    : "Masukkan daftar tugasmu di bawah. Mate akan membuat semua tugas sekaligus memecah langkah cicilannya dalam sekali klik."}
                 </p>
                 <RencanaForm />
               </section>

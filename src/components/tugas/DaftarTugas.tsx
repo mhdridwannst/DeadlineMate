@@ -125,12 +125,12 @@ export default function DaftarTugas({ items }: { items: Item[] }) {
 
   const on = (id: string, asli: boolean) => (id in peta ? peta[id] : asli);
 
-  function ganti(id: string, asli: boolean) {
+  function ganti(id: string, asli: boolean, parentId: string | null = null) {
     const nilai = !on(id, asli);
     sfxCheck(nilai);
     mulai(async () => {
       setPeta({ id, nilai });
-      await ubahStatus(id, nilai);
+      await ubahStatus(id, nilai, parentId);
     });
   }
 
@@ -379,7 +379,7 @@ export default function DaftarTugas({ items }: { items: Item[] }) {
                           <Kotak
                             kecil
                             on={ls}
-                            onClick={() => ganti(l.id, l.selesai)}
+                            onClick={() => ganti(l.id, l.selesai, t.id)}
                             label={`Tandai selesai: ${l.judul}`}
                           />
                           <div className="min-w-0 flex-1">

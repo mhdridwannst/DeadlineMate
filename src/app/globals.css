@@ -251,3 +251,7 @@ summary {
   border-left-width: 0;
   min-height: 46px;
 }
+
+nextjs-portal {
+  display: none !important;
+}
