@@ -148,7 +148,7 @@ export default function AppShell({
                 Deadline Mate
               </span>
               <span className="text-[11px] font-bold text-muted">
-                AI Study Partner
+                Teman Produktifmu
               </span>
             </div>
           </Link>
