@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { getDemoUser } from "@/server/demo-user";
+import { getBahasa, getDemoUser } from "@/server/demo-user";
 import { ambilRingkasan } from "@/lib/stats";
 import {
   dayKey,
@@ -11,7 +11,9 @@ import {
   tambahHari,
   ZONA,
 } from "@/lib/waktu";
+import { DICT, type Lang } from "@/lib/i18n";
 import DaftarTugas, { type Item } from "@/components/tugas/DaftarTugas";
+import InlineOmnibar from "@/components/tugas/InlineOmnibar";
 import StatKartu from "@/components/tugas/StatKartu";
 import MiniKalender from "@/components/tugas/MiniKalender";
 import PomodoroMini from "@/components/tugas/PomodoroMini";
@@ -19,30 +21,44 @@ import PomodoroMini from "@/components/tugas/PomodoroMini";
 export const dynamic = "force-dynamic";
 
 const BOBOT = { HIGH: 0, MEDIUM: 1, LOW: 2 } as const;
-const HURUF_HARI = ["M", "S", "S", "R", "K", "J", "S"];
+const HURUF_HARI_ID = ["M", "S", "S", "R", "K", "J", "S"];
+const HURUF_HARI_EN = ["S", "M", "T", "W", "T", "F", "S"];
 const waktu = (d: Date | null) => (d ? d.getTime() : 8.64e15);
-const fmtMenit = (m: number) =>
-  m < 60 ? `${m} menit` : `${Math.ceil(m / 60)} jam`;
 
 function pesanDefaultMate(
   tone: "SANTAI" | "TEGAS" | "SUPPORTIVE",
   judulTerdekat: string | undefined,
   jumlahAktif: number,
+  lang: Lang,
 ) {
+  if (lang === "en") {
+    if (jumlahAktif === 0) {
+      return "All active tasks are cleared! Type your next assignment below or click New Task.";
+    }
+    if (tone === "TEGAS") {
+      return `Stop postponing! Focus on "${judulTerdekat}" for at least 25 minutes right now.`;
+    }
+    if (tone === "SANTAI") {
+      return `Take it easy bro, don't stress over ${jumlahAktif} tasks. Let's chip away at "${judulTerdekat}" for 10 minutes first!`;
+    }
+    return `Small steps build momentum! Start with the first sub-step of "${judulTerdekat}" today.`;
+  }
+
   if (jumlahAktif === 0) {
-    return "Semua target hari ini sudah bersih. Tambahkan jadwal kuliah berikutnya lewat tombol Tugas baru agar tetap terukur.";
+    return "Semua target aktif sudah bersih! Ketik tugas berikutnya di kolom cepat bawah atau klik Tugas baru.";
   }
   if (tone === "TEGAS") {
-    return `Jangan ditunda lagi. Fokus kerjakan "${judulTerdekat}" sekarang minimal 25 menit sebelum tenggat makin dekat.`;
+    return `Jangan ditunda lagi! Fokus kerjakan "${judulTerdekat}" sekarang minimal 25 menit sebelum makin mepet.`;
   }
   if (tone === "SANTAI") {
-    return `Santai bro, nggak perlu pusing lihat ${jumlahAktif} tugas. Kita cicil "${judulTerdekat}" 10 menit pertama dulu sekarang.`;
+    return `Santai bro, nggak perlu pusing lihat ${jumlahAktif} tugas. Kita cicil "${judulTerdekat}" 10 menit pertama dulu sekarang!`;
   }
-  return `Langkah kecil tetap progres! Yuk mulai cicil "${judulTerdekat}" perlahan, gunakan fitur Pecah Langkah AI bila butuh panduan.`;
+  return `Langkah kecil tetap progres! Yuk mulai cicil "${judulTerdekat}" perlahan, gunakan Pecah Langkah AI bila butuh panduan.`;
 }
 
 export default async function TodayPage() {
-  const user = await getDemoUser();
+  const [user, lang] = await Promise.all([getDemoUser(), getBahasa()]);
+  const t = DICT[lang];
   const now = new Date();
 
   const [induk, catatan, r] = await Promise.all([
@@ -57,19 +73,24 @@ export default async function TodayPage() {
     ambilRingkasan(user.id),
   ]);
 
+  const fmtMenit = (m: number) =>
+    m < 60
+      ? `${m} ${lang === "en" ? "min" : "menit"}`
+      : `${Math.ceil(m / 60)} ${lang === "en" ? "hr" : "jam"}`;
+
   const aktif = induk
-    .filter((t) => t.status !== "DONE")
+    .filter((item) => item.status !== "DONE")
     .sort(
       (a, b) =>
         BOBOT[a.priority] - BOBOT[b.priority] ||
         waktu(a.dueAt) - waktu(b.dueAt),
     );
   const sudah = induk
-    .filter((t) => t.status === "DONE")
+    .filter((item) => item.status === "DONE")
     .sort((a, b) => waktu(b.doneAt) - waktu(a.doneAt))
     .slice(0, 10);
   const terdekat = aktif
-    .filter((t) => t.dueAt && t.dueAt >= now)
+    .filter((item) => item.dueAt && item.dueAt >= now)
     .sort((a, b) => waktu(a.dueAt) - waktu(b.dueAt))[0];
   const mendesak =
     terdekat?.dueAt &&
@@ -77,47 +98,55 @@ export default async function TodayPage() {
       ? terdekat
       : null;
 
-  const ke = (t: (typeof induk)[number], no: number): Item => {
+  const ke = (item: (typeof induk)[number], no: number): Item => {
     const menit =
-      t.estimateMin ?? t.subtasks.reduce((n, s) => n + (s.estimateMin ?? 0), 0);
+      item.estimateMin ??
+      item.subtasks.reduce((n, s) => n + (s.estimateMin ?? 0), 0);
     return {
-      id: t.id,
+      id: item.id,
       no,
-      judul: t.title,
-      selesai: t.status === "DONE",
-      prioritas: t.priority,
-      kategori: t.category,
+      judul: item.title,
+      selesai: item.status === "DONE",
+      prioritas: item.priority,
+      kategori: item.category,
       estimasi: menit ? `≤${fmtMenit(menit)}` : null,
       estimasiJam: menit ? Math.max(1, Math.round(menit / 60)) : 2,
-      tanggal: t.dueAt ? dayKey(t.dueAt) : "",
-      jam: t.dueAt ? jamKey(t.dueAt) : "23:59",
-      sisa: t.dueAt ? sisaWaktu(t.dueAt, now) : "Tanpa tenggat",
-      tenggat: t.dueAt ? formatTenggat(t.dueAt) : "",
-      telat: !!t.dueAt && t.dueAt < now,
-      langkah: t.subtasks.map((s) => ({
+      tanggal: item.dueAt ? dayKey(item.dueAt) : "",
+      jam: item.dueAt ? jamKey(item.dueAt) : "23:59",
+      sisa: item.dueAt ? sisaWaktu(item.dueAt, now) : "Tanpa tenggat",
+      tenggat: item.dueAt ? formatTenggat(item.dueAt) : "",
+      telat: !!item.dueAt && item.dueAt < now,
+      langkah: item.subtasks.map((s) => ({
         id: s.id,
         judul: s.title,
         selesai: s.status === "DONE",
-        info: `${s.dueAt ? formatTenggat(s.dueAt) : "Tanpa tenggat"}${
+        info: `${s.dueAt ? formatTenggat(s.dueAt) : "-"}${
           s.estimateMin ? ` · ${s.estimateMin} menit` : ""
         }`,
       })),
     };
   };
 
-  const tanggalPanjang = new Intl.DateTimeFormat("id-ID", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: ZONA,
-  }).format(now);
+  const tanggalPanjang = new Intl.DateTimeFormat(
+    lang === "en" ? "en-US" : "id-ID",
+    {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      timeZone: ZONA,
+    },
+  ).format(now);
+
   const [tahun, bulan] = r.today.split("-").map(Number);
-  const titik = aktif.filter((t) => t.dueAt).map((t) => dayKey(t.dueAt!));
+  const titik = aktif
+    .filter((item) => item.dueAt)
+    .map((item) => dayKey(item.dueAt!));
   const tujuhHari = Array.from({ length: 7 }, (_, i) =>
     tambahHari(r.today, i - 6),
   );
   const hariAda = new Set(r.hariSukses);
+  const hurufHari = lang === "en" ? HURUF_HARI_EN : HURUF_HARI_ID;
 
   const isiCatatanMate =
     catatan?.body ||
@@ -125,22 +154,23 @@ export default async function TodayPage() {
       user.coachTone,
       terdekat?.title ?? aktif[0]?.title,
       aktif.length,
+      lang,
     );
 
   const mate = (
-    <section className="kartu-lime p-4" aria-label="Catatan Mate">
+    <section className="kartu-lime p-4" aria-label={t.mateNote}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <span className="grid size-7 place-items-center rounded-lg border-2 border-[color:var(--line)] bg-lime text-xs font-extrabold text-[#111]">
+          <span className="grid size-7 place-items-center rounded-lg border-2 border-[#141513] bg-lime text-xs font-extrabold text-[#111310]">
             M
           </span>
-          <h2 className="font-extrabold">Catatan Mate</h2>
+          <h2 className="font-extrabold text-ink">{t.mateNote}</h2>
         </div>
         <span className="rounded-full border border-[color:var(--line)] bg-card px-2.5 py-0.5 text-[11px] font-extrabold text-ink">
           {user.coachTone}
         </span>
       </div>
-      <p className="mt-2.5 text-sm font-semibold leading-relaxed">
+      <p className="mt-2.5 text-sm font-semibold leading-relaxed text-ink">
         “{isiCatatanMate}”
       </p>
     </section>
@@ -166,7 +196,7 @@ export default async function TodayPage() {
           </span>
           <div>
             <p className="text-base font-extrabold">
-              {r.streak > 0 ? "Streak terancam" : "Deadline mendekat"}
+              {r.streak > 0 ? "Streak terancam!" : "Deadline mendekat!"}
             </p>
             <p className="text-sm">
               Selesaikan <strong>“{mendesak.title}”</strong> dalam{" "}
@@ -190,6 +220,7 @@ export default async function TodayPage() {
         exp={r.expLevel}
         selesai={r.hariIniSelesai}
         total={r.hariIniTotal}
+        lang={lang}
       />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
@@ -199,8 +230,8 @@ export default async function TodayPage() {
               <p className="text-sm font-semibold text-muted">
                 {tanggalPanjang}
               </p>
-              <h1 className="text-3xl font-extrabold">
-                <span className="judul-stabilo">Daftar tugas</span>
+              <h1 className="text-3xl font-extrabold text-ink">
+                <span className="judul-stabilo">{t.taskList}</span>
               </h1>
             </div>
 
@@ -208,25 +239,27 @@ export default async function TodayPage() {
               className="inline-flex rounded-xl border-2 border-[color:var(--line)] bg-card p-1 shadow-[0_2px_0_var(--sh)]"
               aria-label="Urutan daftar"
             >
-              <span className="rounded-lg border-2 border-[color:var(--line)] bg-lime px-4 py-1.5 text-sm font-extrabold text-[#111]">
-                Prioritas ({aktif.length})
+              <span className="rounded-lg border-2 border-[#141513] bg-lime px-4 py-1.5 text-sm font-extrabold text-[#111310]">
+                {t.priority} ({aktif.length})
               </span>
               <span className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-bold text-muted">
                 Habit{" "}
                 <span className="rounded-full bg-ink px-2 py-0.5 text-[10px] font-extrabold text-bg">
-                  segera
+                  {t.habitSoon}
                 </span>
               </span>
             </div>
           </div>
 
+          <InlineOmnibar lang={lang} />
+
           <div className="lg:hidden">{mate}</div>
 
           {aktif.length > 0 ? (
-            <DaftarTugas items={aktif.map((t, i) => ke(t, i + 1))} />
+            <DaftarTugas items={aktif.map((item, i) => ke(item, i + 1))} />
           ) : (
             <section className="kartu p-8 text-center">
-              <div className="mx-auto grid size-12 place-items-center rounded-2xl border-2 border-[color:var(--line)] bg-lime text-[#111] shadow-[0_3px_0_var(--sh)]">
+              <div className="mx-auto grid size-12 place-items-center rounded-2xl border-2 border-[#141513] bg-lime text-[#111310] shadow-[0_3px_0_var(--sh)]">
                 <svg
                   viewBox="0 0 24 24"
                   className="size-6"
@@ -239,29 +272,30 @@ export default async function TodayPage() {
                   <path d="M5 12l5 5 9-10" />
                 </svg>
               </div>
-              <p className="mt-3 text-xl font-extrabold">
-                Semua tugas aktif sudah tuntas
+              <p className="mt-3 text-xl font-extrabold text-ink">
+                {t.allDoneTitle}
               </p>
               <p className="mx-auto mt-1 max-w-md text-sm text-muted">
-                Klik tombol <strong>Tugas baru</strong> untuk menambahkan target
-                berikutnya atau buka daftar tugas selesai di bawah.
+                {t.allDoneDesc}
               </p>
             </section>
           )}
 
           {sudah.length > 0 && (
             <details className="kartu group">
-              <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3.5 font-extrabold">
+              <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3.5 font-extrabold text-ink">
                 <span className="flex items-center gap-2">
                   <span className="inline-block size-2.5 rounded-full bg-lime" />
-                  <span>Sudah selesai ({sudah.length})</span>
+                  <span>
+                    {t.completedTasks} ({sudah.length})
+                  </span>
                 </span>
-                <span className="text-xs font-bold text-muted group-open:rotate-180 transition-transform">
+                <span className="text-xs font-bold text-muted transition-transform group-open:rotate-180">
                   ▾
                 </span>
               </summary>
               <div className="border-t-2 border-[color:var(--line)]/15 p-4">
-                <DaftarTugas items={sudah.map((t, i) => ke(t, i + 1))} />
+                <DaftarTugas items={sudah.map((item, i) => ke(item, i + 1))} />
               </div>
             </details>
           )}
@@ -274,9 +308,9 @@ export default async function TodayPage() {
             judulTugas={terdekat?.title ?? aktif[0]?.title ?? null}
           />
 
-          <section className="kartu p-4" aria-label="Deadline terdekat">
+          <section className="kartu p-4" aria-label={t.nearestDeadline}>
             <div className="flex items-center gap-3">
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl border-2 border-[color:var(--line)] bg-lime text-[#111]">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl border-2 border-[#141513] bg-lime text-[#111310]">
                 <svg
                   viewBox="0 0 24 24"
                   className="size-5"
@@ -292,10 +326,10 @@ export default async function TodayPage() {
               </span>
               <div className="min-w-0">
                 <p className="text-xs font-bold uppercase tracking-wide text-muted">
-                  Deadline terdekat
+                  {t.nearestDeadline}
                 </p>
-                <p className="truncate text-base font-extrabold">
-                  {terdekat?.title ?? "Belum ada"}
+                <p className="truncate text-base font-extrabold text-ink">
+                  {terdekat?.title ?? t.noneYet}
                 </p>
               </div>
             </div>
@@ -318,10 +352,10 @@ export default async function TodayPage() {
             titik={titik}
           />
 
-          <section className="kartu p-4" aria-label="Riwayat streak">
+          <section className="kartu p-4" aria-label={t.consistency7d}>
             <div className="flex items-center justify-between">
-              <h2 className="font-extrabold">Riwayat 7 Hari</h2>
-              <span className="text-xs font-bold text-muted">Konsistensi</span>
+              <h2 className="font-extrabold text-ink">{t.consistency7d}</h2>
+              <span className="text-xs font-bold text-muted">7d</span>
             </div>
             <ul className="mt-3 grid grid-cols-7 gap-1.5 text-center">
               {tujuhHari.map((k) => {
@@ -329,9 +363,9 @@ export default async function TodayPage() {
                 return (
                   <li
                     key={k}
-                    className={`flex flex-col items-center gap-1 rounded-lg border py-2 ${
+                    className={`flex flex-col items-center gap-1 rounded-lg border-2 py-2 ${
                       aktifHari
-                        ? "border-[color:var(--line)] bg-lime text-[#111]"
+                        ? "border-[#141513] bg-lime text-[#111310]"
                         : "border-[color:var(--line)]/20 bg-bg text-muted"
                     }`}
                   >
@@ -339,7 +373,7 @@ export default async function TodayPage() {
                       {aktifHari ? "✓" : "·"}
                     </span>
                     <span className="text-[11px] font-extrabold">
-                      {HURUF_HARI[hariKe(k)]}
+                      {hurufHari[hariKe(k)]}
                     </span>
                   </li>
                 );
