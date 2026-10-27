@@ -1,6 +1,6 @@
 import { bangunBulan, NAMA_BULAN } from "@/lib/kalender";
 
-const HURUF = ["S", "S", "R", "K", "J", "S", "M"];
+const HURUF = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
 
 export default function MiniKalender({
   tahun,
@@ -20,12 +20,12 @@ export default function MiniKalender({
       className="kartu p-4"
       aria-label={`Kalender ${NAMA_BULAN[bulan0]} ${tahun}`}
     >
-      <h2 className="font-bold">
+      <h2 className="text-base font-extrabold text-ink">
         {NAMA_BULAN[bulan0]} {tahun}
       </h2>
       <div className="mt-3 grid grid-cols-7 gap-y-1 text-center text-sm">
-        {HURUF.map((h, i) => (
-          <span key={i} className="pb-1 text-xs font-bold text-muted">
+        {HURUF.map((h) => (
+          <span key={h} className="pb-1.5 text-xs font-extrabold text-muted">
             {h}
           </span>
         ))}
@@ -33,17 +33,17 @@ export default function MiniKalender({
           s ? (
             <span
               key={s.key}
-              className={`relative mx-auto grid size-9 place-items-center rounded-lg ${
+              className={`relative mx-auto grid size-9 place-items-center rounded-lg text-xs font-bold ${
                 s.key === hariIni
-                  ? "border-2 border-ink bg-lime font-bold text-[#111]"
-                  : ""
+                  ? "border-2 border-[color:var(--line)] bg-lime font-extrabold text-[#111310]"
+                  : "text-ink"
               }`}
             >
               {s.tgl}
               {adaTugas.has(s.key) && (
                 <span
                   aria-label="ada deadline"
-                  className="absolute bottom-0.5 size-1.5 rounded-full bg-orange-500"
+                  className="absolute bottom-0.5 size-1.5 rounded-full bg-[color:var(--warn-line)]"
                 />
               )}
             </span>

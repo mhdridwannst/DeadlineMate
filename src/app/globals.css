@@ -3,12 +3,15 @@
 :root {
   --bg: #f4f5f0;
   --bg-dot: #d6d9ce;
-  --card: #ffffff;
-  --surface: #eef0e8;
+  --surface: #ffffff;
+  --surface-2: #e9ece2;
+  --surface-raised: #ffffff;
+  --card: var(--surface);
   --ink: #141513;
-  --line: #181a17;
-  --sh: #181a17;
-  --muted: #5c5f58;
+  --line: #141513;
+  --sh: #141513;
+  --muted: #52564e;
+  --placeholder: #757a70;
   --lime: #a3e635;
   --lime-bright: #a3e635;
   --lime-soft: #ecfccb;
@@ -18,46 +21,49 @@
   --warn-ink: #1c1917;
   --biru: #2563eb;
   --bahaya-bg: #fee2e2;
-  --bahaya: #dc2626;
+  --bahaya: #b91c1c;
   --sedang-bg: #fef3c7;
-  --sedang: #b45309;
+  --sedang: #92400e;
   --santai-bg: #dcfce7;
-  --santai: #15803d;
+  --santai: #166534;
   --ai-bg: #f3e8ff;
-  --ai-ink: #6b21a8;
+  --ai-ink: #581c87;
 }
 
 [data-theme="dark"] {
-  --bg: #0c0e0c;
-  --bg-dot: #1f241f;
-  --card: #161916;
-  --surface: #1f241f;
-  --ink: #f4f6f3;
-  --line: #323932;
-  --sh: #040504;
-  --muted: #9ca39b;
-  --lime: #a3e635;
-  --lime-bright: #aff514;
-  --lime-soft: #1e2916;
-  --lime-soft-ink: #f4f6f3;
-  --warn: #2e240d;
+  --bg: #0e110d;
+  --bg-dot: #20251c;
+  --surface: #161a14;
+  --surface-2: #20251c;
+  --surface-raised: #1d2219;
+  --card: var(--surface);
+  --ink: #f3f5ee;
+  --line: rgba(232, 234, 223, 0.68);
+  --sh: rgba(154, 217, 46, 0.25);
+  --muted: #a8b0a0;
+  --placeholder: #8a9282;
+  --lime: #9ad92e;
+  --lime-bright: #a3e635;
+  --lime-soft: #20251c;
+  --lime-soft-ink: #f3f5ee;
+  --warn: #2c230d;
   --warn-line: #eab308;
   --warn-ink: #fef08a;
-  --biru: #60a5fa;
+  --biru: #9ad92e;
   --bahaya-bg: #3b1515;
   --bahaya: #fca5a5;
   --sedang-bg: #36280f;
   --sedang: #fcd34d;
   --santai-bg: #123120;
   --santai: #86efac;
-  --ai-bg: #27173d;
-  --ai-ink: #e9d5ff;
+  --ai-bg: #242b1f;
+  --ai-ink: #d9f99d;
   color-scheme: dark;
 }
 
 @theme inline {
   --color-bg: var(--bg);
-  --color-card: var(--card);
+  --color-card: var(--surface);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-lime: var(--lime);
@@ -66,7 +72,7 @@
   --color-tinta: var(--ink);
   --color-pensil: var(--ink);
   --color-kertas: var(--bg);
-  --color-halaman: var(--card);
+  --color-halaman: var(--surface);
   --color-merah: #ef4444;
   --color-link: var(--ink);
   --color-stabilo: var(--lime);
@@ -97,7 +103,7 @@ select {
 
 button,
 summary {
-  min-height: 42px;
+  min-height: 44px;
 }
 
 :focus-visible {
@@ -106,29 +112,37 @@ summary {
 }
 
 .kartu {
-  background: var(--card);
+  background: var(--surface);
   color: var(--ink);
   border: 2px solid var(--line);
   border-radius: 1rem;
-  box-shadow: 0 4px 0 var(--sh);
+  box-shadow: 0 3px 0 var(--sh);
   transition:
     transform 140ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    box-shadow 140ms cubic-bezier(0.2, 0.8, 0.2, 1),
     border-color 140ms ease;
 }
 
-.kartu-interaktif:hover {
-  transform: translateY(-2px);
-  border-color: var(--lime);
-  box-shadow: 0 6px 0 var(--sh);
+[data-theme="dark"] .kartu {
+  box-shadow: none;
 }
 
+.kartu-interaktif:hover {
+  transform: translateY(-1.5px);
+  border-color: var(--lime);
+}
+
+/* Permukaan netral dengan strip kiri lime 4px agar tidak keruh di mode gelap */
 .kartu-lime {
-  background: var(--lime-soft);
-  color: var(--lime-soft-ink);
+  background: var(--surface);
+  color: var(--ink);
   border: 2px solid var(--line);
+  border-left: 5px solid var(--lime);
   border-radius: 1rem;
-  box-shadow: 0 4px 0 var(--sh);
+  box-shadow: 0 3px 0 var(--sh);
+}
+
+[data-theme="dark"] .kartu-lime {
+  box-shadow: none;
 }
 
 .tombol {
@@ -138,7 +152,7 @@ summary {
   gap: 0.5rem;
   min-height: 44px;
   padding: 0 1rem;
-  border: 2px solid #141513;
+  border: 2px solid var(--line);
   border-radius: 0.75rem;
   background: var(--lime);
   color: #111310;
@@ -156,34 +170,42 @@ summary {
   filter: brightness(1.03);
 }
 .tombol:active:not(:disabled) {
-  transform: translateY(2.5px);
+  transform: translateY(2px);
   box-shadow: 0 0 0 var(--sh);
 }
 .tombol:disabled {
-  opacity: 0.5;
+  background: var(--surface-2);
+  color: var(--muted);
+  border-color: var(--line);
+  box-shadow: none;
   cursor: not-allowed;
 }
 .tombol-putih {
-  background: var(--card);
+  background: var(--surface);
   color: var(--ink);
   border: 2px solid var(--line);
+  box-shadow: none;
+}
+.tombol-putih:hover:not(:disabled) {
+  background: var(--surface-2);
 }
 .tombol-ai {
-  background: var(--ai-bg);
-  color: var(--ai-ink);
+  background: var(--surface-2);
+  color: var(--ink);
   border: 2px solid var(--line);
+  box-shadow: none;
 }
 .tombol-kecil {
-  min-height: 38px;
+  min-height: 40px;
   padding: 0 0.75rem;
   font-size: 0.8125rem;
 }
 
 .judul-stabilo {
   background-image: linear-gradient(
-    transparent 62%,
-    color-mix(in srgb, var(--lime) 65%, transparent) 62%,
-    color-mix(in srgb, var(--lime) 65%, transparent) 92%,
+    transparent 64%,
+    color-mix(in srgb, var(--lime) 55%, transparent) 64%,
+    color-mix(in srgb, var(--lime) 55%, transparent) 92%,
     transparent 92%
   );
   padding-inline: 0.12em;
@@ -195,7 +217,7 @@ summary {
   gap: 0.3rem;
   border: 1.5px solid currentColor;
   border-radius: 9999px;
-  padding: 0.1rem 0.65rem;
+  padding: 0.12rem 0.65rem;
   font-size: 0.75rem;
   font-weight: 700;
   line-height: 1.4;
@@ -213,9 +235,9 @@ summary {
   color: var(--santai);
 }
 .tag-exp {
-  background: var(--warn);
-  color: var(--warn-ink);
-  border-color: var(--warn-line);
+  background: var(--surface-2);
+  color: var(--ink);
+  border-color: var(--line);
 }
 .tag-ai {
   background: var(--ai-bg);
@@ -227,7 +249,7 @@ summary {
   min-height: 46px;
   border: 2px solid var(--line);
   border-radius: 0.75rem;
-  background: color-mix(in srgb, var(--ink) 4%, var(--card));
+  background: var(--surface-2);
   color: var(--ink);
   padding: 0 0.875rem;
   font-weight: 600;
@@ -238,7 +260,7 @@ summary {
   outline: none;
 }
 .kolom::placeholder {
-  color: var(--muted);
+  color: var(--placeholder);
   font-weight: 500;
 }
 .kolom-gabung {
@@ -250,6 +272,15 @@ summary {
   border-bottom-left-radius: 0;
   border-left-width: 0;
   min-height: 46px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 nextjs-portal {

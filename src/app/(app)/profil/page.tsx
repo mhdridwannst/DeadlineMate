@@ -2,10 +2,10 @@ import { ambilRingkasan } from "@/lib/stats";
 import {
   getBahasa,
   getDemoUser,
-  keluarKeDemo,
   masukAkun,
   setBahasa,
 } from "@/server/demo-user";
+import { ubahProfilPreferensi } from "@/server/tugas-form";
 import { DICT } from "@/lib/i18n";
 import ThemeSwitch from "@/components/shell/ThemeSwitch";
 
@@ -18,33 +18,42 @@ export default async function ProfilPage() {
 
   const lencana = [
     {
-      kode: "01",
+      ikon: "🎯",
       judul: lang === "en" ? "First Milestone" : "Langkah Pertama",
       ket:
         lang === "en"
           ? "Complete at least 1 task"
-          : "Menyelesaikan minimal 1 tugas hingga tuntas",
+          : "Selesaikan minimal 1 tugas hingga tuntas",
+      progres: `${Math.min(1, r.totalSelesai)}/1 tugas`,
       terbuka: r.totalSelesai >= 1,
     },
     {
-      kode: "02",
+      ikon: "🔥",
       judul: lang === "en" ? "Streak Guardian" : "Pejuang Konsisten",
       ket:
         lang === "en"
           ? "Maintain a 3-day active streak"
-          : "Menjaga rekor streak minimal 3 hari beruntun",
+          : "Jaga rekor streak minimal 3 hari beruntun",
+      progres: `${Math.min(3, r.rekor)}/3 hari`,
       terbuka: r.rekor >= 3,
     },
     {
-      kode: "03",
+      ikon: "⚡",
       judul: "Anti-SKS Club",
       ket:
         lang === "en"
           ? "Reach Level 2 by earning 100+ EXP"
-          : "Menembus Level 2 dengan mengumpulkan 100+ EXP",
+          : "Tembus Level 2 dengan mengumpulkan 100+ XP",
+      progres: `${Math.min(100, r.exp)}/100 XP`,
       terbuka: r.exp >= 100,
     },
   ];
+
+  const GAYA_MATE = [
+    { id: "SUPPORTIVE", label: "Suportif" },
+    { id: "SANTAI", label: "Santai" },
+    { id: "TEGAS", label: "Tegas" },
+  ] as const;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -55,20 +64,20 @@ export default async function ProfilPage() {
         <p className="mt-1 text-sm text-muted">
           {lang === "en"
             ? "Manage your cloud account, language, interface theme, and academic milestones."
-            : "Kelola akun penyimpanan cloud, bahasa pengantar, tema tampilan, dan pencapaian akademikmu."}
+            : "Kelola akun penyimpanan, bahasa, tema tampilan, dan pencapaian belajarmu."}
         </p>
       </div>
 
       {/* Kartu Identitas User */}
       <section className="kartu-lime flex flex-wrap items-center justify-between gap-4 p-5">
         <div className="flex items-center gap-4">
-          <span className="grid size-14 shrink-0 place-items-center rounded-2xl border-2 border-[#141513] bg-lime text-2xl font-extrabold text-[#111310] shadow-[0_3px_0_var(--sh)]">
+          <span className="grid size-14 shrink-0 place-items-center rounded-2xl border-2 border-[color:var(--line)] bg-lime text-2xl font-extrabold text-[#111310]">
             {nama.slice(0, 1).toUpperCase()}
           </span>
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-xl font-extrabold text-ink">{nama}</p>
-              <span className="rounded-full border border-[color:var(--line)] bg-card px-2.5 py-0.5 text-xs font-extrabold text-ink">
+              <span className="rounded-full border border-[color:var(--line)] bg-[color:var(--surface-2)] px-2.5 py-0.5 text-xs font-extrabold text-ink">
                 Level {r.level}
               </span>
             </div>
@@ -79,84 +88,70 @@ export default async function ProfilPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="rounded-xl border-2 border-[color:var(--line)] bg-card px-3 py-1.5 text-xs font-extrabold text-ink">
-            🔥 Streak: {r.streak}d
+          <span className="rounded-xl border-2 border-[color:var(--line)] bg-[color:var(--surface-2)] px-3 py-1.5 text-xs font-extrabold text-ink">
+            <span className={r.streak === 0 ? "grayscale opacity-45" : ""}>
+              🔥
+            </span>{" "}
+            {r.streak} hari
           </span>
-          <span className="rounded-xl border-2 border-[color:var(--line)] bg-card px-3 py-1.5 text-xs font-extrabold text-ink">
+          <span className="rounded-xl border-2 border-[color:var(--line)] bg-[color:var(--surface-2)] px-3 py-1.5 text-xs font-extrabold text-ink">
             ✓ {r.totalSelesai} {t.done}
           </span>
         </div>
       </section>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Kolom Kiri: Akun Permanen */}
-        <section className="kartu p-5">
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="text-base font-extrabold text-ink">
-              {t.accountSection}
-            </h2>
-            <span
-              className={`rounded-full border px-2.5 py-0.5 text-[10px] font-extrabold ${
-                pakaiAkunPribadi
-                  ? "border-[#141513] bg-lime text-[#111310]"
-                  : "border-[color:var(--line)] bg-bg text-muted"
-              }`}
-            >
-              {pakaiAkunPribadi ? "Cloud Synced" : "Demo Session"}
-            </span>
-          </div>
-          <p className="mt-1 text-xs text-muted">{t.accountDesc}</p>
-
-          <form action={masukAkun} className="mt-4 space-y-3">
-            <div>
-              <label className="mb-1 block text-xs font-bold text-muted">
-                Email
-              </label>
-              <input
-                name="email"
-                type="email"
-                required
-                defaultValue={pakaiAkunPribadi ? user.email : ""}
-                placeholder="nama@mahasiswa.ac.id"
-                className="kolom"
-              />
+        {/* Kolom Kiri: Akun Permanen + Gaya Bicara Mate Ringkas */}
+        <div className="space-y-6">
+          <section className="kartu p-5">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-base font-extrabold text-ink">
+                {t.accountSection}
+              </h2>
+              <span className="rounded-full border border-[color:var(--line)] bg-[color:var(--surface-2)] px-2.5 py-0.5 text-xs font-bold text-muted">
+                {pakaiAkunPribadi ? "Tersinkron" : "Sesi Lokal"}
+              </span>
             </div>
-            <div>
-              <label className="mb-1 block text-xs font-bold text-muted">
-                {t.nickname}
-              </label>
-              <input
-                name="nama"
-                type="text"
-                defaultValue={nama}
-                placeholder="Wannn"
-                className="kolom"
-              />
-            </div>
-            <button type="submit" className="tombol w-full text-sm">
-              {t.switchAccount}
-            </button>
-          </form>
+            <p className="mt-1 text-xs text-muted">{t.accountDesc}</p>
 
-          {pakaiAkunPribadi && (
-            <form action={keluarKeDemo} className="mt-2.5">
-              <button
-                type="submit"
-                className="tombol tombol-putih tombol-kecil w-full"
-              >
-                {t.logoutDemo}
+            <form action={masukAkun} className="mt-4 space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-bold text-muted">
+                  Email
+                </label>
+                <input
+                  name="email"
+                  type="email"
+                  required
+                  defaultValue={pakaiAkunPribadi ? user.email : ""}
+                  placeholder="nama@mahasiswa.ac.id"
+                  className="kolom"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-bold text-muted">
+                  {t.nickname}
+                </label>
+                <input
+                  name="nama"
+                  type="text"
+                  defaultValue={nama}
+                  placeholder="Wannn"
+                  className="kolom"
+                />
+              </div>
+              <button type="submit" className="tombol w-full text-sm">
+                Simpan akun
               </button>
             </form>
-          )}
-        </section>
+          </section>
+        </div>
 
-        {/* Kolom Kanan: Bahasa, Tema & Pencapaian */}
+        {/* Kolom Kanan: Bahasa, Tema & Pencapaian Akademik dengan Indikator Progres */}
         <div className="space-y-6">
           <section className="kartu space-y-5 p-5">
             <div>
-              <h2 className="text-base font-extrabold text-ink">
-                {t.languageLabel}
-              </h2>
+              <h2 className="text-base font-extrabold text-ink">Bahasa</h2>
               <div className="mt-2.5 grid grid-cols-2 gap-2">
                 <form
                   action={async () => {
@@ -168,11 +163,11 @@ export default async function ProfilPage() {
                     type="submit"
                     className={`w-full rounded-xl border-2 p-2.5 text-xs font-extrabold transition ${
                       lang === "id"
-                        ? "border-[#141513] bg-lime text-[#111310] shadow-[0_2px_0_var(--sh)]"
-                        : "border-[color:var(--line)] bg-bg text-ink hover:border-lime"
+                        ? "border-[color:var(--line)] bg-lime text-[#111310]"
+                        : "border-[color:var(--line)] bg-[color:var(--surface-2)] text-ink hover:border-lime"
                     }`}
                   >
-                    🇮🇩 Bahasa Indonesia
+                    Bahasa Indonesia
                   </button>
                 </form>
                 <form
@@ -185,17 +180,17 @@ export default async function ProfilPage() {
                     type="submit"
                     className={`w-full rounded-xl border-2 p-2.5 text-xs font-extrabold transition ${
                       lang === "en"
-                        ? "border-[#141513] bg-lime text-[#111310] shadow-[0_2px_0_var(--sh)]"
-                        : "border-[color:var(--line)] bg-bg text-ink hover:border-lime"
+                        ? "border-[color:var(--line)] bg-lime text-[#111310]"
+                        : "border-[color:var(--line)] bg-[color:var(--surface-2)] text-ink hover:border-lime"
                     }`}
                   >
-                    🇬🇧 English
+                    English
                   </button>
                 </form>
               </div>
             </div>
 
-            <div className="border-t-2 border-[color:var(--line)]/15 pt-4">
+            <div className="border-t-2 border-[color:var(--line)]/20 pt-4">
               <h2 className="text-base font-extrabold text-ink">
                 {t.themeTitle}
               </h2>
@@ -218,25 +213,32 @@ export default async function ProfilPage() {
             <ul className="mt-3 space-y-2.5">
               {lencana.map((b) => (
                 <li
-                  key={b.kode}
+                  key={b.judul}
                   className={`flex items-center gap-3 rounded-xl border-2 p-3 ${
                     b.terbuka
-                      ? "border-[color:var(--line)] bg-lime-soft text-ink"
-                      : "border-[color:var(--line)]/30 bg-bg/40 text-muted opacity-60"
+                      ? "border-[color:var(--line)] border-l-4 border-l-lime bg-[color:var(--surface-2)] text-ink"
+                      : "border-[color:var(--line)]/50 bg-[color:var(--surface-2)]/60 text-muted"
                   }`}
                 >
                   <span
-                    className={`grid size-9 shrink-0 place-items-center rounded-lg border-2 font-mono text-xs font-extrabold ${
+                    className={`grid size-10 shrink-0 place-items-center rounded-xl border-2 text-base font-extrabold ${
                       b.terbuka
-                        ? "border-[#141513] bg-lime text-[#111310]"
-                        : "border-[color:var(--line)] bg-card text-muted"
+                        ? "border-[color:var(--line)] bg-lime text-[#111310]"
+                        : "border-[color:var(--line)] bg-[color:var(--surface)] text-muted grayscale"
                     }`}
                   >
-                    {b.terbuka ? "✓" : b.kode}
+                    {b.terbuka ? "✓" : b.ikon}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-extrabold text-ink">{b.judul}</p>
-                    <p className="text-[11px] text-muted">{b.ket}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs font-extrabold text-ink">
+                        {b.judul}
+                      </p>
+                      <span className="rounded-md border border-[color:var(--line)] bg-[color:var(--surface)] px-2 py-0.5 text-xs font-bold text-ink">
+                        {b.progres}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 text-xs text-muted">{b.ket}</p>
                   </div>
                 </li>
               ))}
