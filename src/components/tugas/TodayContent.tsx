@@ -234,12 +234,11 @@ export default function TodayContent({
             />
           </div>
 
-          {/* DAFTAR TUGAS / EMPTY STATE BARU */}
+          {/* DAFTAR TUGAS */}
           {filteredAktif.length > 0 ? (
             <DaftarTugas items={filteredAktif} />
           ) : (
             <section className="kartu p-8 sm:p-12 text-center mt-2 bg-[color:var(--surface-2)] border-2 border-[color:var(--line)] shadow-[0_4px_0_var(--sh)] relative overflow-hidden group">
-              {/* Background Pattern untuk Empty State */}
               <div
                 className="absolute inset-0 opacity-5 pointer-events-none"
                 style={{
@@ -247,7 +246,6 @@ export default function TodayContent({
                   backgroundSize: "16px 16px",
                 }}
               ></div>
-
               <div className="relative z-10">
                 <div className="mx-auto grid size-20 place-items-center rounded-2xl border-2 border-[#141513] bg-lime text-[#111310] shadow-[0_4px_0_var(--sh)] transition-transform group-hover:-translate-y-2 group-hover:rotate-3">
                   <span className="text-4xl animate-bounce">😎</span>
@@ -262,17 +260,6 @@ export default function TodayContent({
                     ? "Coba ubah kata kunci atau pilih tanggal lain di kalender."
                     : "Semua tugas aktif sudah tuntas. Mata lo bisa istirahat sekarang, atau mau tambah tugas baru?"}
                 </p>
-                {!(search || selectedDate) && (
-                  <button
-                    onClick={() => {
-                      // Memicu event global custom untuk buka modal task
-                      window.dispatchEvent(new CustomEvent("buka-tugas-baru"));
-                    }}
-                    className="mt-6 inline-flex items-center gap-2 rounded-xl border-2 border-[#111] bg-[#111] px-6 py-3 text-sm font-extrabold text-white shadow-[0_4px_0_var(--sh)] transition-all hover:-translate-y-1 hover:shadow-[0_6px_0_var(--sh)] active:translate-y-1 active:shadow-none"
-                  >
-                    + Tambah Tugas Baru
-                  </button>
-                )}
               </div>
             </section>
           )}
@@ -363,27 +350,59 @@ export default function TodayContent({
             onNextMonth={handleNextMonth}
           />
 
+          {/* ================= KONSISTENSI 7 HARI (FIXED PREMIUM) ================= */}
           <section className="kartu p-4" aria-label={t.consistency7d}>
-            <div className="flex items-center justify-between">
-              <h2 className="font-extrabold text-ink">{t.consistency7d}</h2>
-              <span className="text-xs font-bold text-muted">7d</span>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-black text-ink text-sm uppercase tracking-wider">
+                {t.consistency7d}
+              </h2>
+              <span className="text-[10px] font-bold text-muted bg-[color:var(--surface-2)] px-2 py-0.5 rounded border border-[color:var(--line)]/20">
+                7d
+              </span>
             </div>
-            <ul className="mt-3 grid grid-cols-7 gap-1.5 text-center">
+
+            <ul className="grid grid-cols-7 gap-1.5 sm:gap-2 text-center">
               {tujuhHari.map((k) => {
                 const aktifHari = hariAda.includes(k);
+                const isToday = k === r.today;
+
                 return (
-                  <li
-                    key={k}
-                    className={`flex flex-col items-center gap-1 rounded-lg border-2 py-2 ${
-                      aktifHari
-                        ? "border-[#141513] bg-lime text-[#111310]"
-                        : "border-[color:var(--line)]/20 bg-bg text-muted"
-                    }`}
-                  >
-                    <span className="text-xs font-extrabold">
-                      {aktifHari ? "✓" : "·"}
-                    </span>
-                    <span className="text-[11px] font-extrabold">
+                  <li key={k} className="flex flex-col items-center gap-1.5">
+                    {/* Kotak Status */}
+                    <div
+                      className={`flex aspect-square w-full items-center justify-center rounded-lg border-2 transition-all ${
+                        aktifHari
+                          ? "border-[#111] bg-lime text-[#111] shadow-[0_2px_0_var(--sh)]" // Selesai
+                          : isToday
+                            ? "border-[#111] bg-card text-[#111]" // Hari ini (Solid Border)
+                            : "border-[color:var(--line)]/20 bg-transparent text-muted/20" // Kosong (No dot)
+                      }`}
+                    >
+                      {aktifHari ? (
+                        <svg
+                          viewBox="0 0 24 24"
+                          className="size-3.5 sm:size-4"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={3.5}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M5 12l5 5 9-10" />
+                        </svg>
+                      ) : isToday ? (
+                        <span className="text-[9px] font-black uppercase">
+                          INI
+                        </span>
+                      ) : null}
+                    </div>
+
+                    {/* Huruf Hari */}
+                    <span
+                      className={`text-[10px] font-black uppercase tracking-wider ${
+                        isToday ? "text-ink" : "text-muted/60"
+                      }`}
+                    >
                       {hurufHari[hariKe(k)]}
                     </span>
                   </li>
