@@ -82,82 +82,6 @@ export default function TodayContent({
 
   return (
     <div className="space-y-5 lg:space-y-6 pb-24 lg:pb-10">
-      {/* ================= MOBILE ONLY: PREMIUM CLEAN HUD ================= */}
-      <div className="lg:hidden space-y-3">
-        {/* HUD Putih, Border Tebal, Angka Monospace */}
-        <div className="flex w-full overflow-hidden rounded-xl border-2 border-[color:var(--line)] bg-card shadow-[0_3px_0_var(--sh)]">
-          {/* Streak */}
-          <div className="flex flex-1 flex-col items-center justify-center border-r-2 border-[color:var(--line)] py-2.5 px-1 relative">
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted">
-              Streak
-            </span>
-            <div className="flex items-baseline gap-1 mt-0.5">
-              <span className="text-sm">🔥</span>
-              <span className="text-xl font-black font-mono text-ink">
-                {r.streak}
-              </span>
-            </div>
-          </div>
-
-          {/* Level / EXP */}
-          <div className="flex flex-1 flex-col items-center justify-center border-r-2 border-[color:var(--line)] py-2.5 px-1">
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted">
-              EXP
-            </span>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-[10px] font-black bg-[color:var(--lime)] border-2 border-[#111] px-1.5 py-0.5 rounded-md text-[#111]">
-                L{r.level}
-              </span>
-              <span className="text-xl font-black font-mono text-ink">
-                {r.expLevel}
-              </span>
-            </div>
-          </div>
-
-          {/* Hari Ini */}
-          <div className="flex flex-1 flex-col items-center justify-center py-2.5 px-1">
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted">
-              Hari Ini
-            </span>
-            <div className="flex items-baseline gap-1 mt-0.5">
-              <span className="text-xl font-black font-mono text-ink">
-                {r.hariIniSelesai}
-              </span>
-              <span className="text-sm font-bold text-muted">
-                /{r.hariIniTotal}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Banner Deadline Mobile (Putih Bersih, Gak Norak) */}
-        {mendesak && mendesak.tanggal && (
-          <section
-            className="kartu flex items-center gap-3 p-3"
-            style={{
-              background: "var(--warn)",
-              borderColor: "var(--line)",
-              color: "var(--ink)",
-              boxShadow: "0 3px 0 var(--line)",
-            }}
-          >
-            {/* Ikon "!" sekarang pakai background putih bersih dengan border tebal */}
-            <span className="grid size-8 shrink-0 place-items-center rounded-lg border-2 border-[color:var(--line)] bg-card text-sm font-black text-[color:var(--ink)]">
-              !
-            </span>
-            <div className="min-w-0">
-              <p className="text-[13px] font-extrabold leading-tight text-ink">
-                Deadline Mendekat
-              </p>
-              <p className="text-[11px] font-semibold text-[color:var(--warn-ink)] opacity-80 leading-tight mt-0.5 truncate">
-                “{mendesak.judul}” dalam{" "}
-                <strong className="text-ink">{mendesak.sisa}</strong>
-              </p>
-            </div>
-          </section>
-        )}
-      </div>
-
       {/* ================= HEADER & SEARCH BAR ================= */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-3 border-b-2 border-[color:var(--line)]/20 pb-4">
         <div className="flex items-center justify-between gap-3 w-full">
@@ -226,23 +150,91 @@ export default function TodayContent({
         </div>
       </div>
 
-      {/* ================= DESKTOP ONLY: STATISTIK LENGKAP ================= */}
-      <div className="hidden lg:block">
-        <StatKartu
-          streak={r.streak}
-          rekor={r.rekor}
-          level={r.level}
-          exp={r.expLevel}
-          selesai={r.hariIniSelesai}
-          total={r.hariIniTotal}
-          lang={lang}
-        />
-      </div>
+      {/* ================= BANNER DEADLINE (Full Width) ================= */}
+      {mendesak && mendesak.tanggal && (
+        <section
+          className="kartu flex items-center gap-3 p-3"
+          style={{
+            background: "var(--warn)",
+            borderColor: "var(--line)",
+            color: "var(--ink)",
+            boxShadow: "0 3px 0 var(--line)",
+          }}
+        >
+          <span className="grid size-8 shrink-0 place-items-center rounded-lg border-2 border-[color:var(--line)] bg-card text-sm font-black text-[color:var(--ink)]">
+            !
+          </span>
+          <div className="min-w-0">
+            <p className="text-[13px] font-extrabold leading-tight text-ink">
+              Deadline Mendekat
+            </p>
+            <p className="text-[11px] font-semibold text-[color:var(--warn-ink)] opacity-80 leading-tight mt-0.5 truncate">
+              “{mendesak.judul}” dalam{" "}
+              <strong className="text-ink">{mendesak.sisa}</strong>
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* ================= MAIN GRID ================= */}
       <div className="flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_21rem] gap-6">
-        {/* KOLOM KIRI (DAFTAR TUGAS) */}
+        {/* KOLOM KIRI (STATS + DAFTAR TUGAS) */}
         <div className="space-y-4 order-1 lg:order-1">
+          {/* MOBILE ONLY: HUD (Tanpa HP/Nyawa) */}
+          <div className="lg:hidden flex w-full overflow-hidden rounded-xl border-2 border-[color:var(--line)] bg-card shadow-[0_3px_0_var(--sh)]">
+            <div className="flex flex-1 flex-col items-center justify-center border-r-2 border-[color:var(--line)] py-2.5 px-1">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted">
+                Streak
+              </span>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="text-sm">🔥</span>
+                <span className="text-xl font-black font-mono text-ink">
+                  {r.streak}
+                </span>
+              </div>
+            </div>
+            <div className="flex flex-1 flex-col items-center justify-center border-r-2 border-[color:var(--line)] py-2.5 px-1">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted">
+                EXP
+              </span>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="text-[10px] font-black bg-[color:var(--lime)] border-2 border-[#111] px-1.5 py-0.5 rounded-md text-[#111]">
+                  L{r.level}
+                </span>
+                <span className="text-xl font-black font-mono text-ink">
+                  {r.expLevel}
+                </span>
+              </div>
+            </div>
+            <div className="flex flex-1 flex-col items-center justify-center py-2.5 px-1">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted">
+                Hari Ini
+              </span>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="text-xl font-black font-mono text-ink">
+                  {r.hariIniSelesai}
+                </span>
+                <span className="text-sm font-bold text-muted">
+                  /{r.hariIniTotal}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* DESKTOP ONLY: STATISTIK LENGKAP (Dipindah ke sini biar sejajar) */}
+          <div className="hidden lg:block">
+            <StatKartu
+              streak={r.streak}
+              rekor={r.rekor}
+              level={r.level}
+              exp={r.expLevel}
+              selesai={r.hariIniSelesai}
+              total={r.hariIniTotal}
+              lang={lang}
+            />
+          </div>
+
+          {/* DAFTAR TUGAS */}
           {filteredAktif.length > 0 ? (
             <DaftarTugas items={filteredAktif} />
           ) : (
@@ -292,10 +284,8 @@ export default function TodayContent({
             </details>
           )}
 
-          {/* MOBILE ONLY: WIDGET BAWAH */}
+          {/* MOBILE ONLY: KALENDER */}
           <div className="lg:hidden space-y-4 mt-6">
-            <MateChat text={isiCatatanMate} title={t.mateNote} />
-
             <MiniKalender
               tahun={viewDate.tahun}
               bulan0={viewDate.bulan0}

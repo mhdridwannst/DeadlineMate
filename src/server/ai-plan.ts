@@ -356,7 +356,7 @@ export async function rencanakan(
 
 export async function pecahLangkahAI(
   taskId: string,
-): Promise<{ ok: boolean; pesan: string }> {
+): Promise<{ ok: boolean; pesan: string; catatan?: string }> {
   const user = await getDemoUser();
   const tugas = await db.task.findFirst({
     where: { id: taskId, userId: user.id, parentId: null },
@@ -440,5 +440,6 @@ export async function pecahLangkahAI(
   return {
     ok: true,
     pesan: `${daftarLangkah.length} sub-langkah berhasil disusun oleh Mate!`,
+    catatan: output.catatanMate.slice(0, 300),
   };
 }

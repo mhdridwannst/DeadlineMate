@@ -1,13 +1,18 @@
 "use client";
 
-import { useOptimistic, useRef, useState, useTransition } from "react";
+import {
+  useEffect,
+  useOptimistic,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import confetti from "canvas-confetti";
 import { hapusTugas, ubahStatus } from "@/server/tasks";
 import { pecahLangkahAI } from "@/server/ai-plan";
 import { sfxAiSuccess, sfxCheck, sfxClick, sfxDelete } from "@/lib/sfx";
 import FormTugas from "./FormTugas";
 
-// ... (Tipe data Item dan Langkah tetap sama) ...
 export type Langkah = {
   id: string;
   judul: string;
@@ -15,6 +20,7 @@ export type Langkah = {
   info: string;
   menit?: number;
 };
+
 export type Item = {
   id: string;
   no: number;
@@ -32,14 +38,18 @@ export type Item = {
   langkah: Langkah[];
 };
 
-const LABEL = { HIGH: "Tinggi", MEDIUM: "Sedang", LOW: "Santai" } as const;
+const LABEL = {
+  HIGH: "Tinggi",
+  MEDIUM: "Sedang",
+  LOW: "Santai",
+} as const;
+
 const AKSEN_PRIORITAS = {
   HIGH: "!border-l-[6px] !border-l-[color:var(--bahaya)]",
   MEDIUM: "!border-l-[6px] !border-l-[color:var(--warn-line)]",
   LOW: "!border-l-[6px] !border-l-[color:var(--santai)]",
 } as const;
 
-// ... (Komponen Kotak & IkonKecil tetap sama) ...
 function Kotak({
   on,
   onClick,
@@ -55,6 +65,7 @@ function Kotak({
   const warnaCls = on
     ? "border-[#111] bg-lime text-[#111]"
     : "border-[color:var(--line)] bg-[color:var(--surface)] hover:border-biru";
+
   return (
     <button
       type="button"
@@ -125,6 +136,13 @@ export default function DaftarTugas({
   const [edit, setEdit] = useState<Item | null>(null);
   const [targetHapus, setTargetHapus] = useState<Item | null>(null);
 
+  // State untuk Popup AI
+  const [aiNote, setAiNote] = useState<string | null>(null);
+  const dlgAi = useRef<HTMLDialogElement>(null);
+
+  // State untuk animasi melayang +10 XP
+  const [floatingXP, setFloatingXP] = useState<Record<string, boolean>>({});
+
   const dlg = useRef<HTMLDialogElement>(null);
   const dlgHapus = useRef<HTMLDialogElement>(null);
 
@@ -137,21 +155,28 @@ export default function DaftarTugas({
   function ganti(id: string, asli: boolean, parentId: string | null = null) {
     const nilai = !on(id, asli);
     sfxCheck(nilai);
+
     if (nilai && !parentId) {
       confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ["#a8f000", "#111111", "#ffffff"],
+        particleCount: 80,
+        spread: 60,
+        origin: { y: 0.7 },
+        colors: ["#a8f000", "#111111", "#ffffff", "#2563eb"],
+        disableForReducedMotion: true,
       });
+
+      setFloatingXP((prev) => ({ ...prev, [id]: true }));
+      setTimeout(() => {
+        setFloatingXP((prev) => ({ ...prev, [id]: false }));
+      }, 1000);
     }
+
     mulai(async () => {
       setPeta({ id, nilai });
       await ubahStatus(id, nilai, parentId);
     });
   }
 
-  // ... (Fungsi mintaHapus, tutupHapus, eksekusiHapus, jalankanPecahAI, bukaEdit, tutupEdit tetap sama) ...
   function mintaHapus(t: Item) {
     sfxClick();
     setTargetHapus(t);
@@ -170,6 +195,7 @@ export default function DaftarTugas({
       setTargetHapus(null);
     });
   }
+
   async function jalankanPecahAI(t: Item) {
     sfxClick();
     setLoadingAI((s) => ({ ...s, [t.id]: true }));
@@ -180,11 +206,18 @@ export default function DaftarTugas({
       if (hasil.ok) {
         sfxAiSuccess();
         setBuka((s) => ({ ...s, [t.id]: true }));
+
+        // MUNCULKAN POPUP KALAU ADA CATATAN
+        if (hasil.catatan) {
+          setAiNote(hasil.catatan);
+          dlgAi.current?.showModal();
+        }
       }
     } finally {
       setLoadingAI((s) => ({ ...s, [t.id]: false }));
     }
   }
+
   function bukaEdit(t: Item) {
     sfxClick();
     setEdit(t);
@@ -208,8 +241,6 @@ export default function DaftarTugas({
       )}
 
       <ul className="space-y-4">
-        {" "}
-        {/* Spasi diperlebar dikit buat mobile */}
         {items.map((t) => {
           const sel = on(t.id, t.selesai);
           const dari = t.langkah.filter((l) => on(l.id, l.selesai)).length;
@@ -222,11 +253,16 @@ export default function DaftarTugas({
           return (
             <li
               key={t.id}
-              className={`kartu p-4 transition-opacity ${AKSEN_PRIORITAS[t.prioritas]} ${sel ? "opacity-55" : ""}`}
+              className={`kartu p-4 transition-opacity relative ${AKSEN_PRIORITAS[t.prioritas]} ${sel ? "opacity-55" : ""}`}
             >
-              {/* LAYOUT MOBILE-FIRST: Atas = Judul, Bawah = Aksi & Tag */}
+              {/* Animasi Floating +10 XP */}
+              {floatingXP[t.id] && (
+                <span className="absolute top-2 right-12 text-biru font-black text-sm animate-bounce z-10 pointer-events-none drop-shadow-md">
+                  +10 EXP ✨
+                </span>
+              )}
+
               <div className="flex flex-col gap-3">
-                {/* BARIS 1: Checkbox, Judul, Waktu (Kanan) */}
                 <div className="flex items-start gap-3">
                   <Kotak
                     on={sel}
@@ -268,7 +304,6 @@ export default function DaftarTugas({
                     </div>
                   </div>
 
-                  {/* Tenggat disembunyikan di mobile, muncul di desktop */}
                   <div className="hidden sm:block shrink-0 text-right">
                     <span className="text-[11px] font-medium text-muted">
                       {t.tenggat}
@@ -276,16 +311,26 @@ export default function DaftarTugas({
                   </div>
                 </div>
 
-                {/* BARIS 2: Tags & Tombol Aksi (Mepet Bawah) */}
                 <div className="flex flex-wrap items-center justify-between gap-2 border-t-2 border-[color:var(--line)]/10 pt-3 mt-1">
-                  {/* Kiri: Tags & Tombol AI */}
                   <div className="flex flex-wrap items-center gap-1.5">
                     <span className={`tag tag-${t.prioritas}`}>
                       {LABEL[t.prioritas]}
                     </span>
                     {!sel && <span className="tag tag-exp">🔥 +1 streak</span>}
 
-                    {t.langkah.length > 0 ? (
+                    {/* LOGIKA AI: Skeleton Loading */}
+                    {sedangAI ? (
+                      <div className="inline-flex min-h-7 items-center gap-2 rounded-full border-2 border-[color:var(--line)] bg-[color:var(--ai-bg)] px-3 py-1">
+                        <div className="flex space-x-1 animate-pulse">
+                          <div className="size-1.5 bg-[color:var(--ai-ink)] rounded-full"></div>
+                          <div className="size-1.5 bg-[color:var(--ai-ink)] rounded-full"></div>
+                          <div className="size-1.5 bg-[color:var(--ai-ink)] rounded-full"></div>
+                        </div>
+                        <span className="text-[11px] font-bold text-[color:var(--ai-ink)]">
+                          Mate menyusun...
+                        </span>
+                      </div>
+                    ) : t.langkah.length > 0 ? (
                       <button
                         type="button"
                         aria-expanded={!!buka[t.id]}
@@ -304,19 +349,15 @@ export default function DaftarTugas({
                       !sel && (
                         <button
                           type="button"
-                          disabled={sedangAI}
                           onClick={() => jalankanPecahAI(t)}
-                          className="inline-flex min-h-7 items-center gap-1 rounded-full border-2 border-[color:var(--line)] bg-[color:var(--ai-bg)] px-2.5 py-0.5 text-[11px] font-bold text-[color:var(--ai-ink)] transition hover:opacity-90 disabled:opacity-50"
+                          className="inline-flex min-h-7 items-center gap-1 rounded-full border-2 border-[color:var(--line)] bg-[color:var(--ai-bg)] px-2.5 py-0.5 text-[11px] font-bold text-[color:var(--ai-ink)] transition hover:opacity-90"
                         >
-                          <span>
-                            {sedangAI ? "Menyusun..." : "✦ Pecah Langkah AI"}
-                          </span>
+                          <span>✦ Pecah Langkah AI</span>
                         </button>
                       )
                     )}
                   </div>
 
-                  {/* Kanan: Tombol Edit & Hapus (Ikonnya PASTI MUNCUL sekarang) */}
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -350,29 +391,26 @@ export default function DaftarTugas({
                 </div>
               </div>
 
-              {/* Info AI Sub-langkah */}
               {infoAI[t.id] && (
                 <p className="mt-3 rounded-lg bg-[color:var(--ai-bg)] px-3 py-2 text-xs font-bold text-[color:var(--ai-ink)]">
                   {infoAI[t.id]}
                 </p>
               )}
 
-              {/* LIST SUB-LANGKAH (Buka/Tutup) */}
               {buka[t.id] && t.langkah.length > 0 && (
                 <div className="mt-3.5 rounded-xl border-2 border-[color:var(--line)]/30 bg-[color:var(--surface-2)] p-3">
                   <div className="mb-2 flex items-center justify-between gap-2">
                     <span className="text-xs font-extrabold text-muted">
-                      Sub-langkah AI ({dari}/{t.langkah.length} selesai ·{" "}
+                      Sub-langkah AI ({dari}/{t.langkah.length} ·{" "}
                       {persenLangkah}%)
                     </span>
-                    {!sel && (
+                    {!sel && !sedangAI && (
                       <button
                         type="button"
-                        disabled={sedangAI}
                         onClick={() => jalankanPecahAI(t)}
-                        className="min-h-0 text-xs font-bold text-ink underline underline-offset-2 opacity-80 hover:opacity-100 disabled:opacity-50"
+                        className="min-h-0 text-xs font-bold text-ink underline underline-offset-2 opacity-80 hover:opacity-100"
                       >
-                        {sedangAI ? "Menyusun ulang..." : "↻ Susun ulang AI"}
+                        ↻ Susun ulang
                       </button>
                     )}
                   </div>
@@ -420,7 +458,47 @@ export default function DaftarTugas({
         })}
       </ul>
 
-      {/* Modal Hapus & Edit (Sama kayak sebelumnya) */}
+      {/* ================= DIALOG POPUP AI ================= */}
+      <dialog
+        ref={dlgAi}
+        onClick={(e) => {
+          if (e.target === dlgAi.current) dlgAi.current?.close();
+        }}
+        onClose={() => setAiNote(null)}
+        className="m-auto w-[min(92vw,26rem)] rounded-2xl border-2 border-[color:var(--line)] bg-[color:var(--surface-raised)] p-5 text-ink shadow-[0_6px_0_var(--sh)] backdrop:bg-black/60"
+      >
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2">
+            <span className="grid size-8 place-items-center rounded-lg border-2 border-[#111] bg-lime text-sm">
+              🤖
+            </span>
+            <h3 className="text-base font-black text-ink">Pesan dari Mate</h3>
+          </div>
+          <button
+            type="button"
+            onClick={() => dlgAi.current?.close()}
+            className="grid size-8 place-items-center rounded-lg border-2 border-[color:var(--line)] bg-[color:var(--surface-2)] hover:bg-lime"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="relative bg-[color:var(--surface-2)] border-2 border-[color:var(--line)] rounded-xl p-4 shadow-[0_3px_0_var(--sh)]">
+          <p className="text-sm font-bold leading-relaxed text-ink">
+            “{aiNote}”
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => dlgAi.current?.close()}
+          className="tombol w-full mt-4"
+        >
+          Gas, Mulai Kerjain! 🚀
+        </button>
+      </dialog>
+
+      {/* Modal Hapus & Edit */}
       <dialog
         ref={dlgHapus}
         className="m-auto w-[min(92vw,24rem)] rounded-2xl border-2 border-[color:var(--line)] bg-[color:var(--surface-raised)] p-5 text-ink shadow-[0_6px_0_var(--sh)] backdrop:bg-black/60"
