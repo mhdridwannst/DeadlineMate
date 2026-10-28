@@ -27,7 +27,7 @@ export default function StatKartu({
       aria-label="Ringkasan Statistik"
       className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-4"
     >
-      {/* Kartu 1: Streak Aktif (Hijau Pastel Lembut sesuai Figma) */}
+      {/* Kartu 1: Streak Aktif */}
       <div className="kartu-lime col-span-2 flex items-center gap-3.5 p-4 sm:col-span-1">
         <span className="grid size-11 shrink-0 place-items-center rounded-xl border-2 border-[color:var(--line)] bg-[color:var(--surface)] text-xl">
           🔥
