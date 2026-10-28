@@ -1,11 +1,13 @@
 "use client";
 
 import { useOptimistic, useRef, useState, useTransition } from "react";
+import confetti from "canvas-confetti";
 import { hapusTugas, ubahStatus } from "@/server/tasks";
 import { pecahLangkahAI } from "@/server/ai-plan";
 import { sfxAiSuccess, sfxCheck, sfxClick, sfxDelete } from "@/lib/sfx";
 import FormTugas from "./FormTugas";
 
+// ... (Tipe data Item dan Langkah tetap sama) ...
 export type Langkah = {
   id: string;
   judul: string;
@@ -13,7 +15,6 @@ export type Langkah = {
   info: string;
   menit?: number;
 };
-
 export type Item = {
   id: string;
   no: number;
@@ -31,18 +32,14 @@ export type Item = {
   langkah: Langkah[];
 };
 
-const LABEL = {
-  HIGH: "Tinggi",
-  MEDIUM: "Sedang",
-  LOW: "Santai",
-} as const;
-
+const LABEL = { HIGH: "Tinggi", MEDIUM: "Sedang", LOW: "Santai" } as const;
 const AKSEN_PRIORITAS = {
-  HIGH: "border-l-[6px] border-l-[color:var(--bahaya)]",
-  MEDIUM: "border-l-[6px] border-l-[color:var(--warn-line)]",
-  LOW: "border-l-[6px] border-l-[color:var(--santai)]",
+  HIGH: "!border-l-[6px] !border-l-[color:var(--bahaya)]",
+  MEDIUM: "!border-l-[6px] !border-l-[color:var(--warn-line)]",
+  LOW: "!border-l-[6px] !border-l-[color:var(--santai)]",
 } as const;
 
+// ... (Komponen Kotak & IkonKecil tetap sama) ...
 function Kotak({
   on,
   onClick,
@@ -58,7 +55,6 @@ function Kotak({
   const warnaCls = on
     ? "border-[#111] bg-lime text-[#111]"
     : "border-[color:var(--line)] bg-[color:var(--surface)] hover:border-biru";
-
   return (
     <button
       type="button"
@@ -92,7 +88,7 @@ function Kotak({
 
 function IkonKecil({
   d,
-  className = "size-5",
+  className = "size-4",
 }: {
   d: string;
   className?: string;
@@ -103,7 +99,7 @@ function IkonKecil({
       className={className}
       fill="none"
       stroke="currentColor"
-      strokeWidth={2}
+      strokeWidth={2.5}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
@@ -128,8 +124,6 @@ export default function DaftarTugas({
   const [infoAI, setInfoAI] = useState<Record<string, string>>({});
   const [edit, setEdit] = useState<Item | null>(null);
   const [targetHapus, setTargetHapus] = useState<Item | null>(null);
-  const [filterKat, setFilterKat] = useState<string>("SEMUA");
-  const [bukaMenuFilter, setBukaMenuFilter] = useState(false);
 
   const dlg = useRef<HTMLDialogElement>(null);
   const dlgHapus = useRef<HTMLDialogElement>(null);
@@ -138,28 +132,34 @@ export default function DaftarTugas({
     Record<string, boolean>,
     { id: string; nilai: boolean }
   >({}, (s, a) => ({ ...s, [a.id]: a.nilai }));
-
   const on = (id: string, asli: boolean) => (id in peta ? peta[id] : asli);
 
   function ganti(id: string, asli: boolean, parentId: string | null = null) {
     const nilai = !on(id, asli);
     sfxCheck(nilai);
+    if (nilai && !parentId) {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ["#a8f000", "#111111", "#ffffff"],
+      });
+    }
     mulai(async () => {
       setPeta({ id, nilai });
       await ubahStatus(id, nilai, parentId);
     });
   }
 
+  // ... (Fungsi mintaHapus, tutupHapus, eksekusiHapus, jalankanPecahAI, bukaEdit, tutupEdit tetap sama) ...
   function mintaHapus(t: Item) {
     sfxClick();
     setTargetHapus(t);
     dlgHapus.current?.showModal();
   }
-
   function tutupHapus() {
     dlgHapus.current?.close();
   }
-
   function eksekusiHapus() {
     if (!targetHapus) return;
     const id = targetHapus.id;
@@ -170,7 +170,6 @@ export default function DaftarTugas({
       setTargetHapus(null);
     });
   }
-
   async function jalankanPecahAI(t: Item) {
     sfxClick();
     setLoadingAI((s) => ({ ...s, [t.id]: true }));
@@ -186,22 +185,12 @@ export default function DaftarTugas({
       setLoadingAI((s) => ({ ...s, [t.id]: false }));
     }
   }
-
   function bukaEdit(t: Item) {
     sfxClick();
     setEdit(t);
     dlg.current?.showModal();
   }
-
   const tutupEdit = () => dlg.current?.close();
-
-  const itemsTampil =
-    filterKat === "SEMUA"
-      ? items
-      : items.filter(
-          (i) =>
-            (i.kategori ?? "Kuliah").toLowerCase() === filterKat.toLowerCase(),
-        );
 
   return (
     <>
@@ -214,76 +203,14 @@ export default function DaftarTugas({
                 <span className="judul-stabilo">Daftar tugas</span>
               </h1>
             </div>
-
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => {
-                  sfxClick();
-                  setBukaMenuFilter((v) => !v);
-                }}
-                className="inline-flex min-h-10 items-center gap-2 rounded-xl border-2 border-[color:var(--line)] bg-[color:var(--surface)] px-3.5 text-xs font-extrabold text-ink shadow-[0_3px_0_var(--sh)] transition hover:-translate-y-0.5"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  className="size-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2.2}
-                  strokeLinecap="round"
-                >
-                  <path d="M4 6h16M7 12h10M10 18h4" />
-                </svg>
-                <span>
-                  {filterKat === "SEMUA" ? "Filter" : `Filter: ${filterKat}`}
-                </span>
-              </button>
-
-              {bukaMenuFilter && (
-                <div className="kartu absolute right-0 top-12 z-30 w-40 p-1.5">
-                  {["SEMUA", "Kuliah", "Organisasi", "Pribadi"].map((kat) => (
-                    <button
-                      key={kat}
-                      type="button"
-                      onClick={() => {
-                        sfxClick();
-                        setFilterKat(kat);
-                        setBukaMenuFilter(false);
-                      }}
-                      className={`flex min-h-9 w-full items-center justify-between rounded-lg px-3 text-left text-xs font-bold ${
-                        filterKat === kat
-                          ? "bg-lime text-[#111]"
-                          : "text-ink hover:bg-[color:var(--surface-2)]"
-                      }`}
-                    >
-                      <span>{kat === "SEMUA" ? "Semua Kategori" : kat}</span>
-                      {filterKat === kat && <span>✓</span>}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div
-            className="inline-flex rounded-xl border-2 border-[color:var(--line)] bg-[color:var(--surface)] p-1"
-            aria-label="Urutan daftar"
-          >
-            <span className="rounded-lg border-2 border-[#111] bg-lime px-5 py-1.5 text-xs font-extrabold text-[#111]">
-              Priority
-            </span>
-            <span className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-ink">
-              <span>Habit</span>
-              <span className="rounded-full bg-[#111] px-2 py-0.5 text-[10px] font-bold text-white">
-                segera
-              </span>
-            </span>
           </div>
         </div>
       )}
 
-      <ul className="space-y-3.5">
-        {itemsTampil.map((t) => {
+      <ul className="space-y-4">
+        {" "}
+        {/* Spasi diperlebar dikit buat mobile */}
+        {items.map((t) => {
           const sel = on(t.id, t.selesai);
           const dari = t.langkah.filter((l) => on(l.id, l.selesai)).length;
           const sedangAI = !!loadingAI[t.id];
@@ -295,53 +222,65 @@ export default function DaftarTugas({
           return (
             <li
               key={t.id}
-              className={`kartu px-4 py-3.5 transition-opacity ${AKSEN_PRIORITAS[t.prioritas]} ${
-                sel ? "opacity-55" : ""
-              }`}
+              className={`kartu p-4 transition-opacity ${AKSEN_PRIORITAS[t.prioritas]} ${sel ? "opacity-55" : ""}`}
             >
-              <div className="flex items-center gap-3">
-                <Kotak
-                  on={sel}
-                  onClick={() => ganti(t.id, t.selesai, null)}
-                  label={`Tandai selesai: ${t.judul}`}
-                />
+              {/* LAYOUT MOBILE-FIRST: Atas = Judul, Bawah = Aksi & Tag */}
+              <div className="flex flex-col gap-3">
+                {/* BARIS 1: Checkbox, Judul, Waktu (Kanan) */}
+                <div className="flex items-start gap-3">
+                  <Kotak
+                    on={sel}
+                    onClick={() => ganti(t.id, t.selesai, null)}
+                    label={`Tandai selesai: ${t.judul}`}
+                  />
 
-                <div className="min-w-0 flex-1">
-                  <p
-                    className={`text-base font-bold leading-snug ${
-                      sel ? "line-through text-muted" : "text-ink"
-                    }`}
-                  >
-                    <span className="mr-1.5 font-extrabold text-biru">
-                      #{t.no}
-                    </span>
-                    {t.judul}
-                  </p>
-
-                  <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-muted">
-                    <span
-                      className={
-                        t.telat && !sel
-                          ? "font-bold text-[color:var(--bahaya)]"
-                          : ""
-                      }
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className={`text-base font-bold leading-snug ${sel ? "line-through text-muted" : "text-ink"}`}
                     >
-                      {t.sisa}
-                    </span>
-                    {t.kategori && (
-                      <>
-                        <span aria-hidden="true">•</span>
-                        <span>{t.kategori}</span>
-                      </>
-                    )}
-                    {t.estimasi && (
-                      <>
-                        <span aria-hidden="true">•</span>
-                        <span>{t.estimasi}</span>
-                      </>
-                    )}
+                      <span className="mr-1.5 font-extrabold text-biru">
+                        #{t.no}
+                      </span>
+                      {t.judul}
+                    </p>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
+                      <span
+                        className={
+                          t.telat && !sel
+                            ? "font-bold text-[color:var(--bahaya)]"
+                            : ""
+                        }
+                      >
+                        {t.sisa}
+                      </span>
+                      {t.kategori && (
+                        <>
+                          <span>•</span>
+                          <span>{t.kategori}</span>
+                        </>
+                      )}
+                      {t.estimasi && (
+                        <>
+                          <span>•</span>
+                          <span>{t.estimasi}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
 
-                    <span className={`tag tag-${t.prioritas} ml-1`}>
+                  {/* Tenggat disembunyikan di mobile, muncul di desktop */}
+                  <div className="hidden sm:block shrink-0 text-right">
+                    <span className="text-[11px] font-medium text-muted">
+                      {t.tenggat}
+                    </span>
+                  </div>
+                </div>
+
+                {/* BARIS 2: Tags & Tombol Aksi (Mepet Bawah) */}
+                <div className="flex flex-wrap items-center justify-between gap-2 border-t-2 border-[color:var(--line)]/10 pt-3 mt-1">
+                  {/* Kiri: Tags & Tombol AI */}
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className={`tag tag-${t.prioritas}`}>
                       {LABEL[t.prioritas]}
                     </span>
                     {!sel && <span className="tag tag-exp">🔥 +1 streak</span>}
@@ -354,7 +293,7 @@ export default function DaftarTugas({
                           sfxClick();
                           setBuka((s) => ({ ...s, [t.id]: !s[t.id] }));
                         }}
-                        className="inline-flex min-h-6 items-center gap-1 rounded-full border-[1.5px] border-[color:var(--line)] bg-[color:var(--surface-2)] px-2.5 py-0.5 text-[11px] font-bold text-ink transition hover:bg-lime-soft"
+                        className="inline-flex min-h-7 items-center gap-1 rounded-full border-2 border-[color:var(--line)] bg-[color:var(--surface-2)] px-2.5 py-0.5 text-[11px] font-bold text-ink transition hover:bg-lime-soft"
                       >
                         <span>
                           {dari}/{t.langkah.length} langkah
@@ -367,7 +306,7 @@ export default function DaftarTugas({
                           type="button"
                           disabled={sedangAI}
                           onClick={() => jalankanPecahAI(t)}
-                          className="inline-flex min-h-6 items-center gap-1 rounded-full border-[1.5px] border-[color:var(--line)] bg-[color:var(--ai-bg)] px-2.5 py-0.5 text-[11px] font-bold text-[color:var(--ai-ink)] transition hover:opacity-90 disabled:opacity-50"
+                          className="inline-flex min-h-7 items-center gap-1 rounded-full border-2 border-[color:var(--line)] bg-[color:var(--ai-bg)] px-2.5 py-0.5 text-[11px] font-bold text-[color:var(--ai-ink)] transition hover:opacity-90 disabled:opacity-50"
                         >
                           <span>
                             {sedangAI ? "Menyusun..." : "✦ Pecah Langkah AI"}
@@ -377,37 +316,25 @@ export default function DaftarTugas({
                     )}
                   </div>
 
-                  {infoAI[t.id] && (
-                    <p className="mt-2 text-xs font-bold text-biru">
-                      {infoAI[t.id]}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex shrink-0 flex-col items-end gap-2 border-l border-[color:var(--line)]/20 pl-3 sm:pl-4">
-                  {t.tenggat && (
-                    <span className="hidden text-[11px] font-medium text-muted sm:inline">
-                      {t.tenggat}
-                    </span>
-                  )}
-                  <div className="flex items-center gap-1.5">
+                  {/* Kanan: Tombol Edit & Hapus (Ikonnya PASTI MUNCUL sekarang) */}
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => bukaEdit(t)}
                       aria-label={`Edit ${t.judul}`}
-                      className="inline-flex min-h-8 min-w-8 items-center justify-center gap-1 rounded-lg border-2 border-[#111] bg-lime px-2 py-1 text-xs font-extrabold text-[#111] shadow-[0_2px_0_var(--sh)] transition active:translate-y-0.5 active:shadow-none sm:min-w-0 sm:px-3"
+                      className="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg border-2 border-[#111] bg-lime px-3 py-1 text-xs font-extrabold text-[#111] shadow-[0_2px_0_var(--sh)] transition active:translate-y-0.5 active:shadow-none"
                     >
                       <IkonKecil
                         d="M4 20h4L19 9l-4-4L4 16v4zM13 7l4 4"
-                        className="size-3.5 sm:hidden"
+                        className="size-3.5"
                       />
-                      <span className="hidden sm:inline">Edit</span>
+                      <span>Edit</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => mintaHapus(t)}
                       aria-label={`Hapus ${t.judul}`}
-                      className="inline-flex min-h-8 min-w-8 items-center justify-center gap-1 rounded-lg border-2 border-[#111] px-2 py-1 text-xs font-extrabold shadow-[0_2px_0_var(--sh)] transition active:translate-y-0.5 active:shadow-none sm:min-w-0 sm:px-3"
+                      className="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg border-2 border-[#111] px-3 py-1 text-xs font-extrabold shadow-[0_2px_0_var(--sh)] transition active:translate-y-0.5 active:shadow-none"
                       style={{
                         background: "var(--bahaya-bg)",
                         color: "var(--bahaya)",
@@ -415,14 +342,22 @@ export default function DaftarTugas({
                     >
                       <IkonKecil
                         d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"
-                        className="size-3.5 sm:hidden"
+                        className="size-3.5"
                       />
-                      <span className="hidden sm:inline">Hapus</span>
+                      <span>Hapus</span>
                     </button>
                   </div>
                 </div>
               </div>
 
+              {/* Info AI Sub-langkah */}
+              {infoAI[t.id] && (
+                <p className="mt-3 rounded-lg bg-[color:var(--ai-bg)] px-3 py-2 text-xs font-bold text-[color:var(--ai-ink)]">
+                  {infoAI[t.id]}
+                </p>
+              )}
+
+              {/* LIST SUB-LANGKAH (Buka/Tutup) */}
               {buka[t.id] && t.langkah.length > 0 && (
                 <div className="mt-3.5 rounded-xl border-2 border-[color:var(--line)]/30 bg-[color:var(--surface-2)] p-3">
                   <div className="mb-2 flex items-center justify-between gap-2">
@@ -441,14 +376,12 @@ export default function DaftarTugas({
                       </button>
                     )}
                   </div>
-
                   <div className="mb-3 h-2 overflow-hidden rounded-full border border-[color:var(--line)] bg-[color:var(--surface)]">
                     <div
                       className="h-full bg-lime transition-all duration-300"
                       style={{ width: `${persenLangkah}%` }}
                     />
                   </div>
-
                   <ol className="space-y-1.5">
                     {t.langkah.map((l, idx) => {
                       const ls = on(l.id, l.selesai);
@@ -466,9 +399,7 @@ export default function DaftarTugas({
                             />
                             <div className="min-w-0 flex-1">
                               <p
-                                className={`text-xs font-bold leading-snug sm:text-sm ${
-                                  ls ? "line-through text-muted" : "text-ink"
-                                }`}
+                                className={`text-xs font-bold leading-snug sm:text-sm ${ls ? "line-through text-muted" : "text-ink"}`}
                               >
                                 <span className="mr-1.5 font-mono text-xs text-muted">
                                   {idx + 1}.
@@ -478,15 +409,6 @@ export default function DaftarTugas({
                               <p className="text-[11px] text-muted">{l.info}</p>
                             </div>
                           </div>
-
-                          {l.menit ? (
-                            <span
-                              className="shrink-0 rounded-md border border-[color:var(--line)] bg-[color:var(--surface-2)] px-2 py-0.5 text-[11px] font-bold text-muted"
-                              title={`Estimasi ${l.menit} menit`}
-                            >
-                              ⏱ {l.menit}m
-                            </span>
-                          ) : null}
                         </li>
                       );
                     })}
@@ -498,42 +420,17 @@ export default function DaftarTugas({
         })}
       </ul>
 
-      {/* Modal Konfirmasi Hapus */}
+      {/* Modal Hapus & Edit (Sama kayak sebelumnya) */}
       <dialog
         ref={dlgHapus}
-        onClick={(e) => {
-          if (e.target === dlgHapus.current) tutupHapus();
-        }}
-        onClose={() => setTargetHapus(null)}
         className="m-auto w-[min(92vw,24rem)] rounded-2xl border-2 border-[color:var(--line)] bg-[color:var(--surface-raised)] p-5 text-ink shadow-[0_6px_0_var(--sh)] backdrop:bg-black/60"
       >
         {targetHapus && (
           <div>
-            <div className="flex items-center gap-3">
-              <span
-                className="grid size-11 shrink-0 place-items-center rounded-xl border-2 border-[color:var(--line)]"
-                style={{
-                  background: "var(--bahaya-bg)",
-                  color: "var(--bahaya)",
-                }}
-              >
-                <IkonKecil d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
-              </span>
-              <div>
-                <h3 className="text-lg font-extrabold">Hapus tugas ini?</h3>
-                <p className="text-xs text-muted">
-                  Tindakan ini tidak bisa dibatalkan.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-4 rounded-xl border border-[color:var(--line)]/20 bg-[color:var(--surface)] p-3">
-              <p className="font-bold leading-snug">{targetHapus.judul}</p>
-              <p className="mt-0.5 text-xs text-muted">
-                {targetHapus.kategori ?? "Kuliah"} · {targetHapus.sisa}
-              </p>
-            </div>
-
+            <h3 className="text-lg font-extrabold">Hapus tugas ini?</h3>
+            <p className="mt-1 text-xs text-muted">
+              “{targetHapus.judul}” akan dihapus permanen.
+            </p>
             <div className="mt-5 grid grid-cols-2 gap-2.5">
               <button
                 type="button"
@@ -559,13 +456,8 @@ export default function DaftarTugas({
         )}
       </dialog>
 
-      {/* Modal Edit Tugas */}
       <dialog
         ref={dlg}
-        onClick={(e) => {
-          if (e.target === dlg.current) tutupEdit();
-        }}
-        onClose={() => setEdit(null)}
         className="m-auto max-h-[92dvh] w-[min(94vw,34rem)] overflow-y-auto rounded-2xl border-2 border-[color:var(--line)] bg-[color:var(--surface-raised)] p-0 text-ink shadow-[0_6px_0_var(--sh)] backdrop:bg-black/60"
       >
         {edit && (
@@ -577,10 +469,9 @@ export default function DaftarTugas({
               <button
                 type="button"
                 onClick={tutupEdit}
-                aria-label="Tutup"
                 className="grid size-10 place-items-center rounded-xl border-2 border-[color:var(--line)]"
               >
-                <IkonKecil d="M6 6l12 12M18 6L6 18" />
+                ✕
               </button>
             </div>
             <FormTugas

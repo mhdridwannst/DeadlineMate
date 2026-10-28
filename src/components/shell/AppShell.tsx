@@ -74,10 +74,15 @@ export default function AppShell({
 }: Props) {
   const t = DICT[lang];
   const path = usePathname();
+
+  // Refs untuk Dialog
   const dlg = useRef<HTMLDialogElement>(null);
   const dlgAkun = useRef<HTMLDialogElement>(null);
+  const dlgLogout = useRef<HTMLDialogElement>(null);
+
   const [, setTema] = useTema();
   const [, mulai] = useTransition();
+
   const [kunci, setKunci] = useState(0);
   const [tabModal, setTabModal] = useState<"satuan" | "banyak">("satuan");
   const [sfxAktif, setSfxAktif] = useState(true);
@@ -125,6 +130,14 @@ export default function AppShell({
     });
   };
 
+  // Fungsi khusus untuk buka modal logout
+  const bukaLogout = () => {
+    sfxClick();
+    // Tutup modal akun dulu jika sedang terbuka
+    dlgAkun.current?.close();
+    dlgLogout.current?.showModal();
+  };
+
   const inisial = nama.slice(0, 1).toUpperCase();
   const pakaiAkunPribadi = email !== "demo@deadlinemate.app";
 
@@ -137,7 +150,7 @@ export default function AppShell({
         Skip to content
       </a>
 
-      {/* Sidebar Desktop */}
+      {/* ==================== SIDEBAR DESKTOP ==================== */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col justify-between border-r-2 border-[color:var(--line)] bg-card p-4 pb-16 lg:flex">
         <div className="flex flex-col gap-6">
           <Link href="/today" className="flex items-center gap-2.5 px-1 py-2">
@@ -172,25 +185,25 @@ export default function AppShell({
             })}
           </nav>
 
+          {/* FIX: Tombol Tambah Tugas yang lebar dan rapi */}
           <button type="button" onClick={bukaTugas} className="tombol w-full">
             <I n="plus" /> {t.newTask}
           </button>
         </div>
 
-        {/* Tombol Logout di Pojok Kiri Bawah Sesuai Figma */}
-        <form action={keluarAkun}>
-          <button
-            type="submit"
-            className="flex min-h-11 w-full items-center gap-2.5 rounded-xl px-5 py-3 text-sm font-bold text-muted transition hover:bg-[color:var(--surface-2)] hover:text-ink"
-          >
-            <I n="logout" className="size-5" />
-            <span>Logout</span>
-          </button>
-        </form>
+        {/* FIX: Tombol Logout dengan Modal Konfirmasi */}
+        <button
+          type="button"
+          onClick={bukaLogout}
+          className="flex min-h-11 w-full items-center gap-2.5 rounded-xl px-5 py-3 text-sm font-bold text-muted transition hover:bg-[color:var(--surface-2)] hover:text-ink"
+        >
+          <I n="logout" className="size-5" />
+          <span>Logout</span>
+        </button>
       </aside>
 
       <div className="lg:pl-56">
-        {/* Header Desktop */}
+        {/* ==================== HEADER DESKTOP ==================== */}
         <header className="sticky top-0 z-20 hidden h-20 items-center justify-between border-b-2 border-[color:var(--line)] bg-card/95 px-8 backdrop-blur-sm lg:flex">
           <h2 className="text-2xl font-extrabold text-ink">
             <span className="judul-stabilo">
@@ -269,7 +282,7 @@ export default function AppShell({
           </div>
         </header>
 
-        {/* Header Mobile (Bersih & Fokus: Hanya Profil di Kiri, Notifikasi & Tema di Kanan) */}
+        {/* ==================== HEADER MOBILE ==================== */}
         <header className="sticky top-0 z-20 border-b-2 border-[color:var(--line)] bg-card/95 px-4 pb-2.5 pt-[calc(env(safe-area-inset-top)+0.6rem)] backdrop-blur-sm lg:hidden">
           <div className="flex items-center justify-between gap-2">
             <button
@@ -295,7 +308,6 @@ export default function AppShell({
 
             <div className="flex items-center gap-2">
               <DeadlineNotifier items={notifikasi} lang={lang} />
-
               <button
                 type="button"
                 onClick={gantiTema}
@@ -316,7 +328,7 @@ export default function AppShell({
         </main>
       </div>
 
-      {/* Bottom Nav Mobile */}
+      {/* ==================== BOTTOM NAV MOBILE ==================== */}
       <nav
         aria-label="Utama"
         className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-[color:var(--line)] bg-card pb-[env(safe-area-inset-bottom)] lg:hidden"
@@ -326,11 +338,12 @@ export default function AppShell({
             if (!n) {
               return (
                 <li key={`fab-${i}`} className="flex justify-center">
+                  {/* FIX: Ukuran tombol FAB disesuaikan (size-14) biar gak nabrak */}
                   <button
                     type="button"
                     onClick={bukaTugas}
                     aria-label={t.newTask}
-                    className="-mt-7 grid size-15 place-items-center rounded-full border-2 border-[#141513] bg-lime text-[#111310] shadow-[0_4px_0_var(--sh)] active:translate-y-1 active:shadow-none"
+                    className="-mt-5 grid size-14 place-items-center rounded-full border-2 border-[#141513] bg-lime text-[#111310] shadow-[0_4px_0_var(--sh)] active:translate-y-1 active:shadow-none"
                   >
                     <I n="plus" className="size-7" />
                   </button>
@@ -358,7 +371,50 @@ export default function AppShell({
         </ul>
       </nav>
 
-      {/* Dialog Cepat Ganti Akun / Logout */}
+      {/* ==================== DIALOG: KONFIRMASI LOGOUT ==================== */}
+      <dialog
+        ref={dlgLogout}
+        onClick={(e) => {
+          if (e.target === dlgLogout.current) dlgLogout.current?.close();
+        }}
+        className="m-auto w-[min(92vw,24rem)] rounded-2xl border-2 border-[color:var(--line)] bg-[color:var(--surface-raised)] p-5 text-ink shadow-[0_6px_0_var(--sh)] backdrop:bg-black/60"
+      >
+        <div className="flex items-center gap-3">
+          <span
+            className="grid size-11 shrink-0 place-items-center rounded-xl border-2 border-[color:var(--line)]"
+            style={{ background: "var(--bahaya-bg)", color: "var(--bahaya)" }}
+          >
+            <I n="logout" />
+          </span>
+          <div>
+            <h3 className="text-lg font-extrabold">Yakin mau keluar?</h3>
+            <p className="text-xs text-muted">
+              Pastikan semua tugasmu udah disimpan ya.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 grid grid-cols-2 gap-2.5">
+          <button
+            type="button"
+            onClick={() => dlgLogout.current?.close()}
+            className="tombol tombol-putih"
+          >
+            Batal
+          </button>
+          <form action={keluarAkun} className="w-full">
+            <button
+              type="submit"
+              className="tombol w-full"
+              style={{ background: "var(--bahaya-bg)", color: "var(--bahaya)" }}
+            >
+              Ya, Keluar
+            </button>
+          </form>
+        </div>
+      </dialog>
+
+      {/* ==================== DIALOG: AKUN PENGGUNA ==================== */}
       <dialog
         ref={dlgAkun}
         onClick={(e) => {
@@ -399,7 +455,6 @@ export default function AppShell({
               type="text"
               required
               defaultValue={nama}
-              placeholder="Mis. Go Yoon Jung"
               className="kolom"
             />
           </div>
@@ -412,7 +467,6 @@ export default function AppShell({
               type="email"
               required
               defaultValue={email}
-              placeholder="nama@mahasiswa.ac.id"
               className="kolom"
             />
           </div>
@@ -421,17 +475,17 @@ export default function AppShell({
           </button>
         </form>
 
-        <form action={keluarAkun} className="mt-2.5">
-          <button
-            type="submit"
-            className="tombol tombol-putih tombol-kecil w-full text-[color:var(--bahaya)]"
-          >
-            Logout dari Akun Ini
-          </button>
-        </form>
+        {/* FIX: Tombol ini sekarang memanggil modal logout, bukan langsung mengeksekusi form */}
+        <button
+          type="button"
+          onClick={bukaLogout}
+          className="tombol tombol-putih tombol-kecil w-full mt-2.5 text-[color:var(--bahaya)]"
+        >
+          Logout dari Akun Ini
+        </button>
       </dialog>
 
-      {/* Dialog Tugas Baru */}
+      {/* ==================== DIALOG: TUGAS BARU ==================== */}
       <dialog
         ref={dlg}
         onClick={(e) => {
