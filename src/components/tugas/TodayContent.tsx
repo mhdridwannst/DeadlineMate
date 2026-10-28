@@ -107,7 +107,7 @@ export default function TodayContent({
 
         <div className="flex items-center gap-2 w-full lg:w-auto">
           {selectedDate && (
-            <span className="inline-flex items-center gap-1 rounded-lg border-2 border-[color:var(--line)] bg-[#FFE8A1] px-2 py-1.5 text-xs font-black text-[#111] shadow-[0_2px_0_var(--sh)] shrink-0">
+            <span className="inline-flex items-center gap-1 rounded-lg border-2 border-[color:var(--line)] bg-[#FFE8A1] px-2 py-1.5 text-xs font-black text-[#111] shadow-[0_2px_0_var(--sh)] shrink-0 animate-in fade-in zoom-in">
               📅 {selectedDate.split("-").reverse().join("/")}
               <button
                 onClick={() => setSelectedDate(null)}
@@ -118,17 +118,17 @@ export default function TodayContent({
             </span>
           )}
 
-          <div className="relative w-full lg:w-64">
+          <div className="relative w-full lg:w-64 group">
             <input
               type="text"
               placeholder="Cari tugas..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-[color:var(--surface)] border-2 border-[color:var(--line)] rounded-lg pl-9 pr-8 py-2 text-sm font-bold placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-[color:var(--lime)] focus:border-[#111] shadow-[0_2px_0_var(--sh)] transition-all"
+              className="w-full bg-[color:var(--surface)] border-2 border-[color:var(--line)] rounded-lg pl-9 pr-8 py-2 text-sm font-bold placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-[color:var(--lime)] focus:border-[#111] shadow-[0_2px_0_var(--sh)] transition-all group-hover:-translate-y-0.5 group-focus-within:shadow-[0_4px_0_var(--sh)]"
             />
             <svg
               viewBox="0 0 24 24"
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-[#111]"
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-[#111] transition-transform group-focus-within:scale-110"
               fill="none"
               stroke="currentColor"
               strokeWidth={3}
@@ -150,10 +150,10 @@ export default function TodayContent({
         </div>
       </div>
 
-      {/* ================= BANNER DEADLINE (Full Width) ================= */}
+      {/* ================= BANNER DEADLINE ================= */}
       {mendesak && mendesak.tanggal && (
         <section
-          className="kartu flex items-center gap-3 p-3"
+          className="kartu flex items-center gap-3 p-3 animate-in slide-in-from-top-2"
           style={{
             background: "var(--warn)",
             borderColor: "var(--line)",
@@ -161,7 +161,7 @@ export default function TodayContent({
             boxShadow: "0 3px 0 var(--line)",
           }}
         >
-          <span className="grid size-8 shrink-0 place-items-center rounded-lg border-2 border-[color:var(--line)] bg-card text-sm font-black text-[color:var(--ink)]">
+          <span className="grid size-8 shrink-0 place-items-center rounded-lg border-2 border-[color:var(--line)] bg-card text-sm font-black text-[color:var(--ink)] animate-pulse">
             !
           </span>
           <div className="min-w-0">
@@ -178,9 +178,9 @@ export default function TodayContent({
 
       {/* ================= MAIN GRID ================= */}
       <div className="flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_21rem] gap-6">
-        {/* KOLOM KIRI (STATS + DAFTAR TUGAS) */}
+        {/* KOLOM KIRI */}
         <div className="space-y-4 order-1 lg:order-1">
-          {/* MOBILE ONLY: HUD (Tanpa HP/Nyawa) */}
+          {/* MOBILE HUD */}
           <div className="lg:hidden flex w-full overflow-hidden rounded-xl border-2 border-[color:var(--line)] bg-card shadow-[0_3px_0_var(--sh)]">
             <div className="flex flex-1 flex-col items-center justify-center border-r-2 border-[color:var(--line)] py-2.5 px-1">
               <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted">
@@ -221,7 +221,7 @@ export default function TodayContent({
             </div>
           </div>
 
-          {/* DESKTOP ONLY: STATISTIK LENGKAP (Dipindah ke sini biar sejajar) */}
+          {/* DESKTOP STATS */}
           <div className="hidden lg:block">
             <StatKartu
               streak={r.streak}
@@ -234,34 +234,46 @@ export default function TodayContent({
             />
           </div>
 
-          {/* DAFTAR TUGAS */}
+          {/* DAFTAR TUGAS / EMPTY STATE BARU */}
           {filteredAktif.length > 0 ? (
             <DaftarTugas items={filteredAktif} />
           ) : (
-            <section className="kartu p-8 text-center mt-2 bg-[color:var(--surface-2)] border-2 border-dashed border-[color:var(--line)]">
-              <div className="mx-auto grid size-12 place-items-center rounded-2xl border-2 border-[#141513] bg-lime text-[#111310] shadow-[0_3px_0_var(--sh)]">
-                <svg
-                  viewBox="0 0 24 24"
-                  className="size-6"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2.8}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M5 12l5 5 9-10" />
-                </svg>
+            <section className="kartu p-8 sm:p-12 text-center mt-2 bg-[color:var(--surface-2)] border-2 border-[color:var(--line)] shadow-[0_4px_0_var(--sh)] relative overflow-hidden group">
+              {/* Background Pattern untuk Empty State */}
+              <div
+                className="absolute inset-0 opacity-5 pointer-events-none"
+                style={{
+                  backgroundImage: "radial-gradient(#111 2px, transparent 2px)",
+                  backgroundSize: "16px 16px",
+                }}
+              ></div>
+
+              <div className="relative z-10">
+                <div className="mx-auto grid size-20 place-items-center rounded-2xl border-2 border-[#141513] bg-lime text-[#111310] shadow-[0_4px_0_var(--sh)] transition-transform group-hover:-translate-y-2 group-hover:rotate-3">
+                  <span className="text-4xl animate-bounce">😎</span>
+                </div>
+                <h2 className="mt-5 text-2xl font-black text-ink">
+                  {search || selectedDate
+                    ? "Tidak Ada Tugas yang Cocok"
+                    : "Wih, Bersih!"}
+                </h2>
+                <p className="mx-auto mt-2 max-w-md text-sm font-bold text-muted leading-relaxed">
+                  {search || selectedDate
+                    ? "Coba ubah kata kunci atau pilih tanggal lain di kalender."
+                    : "Semua tugas aktif sudah tuntas. Mata lo bisa istirahat sekarang, atau mau tambah tugas baru?"}
+                </p>
+                {!(search || selectedDate) && (
+                  <button
+                    onClick={() => {
+                      // Memicu event global custom untuk buka modal task
+                      window.dispatchEvent(new CustomEvent("buka-tugas-baru"));
+                    }}
+                    className="mt-6 inline-flex items-center gap-2 rounded-xl border-2 border-[#111] bg-[#111] px-6 py-3 text-sm font-extrabold text-white shadow-[0_4px_0_var(--sh)] transition-all hover:-translate-y-1 hover:shadow-[0_6px_0_var(--sh)] active:translate-y-1 active:shadow-none"
+                  >
+                    + Tambah Tugas Baru
+                  </button>
+                )}
               </div>
-              <p className="mt-3 text-lg sm:text-xl font-black text-ink">
-                {search || selectedDate
-                  ? "Tidak ada tugas yang cocok"
-                  : t.allDoneTitle}
-              </p>
-              <p className="mx-auto mt-1 max-w-md text-sm font-semibold text-muted">
-                {search || selectedDate
-                  ? "Coba ubah kata kunci atau pilih tanggal lain."
-                  : t.allDoneDesc}
-              </p>
             </section>
           )}
 
@@ -284,7 +296,7 @@ export default function TodayContent({
             </details>
           )}
 
-          {/* MOBILE ONLY: KALENDER */}
+          {/* MOBILE KALENDER */}
           <div className="lg:hidden space-y-4 mt-6">
             <MiniKalender
               tahun={viewDate.tahun}
@@ -299,7 +311,7 @@ export default function TodayContent({
           </div>
         </div>
 
-        {/* KOLOM KANAN (WIDGET DESKTOP) */}
+        {/* KOLOM KANAN (DESKTOP) */}
         <aside className="hidden lg:block space-y-4 order-2 lg:order-2 lg:sticky lg:top-24 lg:self-start">
           <MateChat text={isiCatatanMate} title={t.mateNote} />
 

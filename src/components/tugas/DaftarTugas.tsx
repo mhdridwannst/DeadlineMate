@@ -45,9 +45,9 @@ const LABEL = {
 } as const;
 
 const AKSEN_PRIORITAS = {
-  HIGH: "!border-l-[6px] !border-l-[color:var(--bahaya)]",
-  MEDIUM: "!border-l-[6px] !border-l-[color:var(--warn-line)]",
-  LOW: "!border-l-[6px] !border-l-[color:var(--santai)]",
+  HIGH: "!border-l-[3px] !border-l-[color:var(--bahaya)]",
+  MEDIUM: "!border-l-[3px] !border-l-[color:var(--warn-line)]",
+  LOW: "!border-l-[3px] !border-l-[color:var(--santai)]",
 } as const;
 
 function Kotak({

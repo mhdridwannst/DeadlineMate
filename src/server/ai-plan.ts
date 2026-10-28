@@ -54,6 +54,15 @@ function ekstrakJson<T>(teksMentah: string, skema: z.ZodType<T>): T | null {
   }
 }
 
+// ================= FUNGSI BERSIHKAN JUDUL =================
+// Menghapus "1. ", "2) ", "- ", "• " dari awal teks
+function bersihkanJudul(judul: string) {
+  return judul
+    .replace(/^(?:\d+[.)]|[-*•])\s*/, "")
+    .replace(/^(?:\d+\s+)/, "")
+    .trim();
+}
+
 /** Generator Sub-Langkah Kontekstual Pintar */
 function buatLangkahKontekstual(judul: string, due: Date) {
   const lower = judul.toLowerCase();
@@ -214,11 +223,14 @@ function susunRencanaLokal(teks: string): z.infer<typeof rencanaSchema> {
         judulBersih.length >= 3 ? judulBersih : kalimat
       ).replace(/^./, (c) => c.toUpperCase());
 
-      const langkah = buatLangkahKontekstual(finalJudul, due);
+      // BERSIHKAN ANGKA DI SINI JUGA (Fallback AI)
+      const judulFinalBersih = bersihkanJudul(finalJudul);
+
+      const langkah = buatLangkahKontekstual(judulFinalBersih, due);
       const totalMenit = langkah.reduce((n, l) => n + l.estimasiMenit, 0);
 
       return {
-        judul: finalJudul,
+        judul: judulFinalBersih,
         tenggat: due.toISOString(),
         kategori: /\b(ukm|rapat|organisasi|panitia)\b/.test(lower)
           ? "Organisasi"
@@ -312,28 +324,33 @@ export async function rencanakan(
     const langkah = t.langkah.slice(0, 5).map((l) => {
       const target = new Date(l.targetSelesai);
       return {
-        title: l.judul,
+        title: bersihkanJudul(l.judul), // Bersihkan judul sub-langkah
         estimateMin: Math.max(10, l.estimasiMenit || 30),
         dueAt: Number.isNaN(target.getTime()) ? validDue : target,
       };
     });
-    return [{ t, due: validDue, langkah }];
+    return [
+      {
+        t,
+        due: validDue,
+        langkah,
+        judulBersih: bersihkanJudul(t.judul), // Bersihkan judul utama
+      },
+    ];
   });
 
   await Promise.all(
-    siap.map(({ t, due, langkah }) =>
+    siap.map(({ judulBersih, due, langkah, t }) =>
       db.task.create({
         data: {
           userId: user.id,
-          title: t.judul,
+          title: judulBersih, // <-- SIMPAN JUDUL BERSIH KE DB
           category: t.kategori,
           priority: t.prioritas,
           estimateMin: Math.max(15, t.estimasiMenit || 60),
           dueAt: due,
           softDueAt: langkah.length ? langkah[langkah.length - 1].dueAt : null,
-          subtasks: {
-            create: langkah.map((l) => ({ userId: user.id, ...l })),
-          },
+          subtasks: { create: langkah.map((l) => ({ userId: user.id, ...l })) },
         },
       }),
     ),
@@ -362,9 +379,7 @@ export async function pecahLangkahAI(
     where: { id: taskId, userId: user.id, parentId: null },
   });
 
-  if (!tugas) {
-    return { ok: false, pesan: "Tugas tidak ditemukan." };
-  }
+  if (!tugas) return { ok: false, pesan: "Tugas tidak ditemukan." };
 
   const sekarang = new Date();
   const due = tugas.dueAt ?? new Date(sekarang.getTime() + 86_400_000);
@@ -407,9 +422,7 @@ export async function pecahLangkahAI(
     };
   }
 
-  await db.task.deleteMany({
-    where: { parentId: tugas.id, userId: user.id },
-  });
+  await db.task.deleteMany({ where: { parentId: tugas.id, userId: user.id } });
 
   const daftarLangkah = output.langkah.slice(0, 5).map((l, idx) => {
     const target = new Date(l.targetSelesai);
@@ -421,7 +434,7 @@ export async function pecahLangkahAI(
     return {
       userId: user.id,
       parentId: tugas.id,
-      title: l.judul,
+      title: bersihkanJudul(l.judul), // <-- BERSIHKAN JUGA SUB-LANGKAH
       estimateMin: Math.max(10, l.estimasiMenit || 25),
       dueAt: Number.isNaN(target.getTime()) ? fallbackDate : target,
     };

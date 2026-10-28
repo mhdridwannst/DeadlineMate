@@ -2,14 +2,14 @@ import { TypingText } from "./TypingText";
 
 export function MateChat({ text, title }: { text: string; title: string }) {
   return (
-    <div className="relative flex flex-col gap-3 mt-4">
+    <div className="relative flex flex-col gap-3 ">
       {/* Maskot Mate: Kotak dengan animasi melayang */}
       <div className="relative shrink-0 z-10">
         <div
           className="w-12 h-12 bg-lime border-2 border-ink shadow-[0_3px_0_var(--sh)] rounded-xl flex items-center justify-center text-2xl"
           style={{ animation: "float 3s ease-in-out infinite" }}
         >
-          🤖
+        🤖
         </div>
       </div>
 
