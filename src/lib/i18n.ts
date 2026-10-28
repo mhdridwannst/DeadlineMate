@@ -49,15 +49,6 @@ const id = {
   allDoneDesc:
     "Ketuk tombol + untuk menambah tugas berikutnya, atau cek riwayat di bawah.",
 
-  // ── Timer fokus ──────────────────────────────────────────
-  focusTimer: "Timer Fokus",
-  quick10m: "10m Cepat",
-  startFocus: "Mulai Fokus",
-  pause: "Jeda",
-  reset: "Reset",
-  focusStep: "Fokus {n} menit",
-  focusDone: "Sesi fokus selesai! +{n} XP",
-
   // ── Urgensi tenggat ──────────────────────────────────────
   dueToday: "Hari ini",
   dueTonight: "Malam ini",
@@ -220,15 +211,6 @@ const en: Record<KunciTeks, string> = {
   allDoneTitle: "All active tasks completed",
   allDoneDesc:
     "Tap the + button to add your next task, or review completed items below.",
-
-  // ── Focus timer ──────────────────────────────────────────
-  focusTimer: "Focus Timer",
-  quick10m: "10m Quick",
-  startFocus: "Start Focus",
-  pause: "Pause",
-  reset: "Reset",
-  focusStep: "Focus for {n} min",
-  focusDone: "Focus session done! +{n} XP",
 
   // ── Deadline urgency ─────────────────────────────────────
   dueToday: "Today",

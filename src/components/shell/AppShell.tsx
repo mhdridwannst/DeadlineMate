@@ -11,7 +11,7 @@ import {
 } from "react";
 import { RencanaForm } from "@/components/paper/RencanaForm";
 import FormTugas from "@/components/tugas/FormTugas";
-import { keluarKeDemo, masukAkun, setBahasa } from "@/server/demo-user";
+import { keluarAkun, masukAkun, setBahasa } from "@/server/demo-user";
 import { isSfxEnabled, sfxClick, toggleSfx } from "@/lib/sfx";
 import { DICT, type Lang } from "@/lib/i18n";
 import DeadlineNotifier, { type ItemNotif } from "./DeadlineNotifier";
@@ -24,6 +24,7 @@ const IKON: Record<string, string> = {
   profil: "M12 12a4 4 0 100-8 4 4 0 000 8zM4 21c0-4 4-7 8-7s8 3 8 7",
   plus: "M12 5v14M5 12h14",
   bulan: "M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z",
+  logout: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9",
   suaraOn: "M11 5L6 9H2v6h4l5 4V5zM15.5 8.5a5 5 0 010 7M19 6a9 9 0 010 12",
   suaraOff: "M11 5L6 9H2v6h4l5 4V5zM22 9l-6 6M16 9l6 6",
   sparkle: "M12 3l1.9 5.8L20 10.8l-6.1 1.9L12 18.5l-1.9-5.8L4 10.8l6.1-2z",
@@ -147,9 +148,6 @@ export default function AppShell({
               <span className="block text-lg font-extrabold tracking-tight text-ink">
                 DeadlineMate
               </span>
-              <span className="text-[11px] font-bold text-muted">
-                AI Study Partner
-              </span>
             </div>
           </Link>
 
@@ -179,17 +177,16 @@ export default function AppShell({
           </button>
         </div>
 
-        <div className="kartu-lime p-3.5 text-xs">
-          <div className="flex items-center gap-1.5 font-extrabold text-ink">
-            <I n="sparkle" className="size-4 text-lime" />
-            <span>Tips Mate</span>
-          </div>
-          <p className="mt-1.5 leading-relaxed opacity-90">
-            {lang === "en"
-              ? "Click Pecah Langkah AI on any task card to break it into easy steps!"
-              : "Klik Pecah Langkah AI di kartu tugas kalau kamu bingung harus mulai nyicil dari mana!"}
-          </p>
-        </div>
+        {/* Tombol Logout di Pojok Kiri Bawah Sesuai Figma */}
+        <form action={keluarAkun}>
+          <button
+            type="submit"
+            className="flex min-h-11 w-full items-center gap-2.5 rounded-xl px-5 py-3 text-sm font-bold text-muted transition hover:bg-[color:var(--surface-2)] hover:text-ink"
+          >
+            <I n="logout" className="size-5" />
+            <span>Logout</span>
+          </button>
+        </form>
       </aside>
 
       <div className="lg:pl-56">
@@ -262,7 +259,7 @@ export default function AppShell({
                   {t.hi}, {nama}!
                 </p>
                 <p className="text-xs font-semibold text-muted">
-                  Lvl {level} · {exp} EXP
+                  Level {level} · {exp} EXP
                 </p>
               </div>
               <span className="grid size-11 place-items-center rounded-full border-2 border-[#141513] bg-lime font-extrabold text-[#111310] shadow-[0_2px_0_var(--sh)]">
@@ -291,7 +288,7 @@ export default function AppShell({
                   {t.hi}, {nama}!
                 </h2>
                 <p className="text-xs font-bold text-muted">
-                  Lvl {level} · 🔥 {streak}d
+                  Level {level} · 🔥 {streak}
                 </p>
               </div>
             </button>
@@ -361,25 +358,25 @@ export default function AppShell({
         </ul>
       </nav>
 
-      {/* Dialog Login / Akun Cloud Permanen */}
+      {/* Dialog Cepat Ganti Akun / Logout */}
       <dialog
         ref={dlgAkun}
         onClick={(e) => {
           if (e.target === dlgAkun.current) dlgAkun.current?.close();
         }}
-        className="m-auto w-[min(92vw,26rem)] rounded-2xl border-2 border-[color:var(--line)] bg-card p-5 text-ink shadow-[0_6px_0_var(--sh)] backdrop:bg-black/60"
+        className="m-auto w-[min(92vw,25rem)] rounded-2xl border-2 border-[color:var(--line)] bg-[color:var(--surface-raised)] p-5 text-ink shadow-[0_6px_0_var(--sh)] backdrop:bg-black/60"
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-lg font-extrabold text-ink">
-              {t.accountSection}
-            </h2>
-            <p className="mt-0.5 text-xs text-muted">{t.accountDesc}</p>
+            <h2 className="text-lg font-extrabold text-ink">Akun Pengguna</h2>
+            <p className="mt-0.5 text-xs text-muted">
+              Aktif sebagai: <strong>{email}</strong>
+            </p>
           </div>
           <button
             type="button"
             onClick={() => dlgAkun.current?.close()}
-            aria-label="Close"
+            aria-label="Tutup"
             className="grid size-10 place-items-center rounded-xl border-2 border-[color:var(--line)]"
           >
             <I n="x" />
@@ -395,50 +392,43 @@ export default function AppShell({
         >
           <div>
             <label className="mb-1 block text-xs font-bold text-muted">
-              Email
+              Nama Panggilan
             </label>
             <input
-              name="email"
-              type="email"
+              name="nama"
+              type="text"
               required
-              defaultValue={pakaiAkunPribadi ? email : ""}
-              placeholder="nama@mahasiswa.ac.id"
+              defaultValue={nama}
+              placeholder="Mis. Go Yoon Jung"
               className="kolom"
             />
           </div>
           <div>
             <label className="mb-1 block text-xs font-bold text-muted">
-              {t.nickname}
+              Email Akun
             </label>
             <input
-              name="nama"
-              type="text"
-              defaultValue={nama}
-              placeholder="Wannn"
+              name="email"
+              type="email"
+              required
+              defaultValue={email}
+              placeholder="nama@mahasiswa.ac.id"
               className="kolom"
             />
           </div>
           <button type="submit" className="tombol w-full">
-            {t.switchAccount}
+            Simpan Akun
           </button>
         </form>
 
-        {pakaiAkunPribadi && (
-          <form
-            action={async () => {
-              await keluarKeDemo();
-              dlgAkun.current?.close();
-            }}
-            className="mt-2.5"
+        <form action={keluarAkun} className="mt-2.5">
+          <button
+            type="submit"
+            className="tombol tombol-putih tombol-kecil w-full text-[color:var(--bahaya)]"
           >
-            <button
-              type="submit"
-              className="tombol tombol-putih tombol-kecil w-full"
-            >
-              {t.logoutDemo}
-            </button>
-          </form>
-        )}
+            Logout dari Akun Ini
+          </button>
+        </form>
       </dialog>
 
       {/* Dialog Tugas Baru */}

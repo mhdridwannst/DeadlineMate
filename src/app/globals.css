@@ -1,69 +1,71 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f4f5f0;
-  --bg-dot: #d6d9ce;
+  --bg: #ffffff;
   --surface: #ffffff;
-  --surface-2: #e9ece2;
+  --surface-2: #f4f5f7;
   --surface-raised: #ffffff;
-  --card: var(--surface);
-  --ink: #141513;
-  --line: #141513;
-  --sh: #141513;
-  --muted: #52564e;
-  --placeholder: #757a70;
-  --lime: #a3e635;
-  --lime-bright: #a3e635;
-  --lime-soft: #ecfccb;
-  --lime-soft-ink: #141513;
-  --warn: #fef08a;
-  --warn-line: #ca8a04;
-  --warn-ink: #1c1917;
+  --card: #ffffff;
+  --ink: #111111;
+  --line: #111111;
+  --sh: #111111;
+  --muted: #6b7280;
+  --placeholder: #9ca3af;
+  --lime: #a8f000;
+  --lime-bright: #a8f000;
+  --lime-soft: #ecf8c5;
+  --lime-soft-ink: #111111;
+  --warn: #f9e8a2;
+  --warn-line: #111111;
+  --warn-ink: #111111;
   --biru: #2563eb;
-  --bahaya-bg: #fee2e2;
-  --bahaya: #b91c1c;
-  --sedang-bg: #fef3c7;
-  --sedang: #92400e;
-  --santai-bg: #dcfce7;
-  --santai: #166534;
+  --biru-soft: #e0e7ff;
+  --oranye: #f97316;
+  --bahaya-bg: #ffd9d6;
+  --bahaya: #c92519;
+  --sedang-bg: #fef0b3;
+  --sedang: #855500;
+  --santai-bg: #d6f5dc;
+  --santai: #156c36;
   --ai-bg: #f3e8ff;
-  --ai-ink: #581c87;
+  --ai-ink: #6b21a8;
 }
 
 [data-theme="dark"] {
-  --bg: #0e110d;
-  --bg-dot: #20251c;
-  --surface: #161a14;
-  --surface-2: #20251c;
-  --surface-raised: #1d2219;
-  --card: var(--surface);
-  --ink: #f3f5ee;
-  --line: rgba(232, 234, 223, 0.68);
-  --sh: rgba(154, 217, 46, 0.25);
-  --muted: #a8b0a0;
-  --placeholder: #8a9282;
-  --lime: #9ad92e;
-  --lime-bright: #a3e635;
-  --lime-soft: #20251c;
-  --lime-soft-ink: #f3f5ee;
-  --warn: #2c230d;
+  --bg: #111315;
+  --surface: #1a1d20;
+  --surface-2: #24282c;
+  --surface-raised: #202428;
+  --card: #1a1d20;
+  --ink: #f8fafc;
+  --line: #3f464d;
+  --sh: #000000;
+  --muted: #94a3b8;
+  --placeholder: #64748b;
+  --lime: #a8f000;
+  --lime-bright: #b4f518;
+  --lime-soft: #232d14;
+  --lime-soft-ink: #f8fafc;
+  --warn: #332a10;
   --warn-line: #eab308;
   --warn-ink: #fef08a;
-  --biru: #9ad92e;
-  --bahaya-bg: #3b1515;
+  --biru: #60a5fa;
+  --biru-soft: #1e293b;
+  --oranye: #fb923c;
+  --bahaya-bg: #451a1c;
   --bahaya: #fca5a5;
-  --sedang-bg: #36280f;
+  --sedang-bg: #3b2e11;
   --sedang: #fcd34d;
-  --santai-bg: #123120;
+  --santai-bg: #133321;
   --santai: #86efac;
-  --ai-bg: #242b1f;
-  --ai-ink: #d9f99d;
+  --ai-bg: #2e1d4a;
+  --ai-ink: #e9d5ff;
   color-scheme: dark;
 }
 
 @theme inline {
   --color-bg: var(--bg);
-  --color-card: var(--surface);
+  --color-card: var(--card);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-lime: var(--lime);
@@ -72,7 +74,7 @@
   --color-tinta: var(--ink);
   --color-pensil: var(--ink);
   --color-kertas: var(--bg);
-  --color-halaman: var(--surface);
+  --color-halaman: var(--card);
   --color-merah: #ef4444;
   --color-link: var(--ink);
   --color-stabilo: var(--lime);
@@ -87,8 +89,6 @@ html {
 
 body {
   background-color: var(--bg);
-  background-image: radial-gradient(var(--bg-dot) 1.25px, transparent 1.25px);
-  background-size: 22px 22px;
   color: var(--ink);
   font-family: var(--font-sans);
   line-height: 1.5;
@@ -103,46 +103,31 @@ select {
 
 button,
 summary {
-  min-height: 44px;
+  min-height: 40px;
 }
 
 :focus-visible {
-  outline: 2px solid var(--lime);
+  outline: 2px solid var(--biru);
   outline-offset: 2px;
 }
 
 .kartu {
-  background: var(--surface);
+  background: var(--card);
   color: var(--ink);
   border: 2px solid var(--line);
   border-radius: 1rem;
-  box-shadow: 0 3px 0 var(--sh);
+  box-shadow: 0 4px 0 var(--sh);
   transition:
-    transform 140ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    border-color 140ms ease;
+    transform 120ms ease-out,
+    box-shadow 120ms ease-out;
 }
 
-[data-theme="dark"] .kartu {
-  box-shadow: none;
-}
-
-.kartu-interaktif:hover {
-  transform: translateY(-1.5px);
-  border-color: var(--lime);
-}
-
-/* Permukaan netral dengan strip kiri lime 4px agar tidak keruh di mode gelap */
 .kartu-lime {
-  background: var(--surface);
-  color: var(--ink);
+  background: var(--lime-soft);
+  color: var(--lime-soft-ink);
   border: 2px solid var(--line);
-  border-left: 5px solid var(--lime);
   border-radius: 1rem;
-  box-shadow: 0 3px 0 var(--sh);
-}
-
-[data-theme="dark"] .kartu-lime {
-  box-shadow: none;
+  box-shadow: 0 4px 0 var(--sh);
 }
 
 .tombol {
@@ -155,19 +140,17 @@ summary {
   border: 2px solid var(--line);
   border-radius: 0.75rem;
   background: var(--lime);
-  color: #111310;
-  font-weight: 800;
+  color: #111111;
+  font-weight: 700;
   box-shadow: 0 3px 0 var(--sh);
   cursor: pointer;
   transition:
     transform 80ms ease-out,
-    box-shadow 80ms ease-out,
-    filter 120ms ease;
+    box-shadow 80ms ease-out;
 }
 .tombol:hover:not(:disabled) {
-  transform: translateY(-1.5px);
-  box-shadow: 0 4.5px 0 var(--sh);
-  filter: brightness(1.03);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 var(--sh);
 }
 .tombol:active:not(:disabled) {
   transform: translateY(2px);
@@ -181,31 +164,22 @@ summary {
   cursor: not-allowed;
 }
 .tombol-putih {
-  background: var(--surface);
+  background: var(--card);
   color: var(--ink);
   border: 2px solid var(--line);
-  box-shadow: none;
-}
-.tombol-putih:hover:not(:disabled) {
-  background: var(--surface-2);
-}
-.tombol-ai {
-  background: var(--surface-2);
-  color: var(--ink);
-  border: 2px solid var(--line);
-  box-shadow: none;
 }
 .tombol-kecil {
-  min-height: 40px;
+  min-height: 36px;
   padding: 0 0.75rem;
   font-size: 0.8125rem;
+  border-radius: 0.625rem;
 }
 
 .judul-stabilo {
   background-image: linear-gradient(
-    transparent 64%,
-    color-mix(in srgb, var(--lime) 55%, transparent) 64%,
-    color-mix(in srgb, var(--lime) 55%, transparent) 92%,
+    transparent 60%,
+    var(--lime) 60%,
+    var(--lime) 92%,
     transparent 92%
   );
   padding-inline: 0.12em;
@@ -214,13 +188,16 @@ summary {
 .tag {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  border: 1.5px solid currentColor;
+  gap: 0.25rem;
+  border: 1.5px solid #111111;
   border-radius: 9999px;
-  padding: 0.12rem 0.65rem;
+  padding: 0.08rem 0.65rem;
   font-size: 0.75rem;
   font-weight: 700;
   line-height: 1.4;
+}
+[data-theme="dark"] .tag {
+  border-color: var(--line);
 }
 .tag-HIGH {
   background: var(--bahaya-bg);
@@ -235,13 +212,8 @@ summary {
   color: var(--santai);
 }
 .tag-exp {
-  background: var(--surface-2);
+  background: var(--lime-soft);
   color: var(--ink);
-  border-color: var(--line);
-}
-.tag-ai {
-  background: var(--ai-bg);
-  color: var(--ai-ink);
 }
 
 .kolom {
@@ -253,10 +225,10 @@ summary {
   color: var(--ink);
   padding: 0 0.875rem;
   font-weight: 600;
-  transition: border-color 120ms ease;
 }
 .kolom:focus {
-  border-color: var(--lime);
+  border-color: var(--biru);
+  background: var(--card);
   outline: none;
 }
 .kolom::placeholder {
@@ -272,15 +244,6 @@ summary {
   border-bottom-left-radius: 0;
   border-left-width: 0;
   min-height: 46px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
 }
 
 nextjs-portal {
