@@ -13,7 +13,7 @@ export default async function ProgressPage() {
   const t = DICT[lang];
   const r = await ambilRingkasan(user.id);
 
-  // Ambil semua task untuk hitung On-Time Rate
+  // Ambil data untuk On-Time Rate
   const semuaTask = await db.task.findMany({
     where: { userId: user.id, parentId: null },
     select: { status: true, dueAt: true, doneAt: true },
@@ -21,8 +21,6 @@ export default async function ProgressPage() {
 
   const selesai = semuaTask.filter((t) => t.status === "DONE" && t.doneAt);
   const tepatWaktu = selesai.filter((t) => t.dueAt && t.doneAt! <= t.dueAt);
-
-  // Persentase tepat waktu
   const onTimeRate =
     selesai.length > 0
       ? Math.round((tepatWaktu.length / selesai.length) * 100)
@@ -80,7 +78,7 @@ export default async function ProgressPage() {
       <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
         {/* KARTU KIRI: Grafik & EXP */}
         <div className="space-y-6">
-          <section className="kartu p-5 sm:p-6">
+          <section className="kartu p-5 sm:p-6 bg-card border-2 border-[color:var(--line)] shadow-[0_4px_0_var(--sh)]">
             <div className="flex items-center justify-between text-sm mb-4">
               <p className="font-extrabold text-ink uppercase tracking-wider">
                 Menuju Level {r.level + 1}
@@ -90,7 +88,7 @@ export default async function ProgressPage() {
               </p>
             </div>
             {/* Progress Bar Segmented ala Game RPG */}
-            <div className="flex gap-1 h-6">
+            <div className="flex gap-1.5 h-6">
               {Array.from({ length: 10 }).map((_, i) => (
                 <div
                   key={i}
@@ -152,7 +150,7 @@ export default async function ProgressPage() {
           </section>
 
           {/* KARTU BARU: On-Time Delivery Rate */}
-          <section className="kartu p-5 sm:p-6 flex flex-col sm:flex-row items-center gap-5">
+          <section className="kartu p-5 sm:p-6 flex flex-col sm:flex-row items-center gap-5 bg-card border-2 border-[color:var(--line)] shadow-[0_4px_0_var(--sh)]">
             <div className="relative size-24 shrink-0">
               <svg viewBox="0 0 36 36" className="size-full -rotate-90">
                 <circle
@@ -192,7 +190,7 @@ export default async function ProgressPage() {
                 Lo udah nyelesain <strong>{tepatWaktu.length}</strong> dari{" "}
                 <strong>{selesai.length}</strong> tugas sebelum deadline.{" "}
                 {onTimeRate >= 80
-                  ? "Gokil, lo anti nunda tugas nih!"
+                  ? "Gokil, lo anti nunda-nunda tugas nih"
                   : "Yuk, mulai cicil lebih awal biar persentasenya naik!"}
               </p>
             </div>
@@ -201,7 +199,9 @@ export default async function ProgressPage() {
 
         {/* KARTU KANAN: Rapor & Kategori */}
         <div className="space-y-4">
-          <section className={`kartu p-5 ${nilaiRapor.warna}`}>
+          <section
+            className={`kartu p-5 border-2 border-[color:var(--line)] shadow-[0_4px_0_var(--sh)] ${nilaiRapor.warna}`}
+          >
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-[11px] font-extrabold uppercase tracking-wider opacity-80">
@@ -220,7 +220,7 @@ export default async function ProgressPage() {
             </p>
           </section>
 
-          <section className="kartu p-5">
+          <section className="kartu p-5 bg-card border-2 border-[color:var(--line)] shadow-[0_4px_0_var(--sh)]">
             <h2 className="text-sm font-extrabold text-ink mb-4">
               {t.categoryDist}
             </h2>
