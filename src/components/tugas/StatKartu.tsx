@@ -25,37 +25,40 @@ export default function StatKartu({
   return (
     <section
       aria-label="Ringkasan Statistik"
-      className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-3.5"
+      className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-4"
     >
-      {/* Kartu 1: Streak (Full width di HP, 1 kolom di Desktop) */}
-      <div className="kartu-lime col-span-2 flex items-center gap-3.5 p-3.5 sm:col-span-1 sm:p-4">
-        <span className="grid size-11 shrink-0 place-items-center rounded-xl border-2 border-[color:var(--line)] bg-card text-xl shadow-[0_2px_0_var(--sh)] sm:size-12">
+      {/* Kartu 1: Streak Aktif (Hijau Pastel Lembut sesuai Figma) */}
+      <div className="kartu-lime col-span-2 flex items-center gap-3.5 p-4 sm:col-span-1">
+        <span className="grid size-11 shrink-0 place-items-center rounded-xl border-2 border-[color:var(--line)] bg-[color:var(--surface)] text-xl">
           🔥
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-bold text-muted">{t.activeStreak}</p>
-          <p className="text-lg font-extrabold leading-snug text-ink sm:text-xl">
-            {streak} {t.daysInRow}
+          <p className="text-xs font-medium text-muted">
+            {lang === "en" ? "Active streak" : "Streak aktif"}
           </p>
-          <p className="text-xs font-semibold text-muted">
+          <p className="text-base font-extrabold leading-snug text-ink sm:text-lg">
+            {streak} {lang === "en" ? "tasks in a row" : "tugas beruntun"}
+          </p>
+          <p className="text-xs text-muted">
             {t.bestRecord}: {rekor}
           </p>
         </div>
       </div>
 
       {/* Kartu 2: Level & EXP */}
-      <div className="kartu flex items-center gap-3 p-3.5 sm:gap-3.5 sm:p-4">
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl border-2 border-[color:var(--line)] bg-[color:var(--surface)] font-mono text-sm font-extrabold text-biru shadow-[0_2px_0_var(--sh)] sm:size-12 sm:text-base">
+      <div className="kartu flex items-center gap-3.5 p-4">
+        <span
+          className="grid size-11 shrink-0 place-items-center rounded-xl border-2 border-[color:var(--line)] text-sm font-extrabold text-biru"
+          style={{ background: "var(--biru-soft)" }}
+        >
           L{level}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[11px] font-bold text-muted sm:text-xs">
-            {t.levelExp}
+          <p className="text-xs font-medium text-muted">Level & EXP</p>
+          <p className="text-base font-extrabold leading-snug text-ink sm:text-lg">
+            Lvl {level} · {exp} EXP
           </p>
-          <p className="text-base font-extrabold leading-snug text-ink sm:text-xl">
-            Lvl {level} · {exp}
-          </p>
-          <div className="mt-1.5 h-2 overflow-hidden rounded-full border-2 border-[color:var(--line)] bg-bg sm:h-2.5">
+          <div className="mt-2 h-2 overflow-hidden rounded-full border-[1.5px] border-[color:var(--line)] bg-[color:var(--surface)]">
             <div
               className="h-full bg-biru transition-all duration-300"
               style={{ width: `${Math.min(100, exp)}%` }}
@@ -64,19 +67,19 @@ export default function StatKartu({
         </div>
       </div>
 
-      {/* Kartu 3: Target Hari Ini */}
-      <div className="kartu flex items-center gap-3 p-3.5 sm:gap-3.5 sm:p-4">
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl border-2 border-[#141513] bg-lime text-lg font-extrabold text-[#111310] shadow-[0_2px_0_var(--sh)] sm:size-12 sm:text-xl">
+      {/* Kartu 3: Hari Ini */}
+      <div className="kartu flex items-center gap-3.5 p-4">
+        <span className="grid size-11 shrink-0 place-items-center rounded-xl border-2 border-[#111] bg-lime text-lg font-extrabold text-[#111]">
           ✓
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[11px] font-bold text-muted sm:text-xs">
-            {t.todayTarget}
+          <p className="text-xs font-medium text-muted">
+            {lang === "en" ? "Today" : "Hari ini"}
           </p>
-          <p className="text-base font-extrabold leading-snug text-ink sm:text-xl">
+          <p className="text-base font-extrabold leading-snug text-ink sm:text-lg">
             {selesai}/{total} {t.done}
           </p>
-          <div className="mt-1.5 h-2 overflow-hidden rounded-full border-2 border-[color:var(--line)] bg-bg sm:h-2.5">
+          <div className="mt-2 h-2 overflow-hidden rounded-full border-[1.5px] border-[color:var(--line)] bg-[color:var(--surface)]">
             <div
               className="h-full bg-lime transition-all duration-300"
               style={{ width: `${persenTugas}%` }}

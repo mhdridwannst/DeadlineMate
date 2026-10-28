@@ -125,7 +125,7 @@ export default function InlineOmnibar({ lang = "id" }: { lang?: Lang }) {
                   : "border-transparent bg-bg text-muted hover:text-ink"
               }`}
             >
-              {lang === "en" ? "AI Split" : "Pecah Banyak (AI)"}
+              {lang === "en" ? "AI Split" : "Buat Banyak "}
             </button>
           </div>
 

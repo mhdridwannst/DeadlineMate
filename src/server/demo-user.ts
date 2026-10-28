@@ -2,6 +2,7 @@
 
 import { cache } from "react";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import type { Lang } from "@/lib/i18n";
@@ -30,28 +31,25 @@ function getUserMap() {
   return globalCache.__dmUserMap;
 }
 
-export async function invalidateUserCache(email?: string) {
-  const map = getUserMap();
-  if (email) {
-    map.delete(email.toLowerCase());
-  } else {
-    map.clear();
-  }
-}
-
 export const getDemoUser = cache(async () => {
   let email = DEMO_EMAIL;
   try {
     const store = await cookies();
     const saved = store.get(COOKIE_EMAIL)?.value?.trim().toLowerCase();
+    if (saved === "logged_out") {
+      redirect("/login");
+    }
     if (saved && saved.includes("@")) {
       email = saved;
     }
-  } catch {}
+  } catch (e) {
+    if (e instanceof Error && e.message.includes("NEXT_REDIRECT")) {
+      throw e;
+    }
+  }
 
   const map = getUserMap();
   const cached = map.get(email);
-  // Gunakan cache memori selama 5 menit (0ms latency!)
   if (cached && Date.now() - cached.ts < 300_000) {
     return cached;
   }
@@ -75,7 +73,7 @@ export const getDemoUser = cache(async () => {
 
   const defaultName =
     email === DEMO_EMAIL
-      ? "Wannn"
+      ? "Go Yoon Jung"
       : email
           .split("@")[0]
           .replace(/[._-]+/g, " ")
@@ -163,10 +161,23 @@ export async function masukAkun(formData: FormData) {
   });
 
   revalidatePath("/", "layout");
+  redirect("/today");
+}
+
+export async function keluarAkun() {
+  const store = await cookies();
+  store.set(COOKIE_EMAIL, "logged_out", {
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30,
+    sameSite: "lax",
+  });
+  revalidatePath("/", "layout");
+  redirect("/login");
 }
 
 export async function keluarKeDemo() {
   const store = await cookies();
   store.delete(COOKIE_EMAIL);
   revalidatePath("/", "layout");
+  redirect("/today");
 }

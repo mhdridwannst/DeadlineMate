@@ -33,7 +33,6 @@ model User {
   score      Int       @default(0)
   createdAt  DateTime  @default(now())
   tasks      Task[]
-  sessions   FocusSession[]
   attendance Attendance[]
   notes      CoachNote[]
 }
@@ -56,21 +55,10 @@ model Task {
   postponed   Int        @default(0)
   doneAt      DateTime?
   createdAt   DateTime   @default(now())
-  sessions    FocusSession[]
 
   @@index([userId, status, dueAt])
 }
 
-model FocusSession {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  taskId      String?
-  task        Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
-  startedAt   DateTime @default(now())
-  durationMin Int
-  completed   Boolean  @default(false)
-}
 
 model Attendance {
   id     String   @id @default(cuid())
