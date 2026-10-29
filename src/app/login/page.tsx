@@ -13,14 +13,11 @@ export default function LoginPage() {
         }}
       />
 
-      {/* Floating Icons */}
-      <div className="absolute top-20 left-10 text-4xl opacity-20 animate-[bounce_4s_infinite]">
-        <Icon name="sparkle" className="size-10 text-ink" />
-      </div>
-      <div className="absolute bottom-32 right-10 text-5xl opacity-20 animate-[pulse_3s_infinite]">
+      {/* Dekorasi Bintang di Kanan Bawah */}
+      <div className="absolute bottom-32 right-10 text-5xl opacity-20 animate-[pulse_3s_infinite] pointer-events-none">
         <Icon name="target" className="size-12 text-ink" />
       </div>
-      <div className="absolute top-40 right-20 text-3xl opacity-10 rotate-12">
+      <div className="absolute top-20 right-20 text-3xl opacity-10 rotate-12 pointer-events-none">
         <Icon name="zap" className="size-8 text-ink" />
       </div>
 
@@ -33,25 +30,23 @@ export default function LoginPage() {
               D
             </span>
             <span className="absolute -bottom-2 -right-2 grid place-items-center rounded-lg border-2 border-[#111] bg-white px-2 py-0.5 text-[10px] font-black shadow-[0_2px_0_var(--sh)] rotate-6">
-              BETA
+              KELOMPOK 2
             </span>
           </div>
           <h1 className="text-3xl font-black tracking-tight text-ink mt-4">
             DeadlineMate
           </h1>
           <p className="text-[13px] font-bold text-muted px-4">
-            Ngejar deadline bareng AI, dijamin gak panik.
+            Atur Tugasmu, Bantu Harimu Makin Produktif.
           </p>
         </div>
 
         {/* Value Prop */}
         <div className="mb-6">
           <h2 className="text-lg font-black text-ink">
-            <span className="judul-stabilo">Mulai Petualanganmu</span>
+            <span className="judul-stabilo">Get Started</span>
           </h2>
-          <p className="mt-2 text-xs font-semibold text-muted leading-relaxed">
-            Masuk buat nyimpen progres, streak, dan XP lo selamanya.
-          </p>
+          <p className="mt-2 text-xs font-semibold text-muted leading-relaxed"></p>
         </div>
 
         {/* Form */}
@@ -62,11 +57,11 @@ export default function LoginPage() {
               htmlFor="login-nama"
               className="mb-1.5 block text-[10px] font-black text-ink uppercase tracking-wider"
             >
-              Nama Panggilan
+              Nama
             </label>
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-ink transition-colors z-10">
-                <Icon name="bot" className="size-4" />
+                <Icon name="user" className="size-4" />
               </span>
               <input
                 id="login-nama"
@@ -86,11 +81,11 @@ export default function LoginPage() {
               htmlFor="login-email"
               className="mb-1.5 block text-[10px] font-black text-ink uppercase tracking-wider"
             >
-              Email Mahasiswa / Pribadi
+              Email
             </label>
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-ink transition-colors z-10">
-                <Icon name="calendar" className="size-4" />
+                <Icon name="mail" className="size-4" />
               </span>
               <input
                 id="login-email"
@@ -108,8 +103,7 @@ export default function LoginPage() {
           <button type="submit" className="relative w-full group mt-4">
             <div className="absolute inset-0 bg-[#111] rounded-xl translate-y-1.5 transition-transform group-hover:translate-y-2 group-active:translate-y-0" />
             <div className="relative flex items-center justify-center gap-2 w-full bg-lime text-[#111] border-2 border-[#111] rounded-xl py-3.5 text-sm font-black transition-transform group-hover:-translate-y-0.5 group-active:translate-y-1">
-              Gas Masuk!
-              <Icon name="check" className="size-4" strokeWidth={3} />
+              Masuk
             </div>
           </button>
         </form>
