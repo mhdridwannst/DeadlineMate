@@ -1,9 +1,13 @@
 import { masukAkun } from "@/server/demo-user";
 import { Icon } from "@/components/ui/Icon";
+import LoginThemeToggle from "@/components/shell/LoginThemeToggle";
 
 export default function LoginPage() {
   return (
     <div className="grid min-h-dvh place-items-center bg-[color:var(--bg)] px-4 py-10 relative overflow-hidden">
+      {/* TOMBOL DARK MODE DI POJOK KANAN ATAS */}
+      <LoginThemeToggle />
+
       {/* ================= BACKGROUND PATTERN & DECORATIONS ================= */}
       <div
         className="absolute inset-0 opacity-[0.04] pointer-events-none"
@@ -29,12 +33,12 @@ export default function LoginPage() {
             <span className="grid size-20 place-items-center rounded-2xl border-2 border-[#111] bg-lime text-4xl font-black text-[#111] shadow-[0_4px_0_var(--sh)] -rotate-3 transition-transform hover:rotate-0 cursor-default">
               D
             </span>
-            <span className="absolute -bottom-2 -right-2 grid place-items-center rounded-lg border-2 border-[#111] bg-white px-2 py-0.5 text-[10px] font-black shadow-[0_2px_0_var(--sh)] rotate-6">
-              KELOMPOK 2
+            <span className="absolute -bottom-2 -right-2 grid place-items-center rounded-lg border-2 border-[#111] bg-white px-2 py-0.5 text-[10px] font-black text-[#111] shadow-[0_2px_0_var(--sh)] rotate-6">
+              BETA
             </span>
           </div>
           <h1 className="text-3xl font-black tracking-tight text-ink mt-4">
-            DeadlineMate
+            Deadline Mate
           </h1>
           <p className="text-[13px] font-bold text-muted px-4">
             Atur Tugasmu, Bantu Harimu Makin Produktif.
@@ -46,7 +50,9 @@ export default function LoginPage() {
           <h2 className="text-lg font-black text-ink">
             <span className="judul-stabilo">Get Started</span>
           </h2>
-          <p className="mt-2 text-xs font-semibold text-muted leading-relaxed"></p>
+          <p className="mt-2 text-xs font-semibold text-muted leading-relaxed">
+            Masuk buat nyimpen progres, streak, dan XP lo selamanya.
+          </p>
         </div>
 
         {/* Form */}
@@ -104,26 +110,27 @@ export default function LoginPage() {
             <div className="absolute inset-0 bg-[#111] rounded-xl translate-y-1.5 transition-transform group-hover:translate-y-2 group-active:translate-y-0" />
             <div className="relative flex items-center justify-center gap-2 w-full bg-lime text-[#111] border-2 border-[#111] rounded-xl py-3.5 text-sm font-black transition-transform group-hover:-translate-y-0.5 group-active:translate-y-1">
               Masuk
+              <Icon name="arrow-right" className="size-4" strokeWidth={3} />
             </div>
           </button>
         </form>
 
-        {/* Footer / Trust Badges */}
+        {/* Footer / Trust Badges (FIX: Kontras Dark Mode) */}
         <div className="mt-8 border-t-2 border-[color:var(--line)]/10 pt-5">
           <p className="text-center text-[9px] font-black uppercase tracking-widest text-muted mb-3">
             Fitur Andalan
           </p>
           <div className="flex flex-wrap justify-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-md border border-[color:var(--line)]/30 bg-[color:var(--surface-2)] px-2.5 py-1 text-[10px] font-bold text-muted">
-              <Icon name="sparkle" className="size-3 text-[#111]" /> AI Pecah
-              Tugas
+            {/* Ubah text-[#111] jadi text-ink, dan text-muted jadi text-ink/80 */}
+            <span className="inline-flex items-center gap-1.5 rounded-md border-2 border-[color:var(--line)]/50 bg-[color:var(--surface-2)] px-2.5 py-1 text-[10px] font-bold text-ink/80">
+              <Icon name="sparkle" className="size-3 text-ink" /> AI Pecah Tugas
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-md border border-[color:var(--line)]/30 bg-[color:var(--surface-2)] px-2.5 py-1 text-[10px] font-bold text-muted">
-              <Icon name="flame" className="size-3 text-[#111]" /> Gamifikasi
+            <span className="inline-flex items-center gap-1.5 rounded-md border-2 border-[color:var(--line)]/50 bg-[color:var(--surface-2)] px-2.5 py-1 text-[10px] font-bold text-ink/80">
+              <Icon name="flame" className="size-3 text-ink" /> Gamifikasi
               Streak
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-md border border-[color:var(--line)]/30 bg-[color:var(--surface-2)] px-2.5 py-1 text-[10px] font-bold text-muted">
-              <Icon name="calendar" className="size-3 text-[#111]" /> Kalender
+            <span className="inline-flex items-center gap-1.5 rounded-md border-2 border-[color:var(--line)]/50 bg-[color:var(--surface-2)] px-2.5 py-1 text-[10px] font-bold text-ink/80">
+              <Icon name="calendar" className="size-3 text-ink" /> Kalender
               Pintar
             </span>
           </div>
