@@ -54,8 +54,6 @@ function ekstrakJson<T>(teksMentah: string, skema: z.ZodType<T>): T | null {
   }
 }
 
-// ================= FUNGSI BERSIHKAN JUDUL =================
-// Menghapus "1. ", "2) ", "- ", "• " dari awal teks
 function bersihkanJudul(judul: string) {
   return judul
     .replace(/^(?:\d+[.)]|[-*•])\s*/, "")
@@ -63,7 +61,6 @@ function bersihkanJudul(judul: string) {
     .trim();
 }
 
-/** Generator Sub-Langkah Kontekstual Pintar */
 function buatLangkahKontekstual(judul: string, due: Date) {
   const lower = judul.toLowerCase();
   const now = Date.now();
@@ -222,10 +219,7 @@ function susunRencanaLokal(teks: string): z.infer<typeof rencanaSchema> {
       const finalJudul = (
         judulBersih.length >= 3 ? judulBersih : kalimat
       ).replace(/^./, (c) => c.toUpperCase());
-
-      // BERSIHKAN ANGKA DI SINI JUGA (Fallback AI)
       const judulFinalBersih = bersihkanJudul(finalJudul);
-
       const langkah = buatLangkahKontekstual(judulFinalBersih, due);
       const totalMenit = langkah.reduce((n, l) => n + l.estimasiMenit, 0);
 
@@ -306,7 +300,6 @@ export async function rencanakan(
       ].join("\n"),
       prompt: `Tulisan user:\n"""\n${teks}\n"""\nJSON:`,
     });
-
     output = ekstrakJson(text, rencanaSchema);
   } catch (e) {
     console.warn("[mate] rencanakan beralih ke Smart Engine Lokal:", e);
@@ -324,18 +317,13 @@ export async function rencanakan(
     const langkah = t.langkah.slice(0, 5).map((l) => {
       const target = new Date(l.targetSelesai);
       return {
-        title: bersihkanJudul(l.judul), // Bersihkan judul sub-langkah
+        title: bersihkanJudul(l.judul),
         estimateMin: Math.max(10, l.estimasiMenit || 30),
         dueAt: Number.isNaN(target.getTime()) ? validDue : target,
       };
     });
     return [
-      {
-        t,
-        due: validDue,
-        langkah,
-        judulBersih: bersihkanJudul(t.judul), // Bersihkan judul utama
-      },
+      { t, due: validDue, langkah, judulBersih: bersihkanJudul(t.judul) },
     ];
   });
 
@@ -344,7 +332,7 @@ export async function rencanakan(
       db.task.create({
         data: {
           userId: user.id,
-          title: judulBersih, // <-- SIMPAN JUDUL BERSIH KE DB
+          title: judulBersih,
           category: t.kategori,
           priority: t.prioritas,
           estimateMin: Math.max(15, t.estimasiMenit || 60),
@@ -364,7 +352,11 @@ export async function rencanakan(
   });
 
   const durasiDetik = ((Date.now() - t0) / 1000).toFixed(1);
-  revalidatePath("/", "layout");
+
+  // SPESIFIK
+  revalidatePath("/today");
+  revalidatePath("/progress");
+
   return {
     ok: true,
     pesan: `Selesai (${durasiDetik} dtk): ${jumlahTugas} tugas & ${jumlahLangkah} sub-langkah berhasil disusun!`,
@@ -408,7 +400,6 @@ export async function pecahLangkahAI(
       ].join("\n"),
       prompt: `Tugas: "${tugas.title}" (${tugas.category ?? "Kuliah"})\nJSON:`,
     });
-
     output = ekstrakJson(text, pecahSatuSchema);
   } catch (e) {
     console.warn("[mate] pecahLangkahAI memakai Smart Step Generator:", e);
@@ -434,7 +425,7 @@ export async function pecahLangkahAI(
     return {
       userId: user.id,
       parentId: tugas.id,
-      title: bersihkanJudul(l.judul), // <-- BERSIHKAN JUGA SUB-LANGKAH
+      title: bersihkanJudul(l.judul),
       estimateMin: Math.max(10, l.estimasiMenit || 25),
       dueAt: Number.isNaN(target.getTime()) ? fallbackDate : target,
     };
@@ -449,7 +440,9 @@ export async function pecahLangkahAI(
     },
   });
 
-  revalidatePath("/", "layout");
+  // SPESIFIK
+  revalidatePath("/today");
+
   return {
     ok: true,
     pesan: `${daftarLangkah.length} sub-langkah berhasil disusun oleh Mate!`,

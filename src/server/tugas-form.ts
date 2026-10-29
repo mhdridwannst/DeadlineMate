@@ -81,7 +81,11 @@ export async function simpanTugas(
     });
   }
 
-  revalidatePath("/", "layout");
+  // SPESIFIK
+  revalidatePath("/today");
+  revalidatePath("/progress");
+  revalidatePath("/kalender");
+
   return { ok: true };
 }
 
@@ -95,30 +99,19 @@ const autoFillSchema = z.object({
 });
 
 export type HasilAutoFill =
-  | {
-      ok: true;
-      data: z.infer<typeof autoFillSchema>;
-    }
-  | {
-      ok: false;
-      error: string;
-    };
+  | { ok: true; data: z.infer<typeof autoFillSchema> }
+  | { ok: false; error: string };
 
-/** Mesin NLP Bahasa Indonesia Lokal (Instant Fallback jika Cloud AI gagal/belum diset) */
 function ekstrakKalimatLokal(teksAsli: string): z.infer<typeof autoFillSchema> {
   const lower = teksAsli.toLowerCase();
   const now = new Date();
   const hariIniIso = dayKey(now);
 
-  // 1. Deteksi Hari / Tanggal
-  let offsetHari = 1; // Default besok
-  if (/\b(hari ini|malam ini|sore ini|sekarang)\b/.test(lower)) {
-    offsetHari = 0;
-  } else if (/\b(lusa)\b/.test(lower)) {
-    offsetHari = 2;
-  } else if (/\b(mingdep|minggu depan|pekan depan)\b/.test(lower)) {
-    offsetHari = 7;
-  } else {
+  let offsetHari = 1;
+  if (/\b(hari ini|malam ini|sore ini|sekarang)\b/.test(lower)) offsetHari = 0;
+  else if (/\b(lusa)\b/.test(lower)) offsetHari = 2;
+  else if (/\b(mingdep|minggu depan|pekan depan)\b/.test(lower)) offsetHari = 7;
+  else {
     const petaHari: Record<string, number> = {
       minggu: 0,
       ahad: 0,
@@ -141,7 +134,6 @@ function ekstrakKalimatLokal(teksAsli: string): z.infer<typeof autoFillSchema> {
   }
   const tanggal = tambahHari(hariIniIso, offsetHari);
 
-  // 2. Deteksi Jam
   let jam = "23:59";
   const matchJam = lower.match(
     /\b(?:jam|pukul)\s*(\d{1,2})(?:[:.](\d{2}))?\s*(pagi|siang|sore|malam)?\b/,
@@ -153,29 +145,21 @@ function ekstrakKalimatLokal(teksAsli: string): z.infer<typeof autoFillSchema> {
     if ((ket === "sore" || ket === "malam") && hh < 12) hh += 12;
     if (ket === "siang" && hh < 11) hh += 12;
     jam = `${String(Math.min(23, hh)).padStart(2, "0")}:${mm}`;
-  } else if (/\bpagi\b/.test(lower)) {
-    jam = "09:00";
-  } else if (/\bsiang\b/.test(lower)) {
-    jam = "13:00";
-  } else if (/\bsore\b/.test(lower)) {
-    jam = "16:30";
-  } else if (/\bmalam\b/.test(lower)) {
-    jam = "21:00";
-  }
+  } else if (/\bpagi\b/.test(lower)) jam = "09:00";
+  else if (/\bsiang\b/.test(lower)) jam = "13:00";
+  else if (/\bsore\b/.test(lower)) jam = "16:30";
+  else if (/\bmalam\b/.test(lower)) jam = "21:00";
 
-  // 3. Deteksi Kategori
   let kategori: "Kuliah" | "Organisasi" | "Pribadi" = "Kuliah";
-  if (/\b(ukm|rapat|panitia|organisasi|hima|bem|divisi|proker)\b/.test(lower)) {
+  if (/\b(ukm|rapat|panitia|organisasi|hima|bem|divisi|proker)\b/.test(lower))
     kategori = "Organisasi";
-  } else if (
+  else if (
     /\b(beli|olahraga|gym|kamar|rumah|pribadi|laundry|jalan|tidur)\b/.test(
       lower,
     )
-  ) {
+  )
     kategori = "Pribadi";
-  }
 
-  // 4. Deteksi Estimasi Jam
   let estimasiJam = 2;
   const matchDurasi = lower.match(/(\d+(?:[.,]\d+)?)\s*jam\b/);
   if (matchDurasi && !matchJam?.[0]?.includes(matchDurasi[0])) {
@@ -185,24 +169,16 @@ function ekstrakKalimatLokal(teksAsli: string): z.infer<typeof autoFillSchema> {
     );
   } else if (
     /\b(laprak|laporan|makalah|skripsi|project|proyek|coding)\b/.test(lower)
-  ) {
+  )
     estimasiJam = 3;
-  } else if (/\b(kuis|rangkum|review|baca)\b/.test(lower)) {
-    estimasiJam = 1.5;
-  }
+  else if (/\b(kuis|rangkum|review|baca)\b/.test(lower)) estimasiJam = 1.5;
 
-  // 5. Deteksi Prioritas
   let prioritas: "LOW" | "MEDIUM" | "HIGH" =
     offsetHari <= 1 ? "HIGH" : offsetHari <= 3 ? "MEDIUM" : "LOW";
-  if (
-    /\b(penting|mendesak|urgent|ujian|uts|uas|besok|hari ini)\b/.test(lower)
-  ) {
+  if (/\b(penting|mendesak|urgent|ujian|uts|uas|besok|hari ini)\b/.test(lower))
     prioritas = "HIGH";
-  } else if (/\b(santai|gampang|ringan)\b/.test(lower)) {
-    prioritas = "LOW";
-  }
+  else if (/\b(santai|gampang|ringan)\b/.test(lower)) prioritas = "LOW";
 
-  // 6. Bersihkan Judul agar rapi (Title Case)
   let judulBersih = teksAsli
     .replace(
       /\b(kumpul|dikumpul|deadline|tenggat)?\s*(hari ini|besok|lusa|mingdep|minggu depan|senin|selasa|rabu|kamis|jumat|sabtu|minggu)\s*(depan)?\b/gi,
@@ -232,12 +208,11 @@ export async function isiOtomatisTugasAI(
   kalimat: string,
 ): Promise<HasilAutoFill> {
   const teks = kalimat.trim();
-  if (teks.length < 2) {
+  if (teks.length < 2)
     return {
       ok: false,
       error: "Ketik atau ucapkan dulu tugasnya singkat aja.",
     };
-  }
 
   const now = new Date();
   const hariIniIso = dayKey(now);
@@ -272,15 +247,12 @@ export async function isiOtomatisTugasAI(
       const parsed = autoFillSchema.safeParse(
         JSON.parse(text.slice(awal, akhir + 1)),
       );
-      if (parsed.success) {
-        return { ok: true, data: parsed.data };
-      }
+      if (parsed.success) return { ok: true, data: parsed.data };
     }
   } catch (e) {
     console.warn("[mate] Cloud AI fallback ke Smart NLP Lokal:", e);
   }
 
-  // Fallback otomatis ke Smart NLP Lokal agar 100% selalu berhasil!
   const hasilLokal = ekstrakKalimatLokal(teks);
   return { ok: true, data: hasilLokal };
 }
@@ -302,5 +274,6 @@ export async function ubahProfilPreferensi(formData: FormData) {
     },
   });
 
-  revalidatePath("/", "layout");
+  // Revalidate profil aja
+  revalidatePath("/profil");
 }

@@ -21,12 +21,10 @@ function uraikan(teks: string): Butir[] {
     .map((s) => s.trim())
     .filter((s) => s.length >= 4)
     .map((baris) => {
-      // PERBAIKAN REGEX: Hapus angka & list mark
       const judul = baris
         .replace(/^(?:\d+[.)]|[-*•])\s*/, "")
         .replace(/^(?:\d+\s+)/, "")
         .trim();
-
       const cocok = judul.match(POLA_TENGGAT) ?? [];
       const tenggat = [...new Set(cocok.map((c) => c.toLowerCase()))];
       return { judul, tenggat };
@@ -66,7 +64,6 @@ export function RencanaForm() {
       SpeechRecognition?: new () => any;
       webkitSpeechRecognition?: new () => any;
     };
-
     const SR = Win.SpeechRecognition || Win.webkitSpeechRecognition;
     if (!SR) {
       alert("Browser ini belum mendukung mikrofon. Ketik manual ya!");
@@ -76,11 +73,9 @@ export function RencanaForm() {
     const rec = new SR();
     rec.lang = "id-ID";
     rec.interimResults = false;
-
     rec.onstart = () => setRekam(true);
     rec.onend = () => setRekam(false);
     rec.onerror = () => setRekam(false);
-
     rec.onresult = (e: any) => {
       const hasilSuara = e.results?.[0]?.[0]?.transcript ?? "";
       if (hasilSuara) {
@@ -92,7 +87,6 @@ export function RencanaForm() {
 
   return (
     <form action={action} className="space-y-4">
-      {/* ================= KOTAK INPUT AI ================= */}
       <div className="relative group">
         <div className="absolute inset-0 bg-[color:var(--line)] rounded-xl translate-y-1 translate-x-1 transition-transform group-focus-within:translate-y-1.5 group-focus-within:translate-x-1.5" />
         <div className="relative bg-card border-2 border-[color:var(--line)] rounded-xl overflow-hidden transition-transform group-focus-within:-translate-y-0.5 group-focus-within:-translate-x-0.5">
@@ -104,16 +98,10 @@ export function RencanaForm() {
               <span className="text-[10px] font-bold text-muted bg-card px-2 py-0.5 rounded border border-[color:var(--line)]">
                 {jumlah} terdeteksi
               </span>
-
               <button
                 type="button"
                 onClick={mulaiSuara}
-                aria-label="Ucapkan tugas"
-                className={`grid size-6 place-items-center rounded-md border-2 transition-all ${
-                  rekam
-                    ? "border-[color:var(--bahaya)] bg-[color:var(--bahaya-bg)] text-[color:var(--bahaya)] animate-pulse"
-                    : "border-[color:var(--line)] bg-card text-ink hover:bg-lime"
-                }`}
+                className={`grid size-6 place-items-center rounded-md border-2 transition-all ${rekam ? "border-[color:var(--bahaya)] bg-[color:var(--bahaya-bg)] text-[color:var(--bahaya)] animate-pulse" : "border-[color:var(--line)] bg-card text-ink hover:bg-lime"}`}
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -130,7 +118,6 @@ export function RencanaForm() {
               </button>
             </div>
           </div>
-
           <textarea
             ref={areaRef}
             name="teks"
@@ -143,16 +130,13 @@ export function RencanaForm() {
             placeholder={
               "Ketik manual atau klik ikon 🎙️ buat ngomong:\n\nContoh: Nulis laprak besok jam 4, tugas desain senin depan jam 12"
             }
-            className="block w-full resize-none bg-transparent px-4 py-3 text-[13px] font-bold leading-relaxed text-ink placeholder:font-semibold placeholder:text-muted/40 focus:outline-none disabled:opacity-60 hide-scrollbar"
+            className="block w-full resize-none bg-transparent px-4 py-3 text-[13px] font-bold leading-relaxed text-ink placeholder:text-muted/70 focus:outline-none disabled:opacity-60 hide-scrollbar"
           />
         </div>
       </div>
 
-      {/* ================= PREVIEW HASIL PARSING ================= */}
       <div
-        className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${
-          jumlah > 0 ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-        }`}
+        className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${jumlah > 0 ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
         aria-live="polite"
       >
         <div className="overflow-hidden">
@@ -165,7 +149,6 @@ export function RencanaForm() {
                 Live Parse
               </span>
             </div>
-
             <ul className="max-h-48 space-y-2 overflow-y-auto pr-1 custom-scrollbar">
               {butir.map((b, i) => (
                 <li
@@ -199,7 +182,6 @@ export function RencanaForm() {
         </div>
       </div>
 
-      {/* ================= TOMBOL SUBMIT ================= */}
       <button
         type="submit"
         disabled={pending || jumlah === 0}
@@ -207,11 +189,13 @@ export function RencanaForm() {
         className="relative w-full group disabled:opacity-50 disabled:cursor-not-allowed mt-2"
       >
         <div className="absolute inset-0 bg-[#111] rounded-xl translate-y-1.5 transition-transform group-hover:translate-y-2 group-active:translate-y-0" />
-        <div className="relative flex items-center justify-center gap-2 w-full bg-lime text-[#111] border-2 border-[#111] rounded-xl py-3.5 text-sm font-black transition-transform group-hover:-translate-y-0.5 group-active:translate-y-1">
+        <div
+          className={`relative flex items-center justify-center gap-2 w-full border-2 border-[#111] rounded-xl py-3.5 text-sm font-black transition-transform group-hover:-translate-y-0.5 group-active:translate-y-1 ${jumlah > 0 ? "bg-lime text-[#111]" : "bg-[color:var(--surface-2)] text-muted border-[color:var(--line)]"}`}
+        >
           {pending ? (
             <>
               <svg
-                className="animate-spin size-4 text-[#111]"
+                className="animate-spin size-4"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -219,7 +203,7 @@ export function RencanaForm() {
               >
                 <path d="M21 12a9 9 0 1 1-6.219-8.56" />
               </svg>
-              Mate sedang menyusun...
+              Mate menyusun...
             </>
           ) : jumlah > 0 ? (
             <>✦ Susun {jumlah} Tugas Sekarang</>
@@ -229,15 +213,10 @@ export function RencanaForm() {
         </div>
       </button>
 
-      {/* ================= STATUS PESAN ================= */}
       {hasil && (
         <div
           role="status"
-          className={`rounded-xl border-2 px-3.5 py-3 text-xs font-extrabold flex items-start gap-2 ${
-            hasil.ok
-              ? "border-[color:var(--santai)] bg-[color:var(--santai-bg)] text-[color:var(--santai)]"
-              : "border-[color:var(--bahaya)] bg-[color:var(--bahaya-bg)] text-[color:var(--bahaya)]"
-          }`}
+          className={`rounded-xl border-2 px-3.5 py-3 text-xs font-extrabold flex items-start gap-2 ${hasil.ok ? "border-[color:var(--santai)] bg-[color:var(--santai-bg)] text-[color:var(--santai)]" : "border-[color:var(--bahaya)] bg-[color:var(--bahaya-bg)] text-[color:var(--bahaya)]"}`}
         >
           <span className="text-base leading-none">
             {hasil.ok ? "✅" : "⚠️"}

@@ -1,4 +1,5 @@
 import { DICT, type Lang } from "@/lib/i18n";
+import { Icon } from "@/components/ui/Icon";
 
 type Props = {
   streak: number;
@@ -27,10 +28,10 @@ export default function StatKartu({
       aria-label="Ringkasan Statistik"
       className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-4"
     >
-      {/* Kartu 1: Streak Aktif */}
+      {/* Kartu 1: Streak */}
       <div className="kartu-lime col-span-2 flex items-center gap-3.5 p-4 sm:col-span-1">
-        <span className="grid size-11 shrink-0 place-items-center rounded-xl border-2 border-[color:var(--line)] bg-[color:var(--surface)] text-xl">
-          🔥
+        <span className="grid size-11 shrink-0 place-items-center rounded-xl border-2 border-[color:var(--line)] bg-[color:var(--surface)] text-ink">
+          <Icon name="flame" className="size-6" />
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-xs font-medium text-muted">
@@ -69,8 +70,8 @@ export default function StatKartu({
 
       {/* Kartu 3: Hari Ini */}
       <div className="kartu flex items-center gap-3.5 p-4">
-        <span className="grid size-11 shrink-0 place-items-center rounded-xl border-2 border-[#111] bg-lime text-lg font-extrabold text-[#111]">
-          ✓
+        <span className="grid size-11 shrink-0 place-items-center rounded-xl border-2 border-[#111] bg-lime text-ink">
+          <Icon name="check" className="size-5" />
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-xs font-medium text-muted">

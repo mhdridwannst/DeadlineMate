@@ -40,15 +40,15 @@
   --ink: #f8fafc;
   --line: #3f464d;
   --sh: #000000;
-  --muted: #94a3b8;
-  --placeholder: #64748b;
+  --muted: #cbd5e1;
+  --placeholder: #94a3b8;
   --lime: #a8f000;
   --lime-bright: #b4f518;
   --lime-soft: #232d14;
   --lime-soft-ink: #f8fafc;
-  --warn: #332a10;
-  --warn-line: #eab308;
-  --warn-ink: #fef08a;
+  --warn: #4a3608; /* Warna amber gelap biar gak keruh */
+  --warn-line: #facc15; /* Border kuning terang */
+  --warn-ink: #fef08a; /* Teks kuning terang */
   --biru: #60a5fa;
   --biru-soft: #1e293b;
   --oranye: #fb923c;
@@ -100,12 +100,10 @@ textarea,
 select {
   font-size: 1rem;
 }
-
 button,
 summary {
   min-height: 40px;
 }
-
 :focus-visible {
   outline: 2px solid var(--biru);
   outline-offset: 2px;
@@ -175,14 +173,17 @@ summary {
   border-radius: 0.625rem;
 }
 
+/* EFEK STIKER NEO-BRUTALISM */
 .judul-stabilo {
-  background-image: linear-gradient(
-    transparent 60%,
-    var(--lime) 60%,
-    var(--lime) 92%,
-    transparent 92%
-  );
-  padding-inline: 0.12em;
+  background-color: var(--lime);
+  color: #111111 !important;
+  padding: 0.15em 0.4em;
+  border-radius: 0.3rem;
+  display: inline-block;
+  border: 2px solid var(--line);
+  box-shadow: 2px 2px 0 var(--line);
+  transform: rotate(-1deg);
+  line-height: 1.2;
 }
 
 .tag {
@@ -250,19 +251,23 @@ nextjs-portal {
   display: none !important;
 }
 
-@keyframes float {
-  0% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-  100% {
-    transform: translateY(0px);
-  }
+/* ANTI-SLOP DETAILS */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
 }
-
-.mate-avatar {
-  animation: float 3s ease-in-out infinite;
-  box-shadow: 0 4px 0 var(--sh);
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--surface-2);
+  border-left: 2px solid var(--line);
+  border-radius: 0 8px 8px 0;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 0 8px 8px 0;
+}
+.sticky-note {
+  transform: rotate(1deg);
+  transition: transform 0.2s ease;
+}
+.sticky-note:hover {
+  transform: rotate(0deg) translateY(-2px);
 }

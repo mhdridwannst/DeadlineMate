@@ -131,7 +131,11 @@ export default async function ProgressPage() {
                       {nilai[i]}
                     </span>
                     <div
-                      className={`w-full rounded-t-lg border-2 border-[#111] transition-all duration-300 relative ${nilai[i] > 0 ? "bg-[color:var(--lime)] shadow-[0_2px_0_var(--sh)]" : "bg-[color:var(--surface-2)]"}`}
+                      className={`w-full rounded-t-lg border-2 transition-all duration-300 relative ${
+                        nilai[i] > 0
+                          ? "border-[#111] bg-[color:var(--lime)] shadow-[0_2px_0_var(--sh)]"
+                          : "border-dashed border-[color:var(--line)]/30 bg-transparent"
+                      }`}
                       style={{ height: `${tinggiPx}px` }}
                     >
                       {apakahHariIni && (

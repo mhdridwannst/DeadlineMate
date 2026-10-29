@@ -251,7 +251,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
           value={judul}
           onChange={(e) => setJudul(e.target.value)}
           placeholder="Misal: Belajar & Latihan Soal Kalkulus"
-          className="kolom"
+          className="kolom placeholder:text-muted/70"
         />
       </div>
 
@@ -271,7 +271,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
             required
             value={tanggal}
             onChange={(e) => setTanggal(e.target.value)}
-            className="kolom"
+            className="kolom placeholder:text-muted/70"
           />
           <div className="mt-2 grid grid-cols-3 gap-1.5">
             <button
@@ -328,7 +328,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
             name="kategori"
             value={kategori}
             onChange={(e) => setKategori(e.target.value)}
-            className="kolom"
+            className="kolom placeholder:text-muted/70"
           >
             <option value="Kuliah">Kuliah</option>
             <option value="Organisasi">Organisasi</option>
@@ -393,7 +393,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
           onChange={(e) =>
             setPrioritas(e.target.value as "LOW" | "MEDIUM" | "HIGH")
           }
-          className="kolom"
+          className="kolom placeholder:text-muted/70"
         >
           <option value="HIGH">Tinggi (Mendesak)</option>
           <option value="MEDIUM">Sedang</option>
