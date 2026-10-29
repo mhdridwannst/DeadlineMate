@@ -12,6 +12,7 @@ import { hapusTugas, ubahStatus } from "@/server/tasks";
 import { pecahLangkahAI } from "@/server/ai-plan";
 import { sfxAiSuccess, sfxCheck, sfxClick, sfxDelete } from "@/lib/sfx";
 import FormTugas from "./FormTugas";
+import { Icon } from "@/components/ui/Icon";
 
 export type Langkah = {
   id: string;
@@ -316,7 +317,9 @@ export default function DaftarTugas({
                     <span className={`tag tag-${t.prioritas}`}>
                       {LABEL[t.prioritas]}
                     </span>
-                    {!sel && <span className="tag tag-exp">🔥 +1 streak</span>}
+                    <span className="tag tag-exp">
+                      <Icon name="flame" className="size-3" /> +1 streak
+                    </span>
 
                     {/* LOGIKA AI: Skeleton Loading */}
                     {sedangAI ? (
@@ -352,7 +355,10 @@ export default function DaftarTugas({
                           onClick={() => jalankanPecahAI(t)}
                           className="inline-flex min-h-7 items-center gap-1 rounded-full border-2 border-[color:var(--line)] bg-[color:var(--ai-bg)] px-2.5 py-0.5 text-[11px] font-bold text-[color:var(--ai-ink)] transition hover:opacity-90"
                         >
-                          <span>✦ Pecah Langkah AI</span>
+                          <span>
+                            <Icon name="sparkle" className="size-3" /> Pecah
+                            Langkah AI
+                          </span>
                         </button>
                       )
                     )}

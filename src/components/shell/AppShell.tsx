@@ -75,7 +75,6 @@ export default function AppShell({
   const t = DICT[lang];
   const path = usePathname();
 
-  // Refs untuk Dialog
   const dlg = useRef<HTMLDialogElement>(null);
   const dlgAkun = useRef<HTMLDialogElement>(null);
   const dlgLogout = useRef<HTMLDialogElement>(null);
@@ -130,10 +129,8 @@ export default function AppShell({
     });
   };
 
-  // Fungsi khusus untuk buka modal logout
   const bukaLogout = () => {
     sfxClick();
-    // Tutup modal akun dulu jika sedang terbuka
     dlgAkun.current?.close();
     dlgLogout.current?.showModal();
   };
@@ -150,10 +147,13 @@ export default function AppShell({
         Skip to content
       </a>
 
-      {/* ==================== SIDEBAR DESKTOP ==================== */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col justify-between border-r-2 border-[color:var(--line)] bg-card p-4 pb-16 lg:flex">
         <div className="flex flex-col gap-6">
-          <Link href="/today" className="flex items-center gap-2.5 px-1 py-2">
+          <Link
+            href="/today"
+            prefetch={false}
+            className="flex items-center gap-2.5 px-1 py-2"
+          >
             <span className="grid size-10 place-items-center rounded-xl border-2 border-[#141513] bg-lime text-lg font-extrabold text-[#111310] shadow-[0_3px_0_var(--sh)]">
               D
             </span>
@@ -174,6 +174,7 @@ export default function AppShell({
                 <Link
                   key={n.href}
                   href={n.href}
+                  prefetch={false}
                   onClick={() => sfxClick()}
                   aria-current={aktif ? "page" : undefined}
                   className={navCls}
@@ -185,13 +186,11 @@ export default function AppShell({
             })}
           </nav>
 
-          {/* FIX: Tombol Tambah Tugas yang lebar dan rapi */}
           <button type="button" onClick={bukaTugas} className="tombol w-full">
             <I n="plus" /> {t.newTask}
           </button>
         </div>
 
-        {/* FIX: Tombol Logout dengan Modal Konfirmasi */}
         <button
           type="button"
           onClick={bukaLogout}
@@ -203,7 +202,6 @@ export default function AppShell({
       </aside>
 
       <div className="lg:pl-56">
-        {/* ==================== HEADER DESKTOP ==================== */}
         <header className="sticky top-0 z-20 hidden h-20 items-center justify-between border-b-2 border-[color:var(--line)] bg-card/95 px-8 backdrop-blur-sm lg:flex">
           <h2 className="text-2xl font-extrabold text-ink">
             <span className="judul-stabilo">
@@ -223,7 +221,6 @@ export default function AppShell({
             >
               🔥 Streak {streak}
             </span>
-
             <button
               type="button"
               onClick={gantiBahasa}
@@ -238,9 +235,7 @@ export default function AppShell({
                 EN
               </span>
             </button>
-
             <DeadlineNotifier items={notifikasi} lang={lang} />
-
             <button
               type="button"
               onClick={ubahSuara}
@@ -249,7 +244,6 @@ export default function AppShell({
             >
               <I n={sfxAktif ? "suaraOn" : "suaraOff"} />
             </button>
-
             <button
               type="button"
               onClick={gantiTema}
@@ -258,7 +252,6 @@ export default function AppShell({
             >
               <I n="bulan" />
             </button>
-
             <button
               type="button"
               onClick={() => {
@@ -282,7 +275,6 @@ export default function AppShell({
           </div>
         </header>
 
-        {/* ==================== HEADER MOBILE ==================== */}
         <header className="sticky top-0 z-20 border-b-2 border-[color:var(--line)] bg-card/95 px-4 pb-2.5 pt-[calc(env(safe-area-inset-top)+0.6rem)] backdrop-blur-sm lg:hidden">
           <div className="flex items-center justify-between gap-2">
             <button
@@ -305,7 +297,6 @@ export default function AppShell({
                 </p>
               </div>
             </button>
-
             <div className="flex items-center gap-2">
               <DeadlineNotifier items={notifikasi} lang={lang} />
               <button
@@ -328,7 +319,6 @@ export default function AppShell({
         </main>
       </div>
 
-      {/* ==================== BOTTOM NAV MOBILE ==================== */}
       <nav
         aria-label="Utama"
         className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-[color:var(--line)] bg-card pb-[env(safe-area-inset-bottom)] lg:hidden"
@@ -338,7 +328,6 @@ export default function AppShell({
             if (!n) {
               return (
                 <li key={`fab-${i}`} className="flex justify-center">
-                  {/* FIX: Ukuran tombol FAB disesuaikan (size-14) biar gak nabrak */}
                   <button
                     type="button"
                     onClick={bukaTugas}
@@ -358,6 +347,7 @@ export default function AppShell({
               <li key={n.href}>
                 <Link
                   href={n.href}
+                  prefetch={false}
                   onClick={() => sfxClick()}
                   aria-current={aktifMobile ? "page" : undefined}
                   className={mobileCls}
@@ -371,7 +361,6 @@ export default function AppShell({
         </ul>
       </nav>
 
-      {/* ==================== DIALOG: KONFIRMASI LOGOUT ==================== */}
       <dialog
         ref={dlgLogout}
         onClick={(e) => {
@@ -393,7 +382,6 @@ export default function AppShell({
             </p>
           </div>
         </div>
-
         <div className="mt-5 grid grid-cols-2 gap-2.5">
           <button
             type="button"
@@ -414,7 +402,6 @@ export default function AppShell({
         </div>
       </dialog>
 
-      {/* ==================== DIALOG: AKUN PENGGUNA ==================== */}
       <dialog
         ref={dlgAkun}
         onClick={(e) => {
@@ -438,7 +425,6 @@ export default function AppShell({
             <I n="x" />
           </button>
         </div>
-
         <form
           action={async (fd) => {
             await masukAkun(fd);
@@ -474,8 +460,6 @@ export default function AppShell({
             Simpan Akun
           </button>
         </form>
-
-        {/* FIX: Tombol ini sekarang memanggil modal logout, bukan langsung mengeksekusi form */}
         <button
           type="button"
           onClick={bukaLogout}
@@ -485,7 +469,6 @@ export default function AppShell({
         </button>
       </dialog>
 
-      {/* ==================== DIALOG: TUGAS BARU ==================== */}
       <dialog
         ref={dlg}
         onClick={(e) => {
@@ -508,7 +491,6 @@ export default function AppShell({
               <I n="x" />
             </button>
           </div>
-
           <div className="mt-4 grid grid-cols-2 gap-1.5 rounded-xl border-2 border-[color:var(--line)] bg-bg p-1">
             <button
               type="button"
@@ -516,11 +498,7 @@ export default function AppShell({
                 sfxClick();
                 setTabModal("satuan");
               }}
-              className={`min-h-10 rounded-lg text-xs font-extrabold transition ${
-                tabModal === "satuan"
-                  ? "border-2 border-[#141513] bg-lime text-[#111310] shadow-[0_2px_0_var(--sh)]"
-                  : "text-muted hover:text-ink"
-              }`}
+              className={`min-h-10 rounded-lg text-xs font-extrabold transition ${tabModal === "satuan" ? "border-2 border-[#141513] bg-lime text-[#111310] shadow-[0_2px_0_var(--sh)]" : "text-muted hover:text-ink"}`}
             >
               {t.singleTaskTab}
             </button>
@@ -530,16 +508,11 @@ export default function AppShell({
                 sfxClick();
                 setTabModal("banyak");
               }}
-              className={`min-h-10 rounded-lg text-xs font-extrabold transition ${
-                tabModal === "banyak"
-                  ? "border-2 border-[#141513] bg-lime text-[#111310] shadow-[0_2px_0_var(--sh)]"
-                  : "text-muted hover:text-ink"
-              }`}
+              className={`min-h-10 rounded-lg text-xs font-extrabold transition ${tabModal === "banyak" ? "border-2 border-[#141513] bg-lime text-[#111310] shadow-[0_2px_0_var(--sh)]" : "text-muted hover:text-ink"}`}
             >
               {t.multiTaskTab}
             </button>
           </div>
-
           <div className="mt-4">
             {tabModal === "satuan" ? (
               <FormTugas
@@ -561,8 +534,8 @@ export default function AppShell({
                 </div>
                 <p className="mb-3 text-xs opacity-85">
                   {lang === "en"
-                    ? "Enter multiple assignments below. Mate will create all tasks and break them into sub-steps in one click."
-                    : "Masukkan daftar tugasmu di bawah. Mate akan membuat semua tugas sekaligus memecah langkah cicilannya dalam sekali klik."}
+                    ? "Enter multiple assignments below..."
+                    : "Masukkan daftar tugasmu di bawah..."}
                 </p>
                 <RencanaForm />
               </section>

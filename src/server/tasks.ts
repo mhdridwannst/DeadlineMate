@@ -25,7 +25,10 @@ export async function buatTugas(formData: FormData) {
       dueAt: new Date(parsed.data.dueAt),
     },
   });
-  revalidatePath("/", "layout");
+  
+  // SPESIFIK, JANGAN LAYOUT
+  revalidatePath("/today");
+  revalidatePath("/progress");
 }
 
 export async function ubahStatus(
@@ -37,7 +40,6 @@ export async function ubahStatus(
   const status = selesai ? "DONE" : "TODO";
   const doneAt = selesai ? new Date() : null;
 
-  // Jika parentId sudah diketahui (null untuk induk, string untuk sub-tugas), lewati findFirst!
   let idInduk = parentId;
   if (idInduk === undefined) {
     const task = await db.task.findFirst({
@@ -70,11 +72,16 @@ export async function ubahStatus(
     });
   }
 
-  revalidatePath("/", "layout");
+  // SPESIFIK
+  revalidatePath("/today");
+  revalidatePath("/progress");
 }
 
 export async function hapusTugas(id: string) {
   const user = await getDemoUser();
   await db.task.deleteMany({ where: { id, userId: user.id } });
-  revalidatePath("/", "layout");
+  
+  // SPESIFIK
+  revalidatePath("/today");
+  revalidatePath("/progress");
 }

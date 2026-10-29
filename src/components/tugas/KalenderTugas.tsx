@@ -87,7 +87,8 @@ export default function KalenderTugas({
               >
                 {s.tgl}
                 {ada.has(s.key) && (
-                  <span className="absolute bottom-1.5 size-1.5 rounded-full bg-orange-500" />
+                  // FIX: Warna titik diganti jadi merah bahaya biar nyatu sama tema
+                  <span className="absolute bottom-1.5 size-1.5 rounded-full bg-[color:var(--bahaya)]" />
                 )}
               </button>
             ) : (

@@ -7,6 +7,7 @@ import StatKartu from "./StatKartu";
 import MiniKalender from "./MiniKalender";
 import { MateChat } from "./MateChat";
 import { hariKe } from "@/lib/waktu";
+import { Icon } from "../ui/Icon";
 
 export default function TodayContent({
   aktif,
@@ -90,11 +91,10 @@ export default function TodayContent({
               {tanggalPanjang}
             </p>
             <h1 className="text-2xl sm:text-3xl font-black text-ink">
-              {t.taskList}
+              <span className="judul-stabilo">{t.taskList}</span>
             </h1>
           </div>
 
-          {/* Badge Jumlah Tugas */}
           <div className="inline-flex items-center gap-1.5 rounded-lg border-2 border-[color:var(--line)] bg-[color:var(--lime)] px-3 py-1 shadow-[0_2px_0_var(--sh)] shrink-0">
             <span className="text-sm font-black text-[#111]">
               {filteredAktif.length}
@@ -108,7 +108,9 @@ export default function TodayContent({
         <div className="flex items-center gap-2 w-full lg:w-auto">
           {selectedDate && (
             <span className="inline-flex items-center gap-1 rounded-lg border-2 border-[color:var(--line)] bg-[#FFE8A1] px-2 py-1.5 text-xs font-black text-[#111] shadow-[0_2px_0_var(--sh)] shrink-0 animate-in fade-in zoom-in">
-              📅 {selectedDate.split("-").reverse().join("/")}
+              <Icon name="calendar" className="size-3.5" />
+
+              {selectedDate.split("-").reverse().join("/")}
               <button
                 onClick={() => setSelectedDate(null)}
                 className="ml-0.5 hover:text-red-600 transition-colors"
@@ -124,11 +126,11 @@ export default function TodayContent({
               placeholder="Cari tugas..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-[color:var(--surface)] border-2 border-[color:var(--line)] rounded-lg pl-9 pr-8 py-2 text-sm font-bold placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-[color:var(--lime)] focus:border-[#111] shadow-[0_2px_0_var(--sh)] transition-all group-hover:-translate-y-0.5 group-focus-within:shadow-[0_4px_0_var(--sh)]"
+              className="w-full bg-[color:var(--surface)] border-2 border-[color:var(--line)] rounded-lg pl-9 pr-8 py-2 text-sm font-bold placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-[color:var(--lime)] focus:border-[color:var(--lime)] shadow-[0_2px_0_var(--sh)] transition-all group-hover:-translate-y-0.5 group-focus-within:shadow-[0_4px_0_var(--sh)]"
             />
             <svg
               viewBox="0 0 24 24"
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-[#111] transition-transform group-focus-within:scale-110"
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-[color:var(--muted)] group-focus-within:text-[color:var(--ink)] transition-all group-focus-within:scale-110"
               fill="none"
               stroke="currentColor"
               strokeWidth={3}
@@ -141,7 +143,7 @@ export default function TodayContent({
             {search && (
               <button
                 onClick={() => setSearch("")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 grid size-5 place-items-center rounded bg-[color:var(--line)] text-white hover:bg-[color:var(--bahaya)] transition-colors"
+                className="absolute right-2 top-1/2 -translate-y-1/2 grid size-5 place-items-center rounded bg-[color:var(--line)] text-[color:var(--bg)] hover:bg-[color:var(--bahaya)] transition-colors"
               >
                 ✕
               </button>
@@ -156,21 +158,20 @@ export default function TodayContent({
           className="kartu flex items-center gap-3 p-3 animate-in slide-in-from-top-2"
           style={{
             background: "var(--warn)",
-            borderColor: "var(--line)",
-            color: "var(--ink)",
-            boxShadow: "0 3px 0 var(--line)",
+            borderColor: "var(--warn-line)",
+            color: "var(--warn-ink)",
+            boxShadow: "0 3px 0 var(--warn-line)",
           }}
         >
-          <span className="grid size-8 shrink-0 place-items-center rounded-lg border-2 border-[color:var(--line)] bg-card text-sm font-black text-[color:var(--ink)] animate-pulse">
-            !
+          <span className="grid size-8 shrink-0 place-items-center rounded-lg border-2 border-[color:var(--warn-line)] bg-[color:var(--card)] text-sm font-black text-[color:var(--warn-ink)] animate-pulse">
+            <Icon name="alert" className="size-4" />
           </span>
           <div className="min-w-0">
-            <p className="text-[13px] font-extrabold leading-tight text-ink">
+            <p className="text-[13px] font-extrabold leading-tight">
               Deadline Mendekat
             </p>
-            <p className="text-[11px] font-semibold text-[color:var(--warn-ink)] opacity-80 leading-tight mt-0.5 truncate">
-              “{mendesak.judul}” dalam{" "}
-              <strong className="text-ink">{mendesak.sisa}</strong>
+            <p className="text-[11px] font-semibold opacity-90 leading-tight mt-0.5 truncate">
+              “{mendesak.judul}” dalam <strong>{mendesak.sisa}</strong>
             </p>
           </div>
         </section>
@@ -187,7 +188,9 @@ export default function TodayContent({
                 Streak
               </span>
               <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="text-sm">🔥</span>
+                <span className="text-sm">
+                  <Icon name="flame" className="size-4 text-oranye" />
+                </span>
                 <span className="text-xl font-black font-mono text-ink">
                   {r.streak}
                 </span>
@@ -248,17 +251,23 @@ export default function TodayContent({
               ></div>
               <div className="relative z-10">
                 <div className="mx-auto grid size-20 place-items-center rounded-2xl border-2 border-[#141513] bg-lime text-[#111310] shadow-[0_4px_0_var(--sh)] transition-transform group-hover:-translate-y-2 group-hover:rotate-3">
-                  <span className="text-4xl animate-bounce">😎</span>
+                  <span className="text-4xl animate-bounce">
+                    <Icon
+                      name="check"
+                      className="size-10 text-[#111]"
+                      strokeWidth={3}
+                    />
+                  </span>
                 </div>
                 <h2 className="mt-5 text-2xl font-black text-ink">
                   {search || selectedDate
                     ? "Tidak Ada Tugas yang Cocok"
-                    : "Wih, Bersih!"}
+                    : "Wah, Bersih nih!"}
                 </h2>
                 <p className="mx-auto mt-2 max-w-md text-sm font-bold text-muted leading-relaxed">
                   {search || selectedDate
                     ? "Coba ubah kata kunci atau pilih tanggal lain di kalender."
-                    : "Semua tugas aktif sudah tuntas. Mata lo bisa istirahat sekarang, atau mau tambah tugas baru?"}
+                    : "Tugas kamu kayaknya udah selesai nih? Kamu istirah dulu ya, atau mau tambah tugas baru?"}
                 </p>
               </div>
             </section>
@@ -350,7 +359,6 @@ export default function TodayContent({
             onNextMonth={handleNextMonth}
           />
 
-          {/* ================= KONSISTENSI 7 HARI (FIXED PREMIUM) ================= */}
           <section className="kartu p-4" aria-label={t.consistency7d}>
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-black text-ink text-sm uppercase tracking-wider">
@@ -368,14 +376,13 @@ export default function TodayContent({
 
                 return (
                   <li key={k} className="flex flex-col items-center gap-1.5">
-                    {/* Kotak Status */}
                     <div
                       className={`flex aspect-square w-full items-center justify-center rounded-lg border-2 transition-all ${
                         aktifHari
-                          ? "border-[#111] bg-lime text-[#111] shadow-[0_2px_0_var(--sh)]" // Selesai
+                          ? "border-[#111] bg-lime text-[#111] shadow-[0_2px_0_var(--sh)]"
                           : isToday
-                            ? "border-[#111] bg-card text-[#111]" // Hari ini (Solid Border)
-                            : "border-[color:var(--line)]/20 bg-transparent text-muted/20" // Kosong (No dot)
+                            ? "border-[#111] bg-card text-[#111]"
+                            : "border-[color:var(--line)]/20 bg-transparent text-muted/20"
                       }`}
                     >
                       {aktifHari ? (
@@ -397,7 +404,6 @@ export default function TodayContent({
                       ) : null}
                     </div>
 
-                    {/* Huruf Hari */}
                     <span
                       className={`text-[10px] font-black uppercase tracking-wider ${
                         isToday ? "text-ink" : "text-muted/60"
