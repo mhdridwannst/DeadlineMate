@@ -128,7 +128,7 @@ export function RencanaForm() {
             onChange={(e) => setTeks(e.target.value)}
             spellCheck="false"
             placeholder={
-              "Ketik manual atau klik ikon 🎙️ buat ngomong:\n\nContoh: Nulis laprak besok jam 4, tugas desain senin depan jam 12"
+              "Ketik manual atau tinggal ngomong, bisa kok:\n\nContoh: Nulis laprak besok jam 4, tugas desain senin depan jam 12"
             }
             className="block w-full resize-none bg-transparent px-4 py-3 text-[13px] font-bold leading-relaxed text-ink placeholder:text-muted/70 focus:outline-none disabled:opacity-60 hide-scrollbar"
           />

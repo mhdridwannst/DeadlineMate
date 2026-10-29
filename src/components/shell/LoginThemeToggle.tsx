@@ -1,53 +1,51 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { Icon } from "@/components/ui/Icon";
 
+function subscribe(callback: () => void) {
+  const observer = new MutationObserver(callback);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-theme"],
+  });
+  return () => observer.disconnect();
+}
+
+function getSnapshot() {
+  return document.documentElement.dataset.theme === "dark";
+}
+
+function getServerSnapshot() {
+  return false;
+}
+
 export default function LoginThemeToggle() {
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    // Cek tema saat ini dari localStorage atau sistem
-    const saved = localStorage.getItem("tema");
-    const prefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)",
-    ).matches;
-    const isCurrentlyDark = saved === "gelap" || (!saved && prefersDark);
-
-    setIsDark(isCurrentlyDark);
-    document.documentElement.dataset.theme = isCurrentlyDark ? "dark" : "light";
-  }, []);
+  const isDark = useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    getServerSnapshot,
+  );
 
   const toggleTheme = () => {
-    const newTheme = isDark ? "terang" : "gelap";
-    setIsDark(!isDark);
-    localStorage.setItem("tema", newTheme);
-    document.documentElement.dataset.theme = isDark ? "light" : "dark";
+    const newTheme = isDark ? "light" : "dark";
+    const savedTheme = isDark ? "terang" : "gelap";
+    localStorage.setItem("tema", savedTheme);
+    document.documentElement.dataset.theme = newTheme;
   };
 
   return (
     <button
       type="button"
       onClick={toggleTheme}
-      aria-label="Ganti Tema"
-      className="fixed top-4 right-4 z-50 grid size-10 place-items-center rounded-xl border-2 border-[color:var(--line)] bg-[color:var(--card)] text-ink shadow-[0_3px_0_var(--sh)] transition-all hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none"
+      aria-label={isDark ? "Aktifkan mode terang" : "Aktifkan mode gelap"}
+      // HAPUS absolute top-4 right-4 z-50 dari sini!
+      className="grid size-10 place-items-center rounded-xl border-2 border-[color:var(--line)] bg-[color:var(--card)] text-ink shadow-[0_3px_0_var(--sh)] transition-all hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none"
     >
       {isDark ? (
-        // Ikon Matahari (kalau lagi gelap, tombolnya nunjukin matahari buat terang)
-        <Icon name="sparkle" className="size-5" />
+        <Icon name="sun" className="size-5" />
       ) : (
-        // Ikon Bulan (kalau lagi terang, tombolnya nunjukin bulan buat gelap)
-        <svg
-          viewBox="0 0 24 24"
-          className="size-5"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
-        </svg>
+        <Icon name="moon" className="size-5" />
       )}
     </button>
   );
