@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useOptimistic,
-  useRef,
-  useState,
-  useTransition,
-} from "react";
+import { useOptimistic, useRef, useState, useTransition } from "react";
 import confetti from "canvas-confetti";
 import { hapusTugas, ubahStatus } from "@/server/tasks";
 import { pecahLangkahAI } from "@/server/ai-plan";
@@ -26,6 +20,7 @@ export type Item = {
   id: string;
   no: number;
   judul: string;
+  catatan: string | null;
   selesai: boolean;
   prioritas: "HIGH" | "MEDIUM" | "LOW";
   kategori: string | null;
@@ -46,9 +41,9 @@ const LABEL = {
 } as const;
 
 const AKSEN_PRIORITAS = {
-  HIGH: "!border-l-[3px] !border-l-[color:var(--bahaya)]",
-  MEDIUM: "!border-l-[3px] !border-l-[color:var(--warn-line)]",
-  LOW: "!border-l-[3px] !border-l-[color:var(--santai)]",
+  HIGH: "!border-l-[4px] !border-l-[color:var(--bahaya)]",
+  MEDIUM: "!border-l-[4px] !border-l-[color:var(--warn-line)]",
+  LOW: "!border-l-[4px] !border-l-[color:var(--santai)]",
 } as const;
 
 function Kotak({
@@ -137,11 +132,8 @@ export default function DaftarTugas({
   const [edit, setEdit] = useState<Item | null>(null);
   const [targetHapus, setTargetHapus] = useState<Item | null>(null);
 
-  // State untuk Popup AI
   const [aiNote, setAiNote] = useState<string | null>(null);
   const dlgAi = useRef<HTMLDialogElement>(null);
-
-  // State untuk animasi melayang +10 XP
   const [floatingXP, setFloatingXP] = useState<Record<string, boolean>>({});
 
   const dlg = useRef<HTMLDialogElement>(null);
@@ -165,7 +157,6 @@ export default function DaftarTugas({
         colors: ["#a8f000", "#111111", "#ffffff", "#2563eb"],
         disableForReducedMotion: true,
       });
-
       setFloatingXP((prev) => ({ ...prev, [id]: true }));
       setTimeout(() => {
         setFloatingXP((prev) => ({ ...prev, [id]: false }));
@@ -207,8 +198,6 @@ export default function DaftarTugas({
       if (hasil.ok) {
         sfxAiSuccess();
         setBuka((s) => ({ ...s, [t.id]: true }));
-
-        // MUNCULKAN POPUP KALAU ADA CATATAN
         if (hasil.catatan) {
           setAiNote(hasil.catatan);
           dlgAi.current?.showModal();
@@ -256,7 +245,6 @@ export default function DaftarTugas({
               key={t.id}
               className={`kartu p-4 transition-opacity relative ${AKSEN_PRIORITAS[t.prioritas]} ${sel ? "opacity-55" : ""}`}
             >
-              {/* Animasi Floating +10 XP */}
               {floatingXP[t.id] && (
                 <span className="absolute top-2 right-12 text-biru font-black text-sm animate-bounce z-10 pointer-events-none drop-shadow-md">
                   +10 EXP ✨
@@ -303,6 +291,21 @@ export default function DaftarTugas({
                         </>
                       )}
                     </div>
+
+                    {/* ================= CATATAN / DESKRIPSI - VISIBLE CARD ================= */}
+                    {t.catatan && (
+                      <div className="mt-2.5 rounded-lg border-2 border-[color:var(--line)]/30 bg-[color:var(--warn)]/30 px-3 py-2">
+                        <div className="flex items-start gap-2">
+                          <Icon
+                            name="mail"
+                            className="size-3.5 shrink-0 mt-0.5 text-ink/70"
+                          />
+                          <p className="text-[11px] font-semibold leading-relaxed text-ink/80 whitespace-pre-wrap line-clamp-3">
+                            {t.catatan}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="hidden sm:block shrink-0 text-right">
@@ -317,11 +320,8 @@ export default function DaftarTugas({
                     <span className={`tag tag-${t.prioritas}`}>
                       {LABEL[t.prioritas]}
                     </span>
-                    <span className="tag tag-exp">
-                      <Icon name="flame" className="size-3" /> +1 streak
-                    </span>
+                    {!sel && <span className="tag tag-exp">🔥 +1 streak</span>}
 
-                    {/* LOGIKA AI: Skeleton Loading */}
                     {sedangAI ? (
                       <div className="inline-flex min-h-7 items-center gap-2 rounded-full border-2 border-[color:var(--line)] bg-[color:var(--ai-bg)] px-3 py-1">
                         <div className="flex space-x-1 animate-pulse">
@@ -355,10 +355,7 @@ export default function DaftarTugas({
                           onClick={() => jalankanPecahAI(t)}
                           className="inline-flex min-h-7 items-center gap-1 rounded-full border-2 border-[color:var(--line)] bg-[color:var(--ai-bg)] px-2.5 py-0.5 text-[11px] font-bold text-[color:var(--ai-ink)] transition hover:opacity-90"
                         >
-                          <span>
-                            <Icon name="sparkle" className="size-3" /> Pecah
-                            Langkah AI
-                          </span>
+                          <span>✦ Pecah Langkah AI</span>
                         </button>
                       )
                     )}
@@ -464,14 +461,14 @@ export default function DaftarTugas({
         })}
       </ul>
 
-      {/* ================= DIALOG POPUP AI ================= */}
+      {/* DIALOG POPUP AI */}
       <dialog
         ref={dlgAi}
         onClick={(e) => {
           if (e.target === dlgAi.current) dlgAi.current?.close();
         }}
         onClose={() => setAiNote(null)}
-        className="m-auto w-[min(92vw,26rem)] rounded-2xl border-2 border-[color:var(--line)] bg-[color:var(--surface-raised)] p-5 text-ink shadow-[0_6px_0_var(--sh)] backdrop:bg-black/60"
+        className="m-auto w-[min(92vw,26rem)] rounded-2xl border-2 border-[color:var(--line)] bg-card p-5 text-ink shadow-[0_6px_0_var(--sh)] backdrop:bg-black/60"
       >
         <div className="flex items-center justify-between gap-3 mb-3">
           <div className="flex items-center gap-2">
@@ -488,26 +485,24 @@ export default function DaftarTugas({
             ✕
           </button>
         </div>
-
         <div className="relative bg-[color:var(--surface-2)] border-2 border-[color:var(--line)] rounded-xl p-4 shadow-[0_3px_0_var(--sh)]">
           <p className="text-sm font-bold leading-relaxed text-ink">
             “{aiNote}”
           </p>
         </div>
-
         <button
           type="button"
           onClick={() => dlgAi.current?.close()}
           className="tombol w-full mt-4"
         >
-          Gas, Mulai Kerjain! 🚀
+          Gas, Mulai Kerjain!
         </button>
       </dialog>
 
-      {/* Modal Hapus & Edit */}
+      {/* Modal Hapus */}
       <dialog
         ref={dlgHapus}
-        className="m-auto w-[min(92vw,24rem)] rounded-2xl border-2 border-[color:var(--line)] bg-[color:var(--surface-raised)] p-5 text-ink shadow-[0_6px_0_var(--sh)] backdrop:bg-black/60"
+        className="m-auto w-[min(92vw,24rem)] rounded-2xl border-2 border-[color:var(--line)] bg-card p-5 text-ink shadow-[0_6px_0_var(--sh)] backdrop:bg-black/60"
       >
         {targetHapus && (
           <div>
@@ -540,9 +535,10 @@ export default function DaftarTugas({
         )}
       </dialog>
 
+      {/* Modal Edit */}
       <dialog
         ref={dlg}
-        className="m-auto max-h-[92dvh] w-[min(94vw,34rem)] overflow-y-auto rounded-2xl border-2 border-[color:var(--line)] bg-[color:var(--surface-raised)] p-0 text-ink shadow-[0_6px_0_var(--sh)] backdrop:bg-black/60"
+        className="m-auto max-h-[92dvh] w-[min(94vw,34rem)] overflow-y-auto rounded-2xl border-2 border-[color:var(--line)] bg-card p-0 text-ink shadow-[0_6px_0_var(--sh)] backdrop:bg-black/60"
       >
         {edit && (
           <div className="p-5">
@@ -563,6 +559,7 @@ export default function DaftarTugas({
               awal={{
                 id: edit.id,
                 judul: edit.judul,
+                catatan: edit.catatan ?? "",
                 tanggal: edit.tanggal,
                 jam: edit.jam,
                 kategori: edit.kategori ?? "Kuliah",

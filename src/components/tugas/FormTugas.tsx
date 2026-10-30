@@ -11,6 +11,7 @@ import { sfxAiSuccess, sfxClick } from "@/lib/sfx";
 export type DataAwalTugas = {
   id?: string;
   judul?: string;
+  catatan?: string;
   tanggal?: string;
   jam?: string;
   kategori?: string;
@@ -34,6 +35,7 @@ function besokDefault() {
 
 export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
   const [judul, setJudul] = useState(awal?.judul ?? "");
+  const [catatan, setCatatan] = useState(awal?.catatan ?? "");
   const [tanggal, setTanggal] = useState(awal?.tanggal || besokDefault());
   const [jam, setJam] = useState(awal?.jam || "23:59");
   const [kategori, setKategori] = useState(awal?.kategori || "Kuliah");
@@ -64,6 +66,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
   useEffect(() => {
     if (awal) {
       setJudul(awal.judul ?? "");
+      setCatatan(awal.catatan ?? "");
       setTanggal(awal.tanggal || besokDefault());
       setJam(awal.jam || "23:59");
       setKategori(awal.kategori || "Kuliah");
@@ -75,24 +78,8 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
   function mulaiSuara() {
     sfxClick();
     const Win = window as unknown as {
-      SpeechRecognition?: new () => {
-        lang: string;
-        interimResults: boolean;
-        onstart: () => void;
-        onend: () => void;
-        onerror: () => void;
-        onresult: (e: { results: { 0: { transcript: string } }[] }) => void;
-        start: () => void;
-      };
-      webkitSpeechRecognition?: new () => {
-        lang: string;
-        interimResults: boolean;
-        onstart: () => void;
-        onend: () => void;
-        onerror: () => void;
-        onresult: (e: { results: { 0: { transcript: string } }[] }) => void;
-        start: () => void;
-      };
+      SpeechRecognition?: new () => any;
+      webkitSpeechRecognition?: new () => any;
     };
 
     const SR = Win.SpeechRecognition || Win.webkitSpeechRecognition;
@@ -110,7 +97,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
     rec.onstart = () => setRekam(true);
     rec.onend = () => setRekam(false);
     rec.onerror = () => setRekam(false);
-    rec.onresult = (e) => {
+    rec.onresult = (e: any) => {
       const hasilSuara = e.results?.[0]?.[0]?.transcript ?? "";
       if (hasilSuara) {
         setInputCepat((lama) => (lama ? `${lama} ${hasilSuara}` : hasilSuara));
@@ -166,7 +153,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
     <form action={formAction} className="space-y-4">
       {awal?.id && <input type="hidden" name="id" value={awal.id} />}
 
-      {/* Kotak AI Auto-Fill dengan kontras teks terang & gelap sempurna */}
+      {/* Kotak AI Auto-Fill */}
       <div className="kartu-lime p-3.5">
         <div className="mb-2 flex items-center justify-between gap-2">
           <label htmlFor="ai-cepat" className="text-sm font-extrabold text-ink">
@@ -196,7 +183,6 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
             type="button"
             onClick={mulaiSuara}
             aria-label="Ucapkan tugas dengan mikrofon"
-            title="Ucapkan tugas"
             className={`tombol tombol-gabung px-3.5 ${
               rekam ? "animate-pulse bg-[color:var(--bahaya-bg)]" : ""
             }`}
@@ -251,8 +237,32 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
           value={judul}
           onChange={(e) => setJudul(e.target.value)}
           placeholder="Misal: Belajar & Latihan Soal Kalkulus"
-          className="kolom placeholder:text-muted/70"
+          className="kolom"
         />
+      </div>
+
+      {/* Catatan / Deskripsi (BARU) */}
+      <div>
+        <label
+          htmlFor="f-catatan"
+          className="mb-1.5 flex items-center justify-between text-sm font-bold"
+        >
+          <span>Catatan / Deskripsi</span>
+          <span className="text-[10px] font-semibold text-muted">Opsional</span>
+        </label>
+        <textarea
+          id="f-catatan"
+          name="catatan"
+          rows={3}
+          maxLength={500}
+          value={catatan}
+          onChange={(e) => setCatatan(e.target.value)}
+          placeholder="Misal: Sisa nulis Bab 3-5 (lainnya)"
+          className="kolom resize-none py-2.5 leading-relaxed"
+        />
+        <p className="mt-1 text-[10px] font-semibold text-muted">
+          {catatan.length}/500 karakter
+        </p>
       </div>
 
       {/* Tanggal & Jam */}
@@ -271,7 +281,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
             required
             value={tanggal}
             onChange={(e) => setTanggal(e.target.value)}
-            className="kolom placeholder:text-muted/70"
+            className="kolom"
           />
           <div className="mt-2 grid grid-cols-3 gap-1.5">
             <button
@@ -328,7 +338,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
             name="kategori"
             value={kategori}
             onChange={(e) => setKategori(e.target.value)}
-            className="kolom placeholder:text-muted/70"
+            className="kolom"
           >
             <option value="Kuliah">Kuliah</option>
             <option value="Organisasi">Organisasi</option>
@@ -393,7 +403,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
           onChange={(e) =>
             setPrioritas(e.target.value as "LOW" | "MEDIUM" | "HIGH")
           }
-          className="kolom placeholder:text-muted/70"
+          className="kolom"
         >
           <option value="HIGH">Tinggi (Mendesak)</option>
           <option value="MEDIUM">Sedang</option>

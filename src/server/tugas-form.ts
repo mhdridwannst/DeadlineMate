@@ -15,6 +15,11 @@ const skema = z.object({
     .trim()
     .min(1, "Nama tugas wajib diisi")
     .max(120, "Nama maksimal 120 karakter"),
+  catatan: z
+    .string()
+    .trim()
+    .max(500, "Catatan maksimal 500 karakter")
+    .optional(),
   tanggal: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Tanggal deadline wajib diisi"),
@@ -36,6 +41,7 @@ export async function simpanTugas(
   const baca = skema.safeParse({
     id: formData.get("id") || undefined,
     judul: String(formData.get("judul") ?? ""),
+    catatan: String(formData.get("catatan") ?? ""),
     tanggal: String(formData.get("tanggal") ?? ""),
     jam: String(formData.get("jam") ?? ""),
     kategori: String(formData.get("kategori") ?? ""),
@@ -50,14 +56,17 @@ export async function simpanTugas(
     return { ok: false, error: "Tanggal atau jam tidak valid" };
 
   const user = await getDemoUser();
-  if (!user) throw new Error("Unauthorized");
+  if (!user) return { ok: false, error: "Sesi berakhir. Silakan login ulang." };
+
   const estimateMin = Math.round(d.estimasi * 60);
+  const notesValue = d.catatan && d.catatan.length > 0 ? d.catatan : null;
 
   if (d.id) {
     const r = await db.task.updateMany({
       where: { id: d.id, userId: user.id, parentId: null },
       data: {
         title: d.judul,
+        notes: notesValue,
         dueAt,
         category: d.kategori,
         estimateMin,
@@ -74,6 +83,7 @@ export async function simpanTugas(
       data: {
         userId: user.id,
         title: d.judul,
+        notes: notesValue,
         dueAt,
         category: d.kategori,
         estimateMin,
@@ -82,7 +92,6 @@ export async function simpanTugas(
     });
   }
 
-  // SPESIFIK
   revalidatePath("/today");
   revalidatePath("/progress");
   revalidatePath("/kalender");
@@ -90,6 +99,7 @@ export async function simpanTugas(
   return { ok: true };
 }
 
+// ==================== AUTO-FILL AI (TIDAK BERUBAH) ====================
 const autoFillSchema = z.object({
   judul: z.string(),
   tanggal: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -260,7 +270,8 @@ export async function isiOtomatisTugasAI(
 
 export async function ubahProfilPreferensi(formData: FormData) {
   const user = await getDemoUser();
-  if (!user) throw new Error("Unauthorized");
+  if (!user) return;
+
   const namaBaru = String(formData.get("nama") ?? "").trim();
   const toneBaru = String(formData.get("coachTone") ?? "");
 
@@ -276,6 +287,5 @@ export async function ubahProfilPreferensi(formData: FormData) {
     },
   });
 
-  // Revalidate profil aja
   revalidatePath("/profil");
 }

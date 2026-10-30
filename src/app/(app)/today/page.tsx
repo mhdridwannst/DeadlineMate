@@ -91,6 +91,7 @@ export default async function TodayPage() {
       id: item.id,
       no,
       judul: item.title,
+      catatan: item.notes ?? null,
       selesai: item.status === "DONE",
       prioritas: item.priority,
       kategori: item.category,
