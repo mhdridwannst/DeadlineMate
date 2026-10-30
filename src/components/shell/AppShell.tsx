@@ -11,7 +11,8 @@ import {
 } from "react";
 import { RencanaForm } from "@/components/paper/RencanaForm";
 import FormTugas from "@/components/tugas/FormTugas";
-import { keluarAkun, masukAkun, setBahasa } from "@/server/demo-user";
+import { setBahasa } from "@/server/demo-user"; // masukAkun DIHAPUS
+import { keluarAkunBaru } from "@/server/auth-actions"; // IMPORT BARU
 import { isSfxEnabled, sfxClick, toggleSfx } from "@/lib/sfx";
 import { DICT, type Lang } from "@/lib/i18n";
 import DeadlineNotifier, { type ItemNotif } from "./DeadlineNotifier";
@@ -64,7 +65,7 @@ type Props = {
 
 export default function AppShell({
   nama,
-  email = "demo@deadlinemate.app",
+  email = "",
   lang = "id",
   notifikasi = [],
   streak,
@@ -84,7 +85,12 @@ export default function AppShell({
 
   const [kunci, setKunci] = useState(0);
   const [tabModal, setTabModal] = useState<"satuan" | "banyak">("satuan");
-  const [sfxAktif, setSfxAktif] = useState(true);
+
+  // FIX WARNING MERAH: Inisialisasi state secara lazy untuk menghindari useEffect
+  const [sfxAktif, setSfxAktif] = useState(() => {
+    if (typeof window !== "undefined") return isSfxEnabled();
+    return true;
+  });
 
   const NAV = [
     { href: "/today", label: t.navHome, ikon: "home" },
@@ -99,10 +105,6 @@ export default function AppShell({
     "/kalender": t.navCalendar,
     "/profil": t.navProfile,
   };
-
-  useEffect(() => {
-    setSfxAktif(isSfxEnabled());
-  }, []);
 
   const bukaTugas = () => {
     sfxClick();
@@ -135,8 +137,7 @@ export default function AppShell({
     dlgLogout.current?.showModal();
   };
 
-  const inisial = nama.slice(0, 1).toUpperCase();
-  const pakaiAkunPribadi = email !== "demo@deadlinemate.app";
+  const inisial = (nama || "W").slice(0, 1).toUpperCase();
 
   return (
     <>
@@ -147,6 +148,7 @@ export default function AppShell({
         Skip to content
       </a>
 
+      {/* ==================== SIDEBAR DESKTOP ==================== */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col justify-between border-r-2 border-[color:var(--line)] bg-card p-4 pb-16 lg:flex">
         <div className="flex flex-col gap-6">
           <Link
@@ -163,7 +165,6 @@ export default function AppShell({
               </span>
             </div>
           </Link>
-
           <nav aria-label="Utama" className="flex flex-col gap-2">
             {NAV.map((n) => {
               const aktif = path === n.href;
@@ -185,12 +186,10 @@ export default function AppShell({
               );
             })}
           </nav>
-
           <button type="button" onClick={bukaTugas} className="tombol w-full">
             <I n="plus" /> {t.newTask}
           </button>
         </div>
-
         <button
           type="button"
           onClick={bukaLogout}
@@ -202,13 +201,13 @@ export default function AppShell({
       </aside>
 
       <div className="lg:pl-56">
+        {/* ==================== HEADER DESKTOP ==================== */}
         <header className="sticky top-0 z-20 hidden h-20 items-center justify-between border-b-2 border-[color:var(--line)] bg-card/95 px-8 backdrop-blur-sm lg:flex">
           <h2 className="text-2xl font-extrabold text-ink">
             <span className="judul-stabilo">
               {JUDUL[path] ?? "DeadlineMate"}
             </span>
           </h2>
-
           <div className="flex items-center gap-2.5">
             <span
               className="tag px-3 py-1"
@@ -224,7 +223,6 @@ export default function AppShell({
             <button
               type="button"
               onClick={gantiBahasa}
-              title="Switch Language (ID / EN)"
               className="inline-flex min-h-10 items-center gap-1 rounded-xl border-2 border-[color:var(--line)] bg-card px-3 text-xs font-extrabold text-ink transition hover:-translate-y-0.5"
             >
               <span className={lang === "id" ? "text-lime" : "text-muted"}>
@@ -275,6 +273,7 @@ export default function AppShell({
           </div>
         </header>
 
+        {/* ==================== HEADER MOBILE ==================== */}
         <header className="sticky top-0 z-20 border-b-2 border-[color:var(--line)] bg-card/95 px-4 pb-2.5 pt-[calc(env(safe-area-inset-top)+0.6rem)] backdrop-blur-sm lg:hidden">
           <div className="flex items-center justify-between gap-2">
             <button
@@ -319,6 +318,7 @@ export default function AppShell({
         </main>
       </div>
 
+      {/* ==================== BOTTOM NAV MOBILE ==================== */}
       <nav
         aria-label="Utama"
         className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-[color:var(--line)] bg-card pb-[env(safe-area-inset-bottom)] lg:hidden"
@@ -361,6 +361,7 @@ export default function AppShell({
         </ul>
       </nav>
 
+      {/* ==================== DIALOG LOGOUT ==================== */}
       <dialog
         ref={dlgLogout}
         onClick={(e) => {
@@ -390,7 +391,7 @@ export default function AppShell({
           >
             Batal
           </button>
-          <form action={keluarAkun} className="w-full">
+          <form action={keluarAkunBaru} className="w-full">
             <button
               type="submit"
               className="tombol w-full"
@@ -402,6 +403,7 @@ export default function AppShell({
         </div>
       </dialog>
 
+      {/* ==================== DIALOG AKUN ==================== */}
       <dialog
         ref={dlgAkun}
         onClick={(e) => {
@@ -413,7 +415,7 @@ export default function AppShell({
           <div>
             <h2 className="text-lg font-extrabold text-ink">Akun Pengguna</h2>
             <p className="mt-0.5 text-xs text-muted">
-              Aktif sebagai: <strong>{email}</strong>
+              Masuk sebagai: <strong>{email}</strong>
             </p>
           </div>
           <button
@@ -425,41 +427,22 @@ export default function AppShell({
             <I n="x" />
           </button>
         </div>
-        <form
-          action={async (fd) => {
-            await masukAkun(fd);
-            dlgAkun.current?.close();
-          }}
-          className="mt-4 space-y-3"
-        >
-          <div>
-            <label className="mb-1 block text-xs font-bold text-muted">
-              Nama Panggilan
-            </label>
-            <input
-              name="nama"
-              type="text"
-              required
-              defaultValue={nama}
-              className="kolom"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-bold text-muted">
-              Email Akun
-            </label>
-            <input
-              name="email"
-              type="email"
-              required
-              defaultValue={email}
-              className="kolom"
-            />
-          </div>
-          <button type="submit" className="tombol w-full">
-            Simpan Akun
-          </button>
-        </form>
+
+        {/* FIX: Karena Auth.js yang atur profil, kita arahkan ke halaman Profil aja buat ubah nama */}
+        <div className="mt-6 space-y-3">
+          <p className="text-xs text-muted text-center leading-relaxed">
+            Ingin mengubah nama atau preferensi akun? Silakan kunjungi halaman
+            Profil.
+          </p>
+          <Link
+            href="/profil"
+            onClick={() => dlgAkun.current?.close()}
+            className="tombol w-full text-center block"
+          >
+            Ke Halaman Profil
+          </Link>
+        </div>
+
         <button
           type="button"
           onClick={bukaLogout}
@@ -469,6 +452,7 @@ export default function AppShell({
         </button>
       </dialog>
 
+      {/* ==================== DIALOG TUGAS BARU ==================== */}
       <dialog
         ref={dlg}
         onClick={(e) => {

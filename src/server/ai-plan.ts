@@ -257,6 +257,7 @@ export async function rencanakan(
     return { ok: false, pesan: "Terlalu panjang. Maksimal 1500 karakter." };
 
   const user = await getDemoUser();
+  if (!user) throw new Error("Unauthorized");
   const sekarang = new Intl.DateTimeFormat("id-ID", {
     dateStyle: "full",
     timeStyle: "short",
@@ -367,6 +368,7 @@ export async function pecahLangkahAI(
   taskId: string,
 ): Promise<{ ok: boolean; pesan: string; catatan?: string }> {
   const user = await getDemoUser();
+  if (!user) throw new Error("Unauthorized");
   const tugas = await db.task.findFirst({
     where: { id: taskId, userId: user.id, parentId: null },
   });

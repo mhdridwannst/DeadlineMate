@@ -4,12 +4,16 @@ import { ambilRingkasan } from "@/lib/stats";
 import { hariKe, tambahHari } from "@/lib/waktu";
 import { DICT } from "@/lib/i18n";
 import StatKartu from "@/components/tugas/StatKartu";
+import { redirect } from "next/navigation";
 
 const HARI_ID = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 const HARI_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default async function ProgressPage() {
   const [user, lang] = await Promise.all([getDemoUser(), getBahasa()]);
+
+  if (!user) redirect("/login");
+
   const t = DICT[lang];
   const r = await ambilRingkasan(user.id);
 
