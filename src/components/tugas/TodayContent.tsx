@@ -262,12 +262,12 @@ export default function TodayContent({
                 <h2 className="mt-5 text-2xl font-black text-ink">
                   {search || selectedDate
                     ? "Tidak Ada Tugas yang Cocok"
-                    : "Wah, Bersih nih!"}
+                    : "Tugas kamu udah selesai atau belum ada nih?"}
                 </h2>
                 <p className="mx-auto mt-2 max-w-md text-sm font-bold text-muted leading-relaxed">
                   {search || selectedDate
                     ? "Coba ubah kata kunci atau pilih tanggal lain di kalender."
-                    : "Tugas kamu kayaknya udah selesai nih? Kamu istirah dulu ya, atau mau tambah tugas baru?"}
+                    : "Kamu bisa nambah jadwal tugasmu di (+) Tugas Baru"}
                 </p>
               </div>
             </section>
