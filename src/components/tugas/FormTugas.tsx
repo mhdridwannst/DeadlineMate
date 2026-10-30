@@ -160,7 +160,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
             Ketik atau ucapkan tugasmu
           </label>
           <span className="rounded-md border border-[color:var(--line)] bg-card px-2 py-0.5 text-[11px] font-bold text-muted">
-            Smart Extract
+            Speech-to-text
           </span>
         </div>
 
@@ -236,7 +236,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
           required
           value={judul}
           onChange={(e) => setJudul(e.target.value)}
-          placeholder="Misal: Belajar & Latihan Soal Kalkulus"
+          placeholder="Belajar & Latihan Soal Kalkulus"
           className="kolom"
         />
       </div>
@@ -254,14 +254,14 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
           id="f-catatan"
           name="catatan"
           rows={3}
-          maxLength={500}
+          maxLength={300}
           value={catatan}
           onChange={(e) => setCatatan(e.target.value)}
-          placeholder="Misal: Sisa nulis Bab 3-5 (lainnya)"
+          placeholder="contoh: Sisa nulis Bab 3-5 (lainnya)"
           className="kolom resize-none py-2.5 leading-relaxed"
         />
         <p className="mt-1 text-[10px] font-semibold text-muted">
-          {catatan.length}/500 karakter
+          {catatan.length}/300 karakter
         </p>
       </div>
 

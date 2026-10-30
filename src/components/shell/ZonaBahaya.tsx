@@ -11,10 +11,10 @@ export default function ZonaBahaya() {
     <>
       <section className="kartu p-5 bg-[color:var(--bahaya-bg)] border-2 border-[color:var(--bahaya)] shadow-[0_4px_0_var(--bahaya)]">
         <h3 className="font-extrabold text-[color:var(--bahaya)] text-sm mb-1 uppercase tracking-wider">
-          Zona Berbahaya
+          Logout
         </h3>
         <p className="text-[11px] font-semibold text-[color:var(--bahaya)]/80 mb-3">
-          Sesi lo akan berakhir. Pastikan semua tugas udah disimpan.
+          Sesimu akan berakhir. Pastikan semua tugas udah disimpan.
         </p>
 
         <button
