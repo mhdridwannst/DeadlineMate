@@ -18,8 +18,9 @@ type IconName =
   | "user"
   | "mail"
   | "arrow-right"
-  | "sun"
-  | "moon";
+  | "logout"
+  | "sun" // <-- TAMBAHAN
+  | "moon"; // <-- TAMBAHAN
 
 export function Icon({
   name,
@@ -116,13 +117,20 @@ export function Icon({
         <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
       </>
     ),
-    // <-- PATH BARU
     "arrow-right": (
       <>
         <path d="M5 12h14" />
         <path d="m12 5 7 7-7 7" />
       </>
     ),
+    logout: (
+      <>
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+        <polyline points="16 17 21 12 16 7" />
+        <line x1="21" x2="9" y1="12" y2="12" />
+      </>
+    ),
+    // IKON MATAHARI DAN BULAN BUAT THEME TOGGLE
     sun: (
       <>
         <circle cx="12" cy="12" r="4" />

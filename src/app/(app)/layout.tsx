@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { redirect } from "next/navigation";
 import { ambilRingkasan } from "@/lib/stats";
 import { durasi } from "@/lib/waktu";
 import { getBahasa, getDemoUser } from "@/server/demo-user";
@@ -7,9 +8,14 @@ import type { ItemNotif } from "@/components/shell/DeadlineNotifier";
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const [user, lang] = await Promise.all([getDemoUser(), getBahasa()]);
-  const r = await ambilRingkasan(user.id);
 
+  if (!user) {
+    redirect("/login");
+  }
+
+  const r = await ambilRingkasan(user.id);
   const now = Date.now();
+
   const notifikasi: ItemNotif[] = r.aktifBerTenggat.flatMap(
     (t): ItemNotif[] => {
       const selisihMs = t.dueAt.getTime() - now;

@@ -18,6 +18,7 @@ export async function buatTugas(formData: FormData) {
   if (!parsed.success) return;
 
   const user = await getDemoUser();
+  if (!user) throw new Error("Unauthorized");
   await db.task.create({
     data: {
       userId: user.id,
@@ -25,7 +26,7 @@ export async function buatTugas(formData: FormData) {
       dueAt: new Date(parsed.data.dueAt),
     },
   });
-  
+
   // SPESIFIK, JANGAN LAYOUT
   revalidatePath("/today");
   revalidatePath("/progress");
@@ -37,6 +38,7 @@ export async function ubahStatus(
   parentId?: string | null,
 ) {
   const user = await getDemoUser();
+  if (!user) throw new Error("Unauthorized");
   const status = selesai ? "DONE" : "TODO";
   const doneAt = selesai ? new Date() : null;
 
@@ -79,8 +81,9 @@ export async function ubahStatus(
 
 export async function hapusTugas(id: string) {
   const user = await getDemoUser();
+  if (!user) throw new Error("Unauthorized");
   await db.task.deleteMany({ where: { id, userId: user.id } });
-  
+
   // SPESIFIK
   revalidatePath("/today");
   revalidatePath("/progress");

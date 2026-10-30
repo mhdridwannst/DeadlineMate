@@ -50,6 +50,7 @@ export async function simpanTugas(
     return { ok: false, error: "Tanggal atau jam tidak valid" };
 
   const user = await getDemoUser();
+  if (!user) throw new Error("Unauthorized");
   const estimateMin = Math.round(d.estimasi * 60);
 
   if (d.id) {
@@ -259,6 +260,7 @@ export async function isiOtomatisTugasAI(
 
 export async function ubahProfilPreferensi(formData: FormData) {
   const user = await getDemoUser();
+  if (!user) throw new Error("Unauthorized");
   const namaBaru = String(formData.get("nama") ?? "").trim();
   const toneBaru = String(formData.get("coachTone") ?? "");
 

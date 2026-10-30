@@ -12,6 +12,7 @@ import {
 import { DICT, type Lang } from "@/lib/i18n";
 import type { Item } from "@/components/tugas/DaftarTugas";
 import TodayContent from "@/components/tugas/TodayContent";
+import { redirect } from "next/navigation";
 
 const BOBOT = { HIGH: 0, MEDIUM: 1, LOW: 2 } as const;
 const HURUF_HARI_ID = ["M", "S", "S", "R", "K", "J", "S"];
@@ -35,6 +36,8 @@ function pesanDefaultMate(
 
 export default async function TodayPage() {
   const [user, lang] = await Promise.all([getDemoUser(), getBahasa()]);
+
+  if (!user) redirect("/login");
   const t = DICT[lang];
   const now = new Date();
   const nowTimestamp = now.getTime();

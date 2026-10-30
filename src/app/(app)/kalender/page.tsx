@@ -2,11 +2,16 @@ import { db } from "@/lib/db";
 import { getDemoUser } from "@/server/demo-user";
 import { dayKey, formatTenggat, sisaWaktu } from "@/lib/waktu";
 import KalenderTugas, { type ItemKal } from "@/components/tugas/KalenderTugas";
+import { redirect } from "next/navigation"; // <-- TAMBAH IMPORT
 
 export const dynamic = "force-dynamic";
 
 export default async function KalenderPage() {
   const user = await getDemoUser();
+
+  // TAMBAH GUARD CLAUSE INI
+  if (!user) redirect("/login");
+
   const now = new Date();
   const tugas = await db.task.findMany({
     where: { userId: user.id, parentId: null, dueAt: { not: null } },

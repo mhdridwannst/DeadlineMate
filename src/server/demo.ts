@@ -15,6 +15,7 @@ function izinkan() {
 export async function majukanHari() {
   izinkan();
   const user = await getDemoUser();
+  if (!user) throw new Error("Unauthorized");
   const tugas = await db.task.findMany({
     where: { userId: user.id },
     select: { id: true, dueAt: true, softDueAt: true, doneAt: true },
@@ -38,6 +39,7 @@ export async function majukanHari() {
 export async function lewatiDeadline() {
   izinkan();
   const user = await getDemoUser();
+  if (!user) throw new Error("Unauthorized");
   const target = await db.task.findFirst({
     where: {
       userId: user.id,

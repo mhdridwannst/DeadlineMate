@@ -1,20 +1,23 @@
 import { ambilRingkasan } from "@/lib/stats";
-import {
-  getBahasa,
-  getDemoUser,
-  keluarAkun,
-  setBahasa,
-} from "@/server/demo-user";
+import { getBahasa, getDemoUser, setBahasa } from "@/server/demo-user";
 import { ubahProfilPreferensi } from "@/server/tugas-form";
 import { DICT } from "@/lib/i18n";
 import ThemeSwitch from "@/components/shell/ThemeSwitch";
 import { Icon } from "@/components/ui/Icon";
+import { redirect } from "next/navigation";
+import ZonaBahaya from "@/components/shell/ZonaBahaya";
 
 export default async function ProfilPage() {
   const [user, lang] = await Promise.all([getDemoUser(), getBahasa()]);
+
+  if (!user) {
+    redirect("/login");
+  }
+
   const t = DICT[lang];
   const r = await ambilRingkasan(user.id);
   const nama = user.name ?? "Wannn";
+
   const inisial = nama.slice(0, 1).toUpperCase();
   const pakaiAkunPribadi = user.email !== "demo@deadlinemate.app";
 
@@ -68,7 +71,7 @@ export default async function ProfilPage() {
         </p>
       </div>
 
-      {/* PLAYER ID CARD */}
+      {/* ================= 1. PLAYER ID CARD ================= */}
       <section className="kartu bg-card border-2 border-[color:var(--line)] shadow-[0_4px_0_var(--sh)] p-5 sm:p-6 flex flex-col sm:flex-row items-center gap-5">
         <span className="grid size-20 shrink-0 place-items-center rounded-2xl border-2 border-[color:var(--line)] bg-lime text-3xl font-black text-[#111] shadow-[0_4px_0_var(--sh)]">
           {inisial}
@@ -99,8 +102,9 @@ export default async function ProfilPage() {
       </section>
 
       <div className="grid gap-6 md:grid-cols-2">
+        {/* ================= KOLOM KIRI ================= */}
         <div className="space-y-6">
-          {/* Form */}
+          {/* Form Profil */}
           <section className="kartu p-5 bg-card border-2 border-[color:var(--line)] shadow-[0_4px_0_var(--sh)]">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-black text-ink uppercase tracking-wider">
@@ -110,6 +114,7 @@ export default async function ProfilPage() {
                 {pakaiAkunPribadi ? "Tersinkron" : "Sesi Lokal"}
               </span>
             </div>
+
             <form action={ubahProfilPreferensi} className="space-y-4">
               <div>
                 <label className="mb-1.5 block text-[11px] font-black uppercase tracking-wider text-muted">
@@ -144,7 +149,7 @@ export default async function ProfilPage() {
             </form>
           </section>
 
-          {/* Stats */}
+          {/* Statistik Produktivitas */}
           <section className="kartu p-5 bg-card border-2 border-[color:var(--line)] shadow-[0_4px_0_var(--sh)]">
             <h2 className="text-sm font-black text-ink uppercase tracking-wider mb-4">
               Statistik Produktivitas
@@ -179,27 +184,13 @@ export default async function ProfilPage() {
             </div>
           </section>
 
-          {/* Danger Zone */}
-          <section className="kartu p-5 bg-[color:var(--bahaya-bg)] border-2 border-[color:var(--bahaya)] shadow-[0_4px_0_var(--bahaya)]">
-            <h3 className="font-extrabold text-[color:var(--bahaya)] text-sm mb-1 uppercase tracking-wider">
-              Zona Berbahaya
-            </h3>
-            <p className="text-[11px] font-semibold text-[color:var(--bahaya)]/80 mb-3">
-              Sesi lo akan berakhir. Pastikan semua tugas udah disimpan.
-            </p>
-            <form action={keluarAkun}>
-              <button
-                type="submit"
-                className="w-full rounded-xl border-2 border-[color:var(--bahaya)] bg-card py-2 text-xs font-black text-[color:var(--bahaya)] shadow-[0_2px_0_var(--bahaya)] transition-all hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none"
-              >
-                Keluar dari Akun
-              </button>
-            </form>
-          </section>
+          {/* ZONA BERBAHAYA (COMPONENT BARU) */}
+          <ZonaBahaya />
         </div>
 
+        {/* ================= KOLOM KANAN ================= */}
         <div className="space-y-6">
-          {/* Preferences */}
+          {/* Preferensi */}
           <section className="kartu p-5 bg-card border-2 border-[color:var(--line)] shadow-[0_4px_0_var(--sh)] space-y-5">
             <div>
               <h2 className="text-sm font-black text-ink mb-2.5 uppercase tracking-wider">
@@ -234,6 +225,7 @@ export default async function ProfilPage() {
                 </form>
               </div>
             </div>
+
             <div className="border-t-2 border-[color:var(--line)]/10 pt-4">
               <h2 className="text-sm font-black text-ink mb-2.5 uppercase tracking-wider">
                 {t.themeTitle}
@@ -242,7 +234,7 @@ export default async function ProfilPage() {
             </div>
           </section>
 
-          {/* Trophy Room */}
+          {/* Lencana (Trophy Room) */}
           <section className="kartu p-5 bg-card border-2 border-[color:var(--line)] shadow-[0_4px_0_var(--sh)] relative overflow-hidden">
             <div
               className="absolute inset-0 opacity-[0.03] pointer-events-none"
