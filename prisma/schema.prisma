@@ -94,6 +94,8 @@ model Task {
   subtasks    Task[]     @relation("Subtasks")
   title       String
   notes       String?
+  attachmentUrl String?
+  attachmentName String?
   category    String?
   priority    Priority   @default(MEDIUM)
   status      TaskStatus @default(TODO)

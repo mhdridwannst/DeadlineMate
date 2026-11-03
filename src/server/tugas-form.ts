@@ -20,6 +20,8 @@ const skema = z.object({
     .trim()
     .max(500, "Catatan maksimal 500 karakter")
     .optional(),
+  attachmentUrl: z.string().optional().or(z.literal("")),
+  attachmentName: z.string().optional().or(z.literal("")),
   tanggal: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Tanggal deadline wajib diisi"),
@@ -42,6 +44,8 @@ export async function simpanTugas(
     id: formData.get("id") || undefined,
     judul: String(formData.get("judul") ?? ""),
     catatan: String(formData.get("catatan") ?? ""),
+    attachmentUrl: String(formData.get("attachmentUrl") ?? ""),
+    attachmentName: String(formData.get("attachmentName") ?? ""),
     tanggal: String(formData.get("tanggal") ?? ""),
     jam: String(formData.get("jam") ?? ""),
     kategori: String(formData.get("kategori") ?? ""),
@@ -60,6 +64,10 @@ export async function simpanTugas(
 
   const estimateMin = Math.round(d.estimasi * 60);
   const notesValue = d.catatan && d.catatan.length > 0 ? d.catatan : null;
+  const attachmentUrlValue =
+    d.attachmentUrl && d.attachmentUrl.length > 0 ? d.attachmentUrl : null;
+  const attachmentNameValue =
+    d.attachmentName && d.attachmentName.length > 0 ? d.attachmentName : null;
 
   if (d.id) {
     const r = await db.task.updateMany({
@@ -67,6 +75,8 @@ export async function simpanTugas(
       data: {
         title: d.judul,
         notes: notesValue,
+        attachmentUrl: attachmentUrlValue,
+        attachmentName: attachmentNameValue,
         dueAt,
         category: d.kategori,
         estimateMin,
@@ -84,6 +94,8 @@ export async function simpanTugas(
         userId: user.id,
         title: d.judul,
         notes: notesValue,
+        attachmentUrl: attachmentUrlValue,
+        attachmentName: attachmentNameValue,
         dueAt,
         category: d.kategori,
         estimateMin,

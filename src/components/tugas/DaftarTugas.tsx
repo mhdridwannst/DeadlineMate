@@ -21,6 +21,8 @@ export type Item = {
   no: number;
   judul: string;
   catatan: string | null;
+  attachmentUrl: string | null;
+  attachmentName: string | null;
   selesai: boolean;
   prioritas: "HIGH" | "MEDIUM" | "LOW";
   kategori: string | null;
@@ -132,8 +134,11 @@ export default function DaftarTugas({
   const [edit, setEdit] = useState<Item | null>(null);
   const [targetHapus, setTargetHapus] = useState<Item | null>(null);
 
+  // AI Popup state
   const [aiNote, setAiNote] = useState<string | null>(null);
   const dlgAi = useRef<HTMLDialogElement>(null);
+
+  // XP Floating Animation
   const [floatingXP, setFloatingXP] = useState<Record<string, boolean>>({});
 
   const dlg = useRef<HTMLDialogElement>(null);
@@ -292,7 +297,7 @@ export default function DaftarTugas({
                       )}
                     </div>
 
-                    {/* ================= CATATAN / DESKRIPSI - VISIBLE CARD ================= */}
+                    {/* CATATAN / DESKRIPSI */}
                     {t.catatan && (
                       <div className="mt-2.5 rounded-lg border-2 border-[color:var(--line)]/30 bg-[color:var(--warn)]/30 px-3 py-2">
                         <div className="flex items-start gap-2">
@@ -305,6 +310,32 @@ export default function DaftarTugas({
                           </p>
                         </div>
                       </div>
+                    )}
+
+                    {/* LAMPIRAN FILE */}
+                    {t.attachmentUrl && (
+                      <a
+                        href={t.attachmentUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download={t.attachmentName ?? undefined}
+                        className="mt-2 inline-flex items-center gap-1.5 rounded-lg border-2 border-[color:var(--line)]/30 bg-[color:var(--biru-soft)] px-2.5 py-1 text-[11px] font-black text-biru transition-all hover:-translate-y-0.5 hover:shadow-[0_2px_0_var(--sh)]"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          className="size-3 shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={2.5}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                        </svg>
+                        <span className="truncate max-w-[180px]">
+                          {t.attachmentName ?? "Lampiran"}
+                        </span>
+                      </a>
                     )}
                   </div>
 
@@ -495,7 +526,7 @@ export default function DaftarTugas({
           onClick={() => dlgAi.current?.close()}
           className="tombol w-full mt-4"
         >
-          Gas, Mulai Kerjain!
+          Gas, Mulai Kerjain! 🚀
         </button>
       </dialog>
 
@@ -560,6 +591,8 @@ export default function DaftarTugas({
                 id: edit.id,
                 judul: edit.judul,
                 catatan: edit.catatan ?? "",
+                attachmentUrl: edit.attachmentUrl ?? "",
+                attachmentName: edit.attachmentName ?? "",
                 tanggal: edit.tanggal,
                 jam: edit.jam,
                 kategori: edit.kategori ?? "Kuliah",
