@@ -6,12 +6,14 @@ import {
   simpanTugas,
   type HasilForm,
 } from "@/server/tugas-form";
-import { sfxAiSuccess, sfxClick } from "@/lib/sfx";
+import { sfxAiSuccess, sfxClick, sfxDelete } from "@/lib/sfx";
 
 export type DataAwalTugas = {
   id?: string;
   judul?: string;
   catatan?: string;
+  attachmentUrl?: string | null;
+  attachmentName?: string | null;
   tanggal?: string;
   jam?: string;
   kategori?: string;
@@ -36,6 +38,13 @@ function besokDefault() {
 export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
   const [judul, setJudul] = useState(awal?.judul ?? "");
   const [catatan, setCatatan] = useState(awal?.catatan ?? "");
+  const [attachmentUrl, setAttachmentUrl] = useState(awal?.attachmentUrl ?? "");
+  const [attachmentName, setAttachmentName] = useState(
+    awal?.attachmentName ?? "",
+  );
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
   const [tanggal, setTanggal] = useState(awal?.tanggal || besokDefault());
   const [jam, setJam] = useState(awal?.jam || "23:59");
   const [kategori, setKategori] = useState(awal?.kategori || "Kuliah");
@@ -67,6 +76,8 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
     if (awal) {
       setJudul(awal.judul ?? "");
       setCatatan(awal.catatan ?? "");
+      setAttachmentUrl(awal.attachmentUrl ?? "");
+      setAttachmentName(awal.attachmentName ?? "");
       setTanggal(awal.tanggal || besokDefault());
       setJam(awal.jam || "23:59");
       setKategori(awal.kategori || "Kuliah");
@@ -74,6 +85,49 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
       setPrioritas(awal.prioritas ?? "MEDIUM");
     }
   }, [awal]);
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setUploadError(null);
+    sfxClick();
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Upload gagal.");
+      }
+
+      setAttachmentUrl(data.url);
+      setAttachmentName(data.name);
+      sfxAiSuccess();
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Upload gagal.";
+      setUploadError(msg);
+    } finally {
+      setUploading(false);
+      // Reset input file biar bisa upload file yang sama lagi kalau mau
+      e.target.value = "";
+    }
+  }
+
+  function hapusAttachment() {
+    sfxDelete();
+    setAttachmentUrl("");
+    setAttachmentName("");
+    setUploadError(null);
+  }
 
   function mulaiSuara() {
     sfxClick();
@@ -152,15 +206,17 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
   return (
     <form action={formAction} className="space-y-4">
       {awal?.id && <input type="hidden" name="id" value={awal.id} />}
+      <input type="hidden" name="attachmentUrl" value={attachmentUrl} />
+      <input type="hidden" name="attachmentName" value={attachmentName} />
 
-      {/* Kotak AI Auto-Fill */}
+      {/* AI Auto-Fill */}
       <div className="kartu-lime p-3.5">
         <div className="mb-2 flex items-center justify-between gap-2">
           <label htmlFor="ai-cepat" className="text-sm font-extrabold text-ink">
             Ketik atau ucapkan tugasmu
           </label>
           <span className="rounded-md border border-[color:var(--line)] bg-card px-2 py-0.5 text-[11px] font-bold text-muted">
-            Speech-to-text
+            Smart Extract
           </span>
         </div>
 
@@ -224,7 +280,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
         )}
       </div>
 
-      {/* Nama Tugas */}
+      {/* Judul */}
       <div>
         <label htmlFor="f-judul" className="mb-1.5 block text-sm font-bold">
           Nama Tugas
@@ -236,12 +292,12 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
           required
           value={judul}
           onChange={(e) => setJudul(e.target.value)}
-          placeholder="Belajar & Latihan Soal Kalkulus"
+          placeholder="Misal: Belajar & Latihan Soal Kalkulus"
           className="kolom"
         />
       </div>
 
-      {/* Catatan / Deskripsi (BARU) */}
+      {/* ================= CATATAN + ATTACHMENT ================= */}
       <div>
         <label
           htmlFor="f-catatan"
@@ -250,19 +306,104 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
           <span>Catatan / Deskripsi</span>
           <span className="text-[10px] font-semibold text-muted">Opsional</span>
         </label>
-        <textarea
-          id="f-catatan"
-          name="catatan"
-          rows={3}
-          maxLength={300}
-          value={catatan}
-          onChange={(e) => setCatatan(e.target.value)}
-          placeholder="contoh: Sisa nulis Bab 3-5 (lainnya)"
-          className="kolom resize-none py-2.5 leading-relaxed"
-        />
-        <p className="mt-1 text-[10px] font-semibold text-muted">
-          {catatan.length}/300 karakter
-        </p>
+
+        <div className="relative rounded-xl border-2 border-[color:var(--line)] bg-[color:var(--surface-2)] focus-within:bg-card focus-within:border-[color:var(--biru)] transition-colors">
+          <textarea
+            id="f-catatan"
+            name="catatan"
+            rows={3}
+            maxLength={500}
+            value={catatan}
+            onChange={(e) => setCatatan(e.target.value)}
+            placeholder="Misal: Bab 3-5, link referensi, dll."
+            className="block w-full resize-none bg-transparent px-3.5 pt-3 pb-11 text-sm font-semibold text-ink placeholder:text-muted/60 placeholder:font-medium focus:outline-none"
+          />
+
+          {/* Toolbar Bawah: Klip Kertas + Counter */}
+          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between border-t-2 border-[color:var(--line)]/10 bg-[color:var(--surface-2)]/50 px-2 py-1.5">
+            <div className="flex items-center gap-1.5">
+              {/* Hidden file input */}
+              <input
+                type="file"
+                id="file-upload"
+                className="hidden"
+                onChange={handleFileUpload}
+                accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp,.txt,.xls,.xlsx,.ppt,.pptx"
+                disabled={uploading}
+              />
+
+              {/* Tombol Klip Kertas */}
+              <label
+                htmlFor="file-upload"
+                className={`cursor-pointer inline-flex items-center gap-1.5 rounded-md border-2 border-[color:var(--line)]/30 bg-card px-2 py-1 text-[10px] font-black transition-all hover:border-[color:var(--line)] hover:-translate-y-0.5 ${
+                  uploading ? "opacity-50 pointer-events-none" : ""
+                }`}
+                title="Lampirkan file (max 4MB)"
+              >
+                {uploading ? (
+                  <svg
+                    className="animate-spin size-3.5 text-ink"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={3}
+                  >
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                  </svg>
+                ) : (
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="size-3.5 text-ink"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                  </svg>
+                )}
+                <span>{uploading ? "Mengunggah..." : "Lampirkan"}</span>
+              </label>
+
+              {/* Chip File Terlampir */}
+              {attachmentUrl && !uploading && (
+                <div className="inline-flex items-center gap-1 rounded-md border-2 border-[color:var(--biru)]/40 bg-[color:var(--biru-soft)] px-2 py-0.5 text-[10px] font-bold text-biru max-w-[180px]">
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="size-3 shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                  </svg>
+                  <span className="truncate">{attachmentName || "file"}</span>
+                  <button
+                    type="button"
+                    onClick={hapusAttachment}
+                    aria-label="Hapus lampiran"
+                    className="ml-0.5 rounded text-biru/70 hover:text-[color:var(--bahaya)] hover:bg-card transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <span className="text-[10px] font-semibold text-muted">
+              {catatan.length}/500
+            </span>
+          </div>
+        </div>
+
+        {uploadError && (
+          <p className="mt-1.5 rounded-lg border-2 border-[color:var(--bahaya)] bg-[color:var(--bahaya-bg)] px-2.5 py-1 text-[10px] font-bold text-[color:var(--bahaya)]">
+            {uploadError}
+          </p>
+        )}
       </div>
 
       {/* Tanggal & Jam */}
@@ -324,7 +465,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
         </div>
       </div>
 
-      {/* Kategori & Estimasi Jam */}
+      {/* Kategori & Estimasi */}
       <div className="grid gap-3 sm:grid-cols-[1fr_10.5rem]">
         <div>
           <label
