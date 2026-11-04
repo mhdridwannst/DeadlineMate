@@ -27,6 +27,8 @@ export default function NotifToggle() {
   const [info, setInfo] = useState<string | null>(null);
   const [jumlah, setJumlah] = useState(0);
 
+  const [isTesting, setIsTesting] = useState(false);
+
   useEffect(() => {
     async function check() {
       if (typeof window === "undefined") return;
@@ -128,7 +130,9 @@ export default function NotifToggle() {
 
   async function kirimTest() {
     sfxClick();
-    setInfo("Mengirim test notifikasi...");
+    setIsTesting(true);
+    setInfo(null);
+
     try {
       const res = await fetch("/api/push/test", { method: "POST" });
       const data = await res.json();
@@ -142,6 +146,8 @@ export default function NotifToggle() {
       }
     } catch {
       setInfo("Gagal kirim test.");
+    } finally {
+      setIsTesting(false);
     }
   }
 
@@ -218,22 +224,46 @@ export default function NotifToggle() {
         </div>
       )}
 
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-3 flex flex-wrap items-center gap-2">
         {isActive ? (
           <>
+            {/* FIX UI: Tombol Test pakai hover:Lime */}
             <button
               type="button"
               onClick={kirimTest}
-              disabled={isWorking}
-              className="rounded-lg border-2 border-[#111] bg-lime px-3 py-1.5 text-[11px] font-black text-[#111] shadow-[0_2px_0_var(--sh)] transition-all hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none disabled:opacity-50"
+              disabled={isTesting || isWorking}
+              className={`inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg border-2 border-[#111] px-3.5 py-1.5 text-[11px] font-black transition-all duration-150 ${
+                isTesting
+                  ? "bg-[color:var(--surface-2)] text-muted cursor-wait translate-y-[2px] shadow-none"
+                  : "bg-white text-ink shadow-[0_3px_0_var(--sh)] hover:bg-lime hover:-translate-y-0.5 hover:shadow-[0_4px_0_var(--sh)] active:translate-y-1 active:shadow-none"
+              } disabled:opacity-60 disabled:cursor-not-allowed`}
             >
-              🔔 Kirim Test Notif
+              {isTesting ? (
+                <>
+                  <svg
+                    className="animate-spin size-3.5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={3}
+                  >
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                  </svg>
+                  Mengirim...
+                </>
+              ) : (
+                <>
+                  <Icon name="check" className="size-3.5" />
+                  Kirim Test Notif
+                </>
+              )}
             </button>
+
             <button
               type="button"
               onClick={nonaktifkan}
-              disabled={isWorking}
-              className="rounded-lg border-2 border-[color:var(--line)] bg-[color:var(--surface-2)] px-3 py-1.5 text-[11px] font-bold text-muted transition-all hover:border-[color:var(--bahaya)] hover:text-[color:var(--bahaya)] disabled:opacity-50"
+              disabled={isTesting || isWorking}
+              className="rounded-lg px-3 py-1.5 text-[11px] font-bold text-muted transition-colors hover:bg-[color:var(--bahaya-bg)] hover:text-[color:var(--bahaya)] disabled:opacity-50"
             >
               Matikan
             </button>
@@ -243,9 +273,12 @@ export default function NotifToggle() {
             type="button"
             onClick={aktifkan}
             disabled={isWorking}
-            className="rounded-lg border-2 border-[#111] bg-lime px-4 py-1.5 text-[11px] font-black text-[#111] shadow-[0_2px_0_var(--sh)] transition-all hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none disabled:opacity-50"
+            className="relative group w-full disabled:opacity-50"
           >
-            {isWorking ? "Memproses..." : "Aktifkan Notifikasi"}
+            <div className="absolute inset-0 bg-[#111] rounded-xl translate-y-1.5 transition-transform group-hover:translate-y-2 group-active:translate-y-0" />
+            <div className="relative flex items-center justify-center gap-2 w-full bg-lime text-[#111] border-2 border-[#111] rounded-xl py-2 text-xs font-black transition-transform group-hover:-translate-y-0.5 group-active:translate-y-1">
+              {isWorking ? "Memproses..." : "Aktifkan Notifikasi"}
+            </div>
           </button>
         )}
       </div>
