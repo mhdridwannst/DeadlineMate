@@ -31,6 +31,7 @@ AI di sini punya fungsi yang jelas dalam alur aplikasi, bukan fitur tempelan:
 - Tema terang, gelap, atau mengikuti sistem
 - Tampilan mobile dengan navigasi bawah, dan sidebar di desktop
 - Mode demo untuk memperagakan alur streak tanpa menunggu berhari-hari
+- Kalau tanggal tidak disebut, tenggat diisi otomatis ke besok pukul 23.59, dan bisa diubah sebelum disimpan
 
 ## Aturan streak dan EXP
 
@@ -128,8 +129,8 @@ Dikembangkan oleh **Kelompok 2** dari UKM Software Development 2026:
       Hacker
     </td>
     <td align="center">
-      <a href="https://github.com/username2">
-        <img src="https://github.com/username2.png" width="100" style="border-radius:50%" alt="Muhammad Slamet Ridho"/><br />
+      <a href="https://github.com/ridho-novianto">
+        <img src="https://github.com/ridho-novianto.png" width="100" style="border-radius:50%" alt="Muhammad Slamet Ridho"/><br />
         <sub><b>Muhammad Slamet Ridho</b></sub>
       </a><br />
       Hipster
@@ -144,8 +145,8 @@ Dikembangkan oleh **Kelompok 2** dari UKM Software Development 2026:
   </tr>
   <tr>
     <td align="center">
-      <a href="https://github.com/username7">
-        <img src="https://github.com/username7.png" width="100" style="border-radius:50%" alt="M Zaki Edi"/><br />
+      <a href="https://github.com/M-Zaki-Edi">
+        <img src="https://github.com/M-Zaki-Edi.png" width="100" style="border-radius:50%" alt="M Zaki Edi"/><br />
         <sub><b>M Zaki Edi</b></sub>
       </a><br />
       Hacker
