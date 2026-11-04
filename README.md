@@ -31,6 +31,7 @@ AI di sini punya fungsi yang jelas dalam alur aplikasi, bukan fitur tempelan:
 - Tema terang, gelap, atau mengikuti sistem
 - Tampilan mobile dengan navigasi bawah, dan sidebar di desktop
 - Mode demo untuk memperagakan alur streak tanpa menunggu berhari-hari
+- Kalau tanggal tidak disebut, tenggat diisi otomatis ke besok pukul 23.59, dan bisa diubah sebelum disimpan
 
 ## Aturan streak dan EXP
 
