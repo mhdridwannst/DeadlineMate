@@ -216,7 +216,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
             Ketik atau ucapkan tugasmu
           </label>
           <span className="rounded-md border border-[color:var(--line)] bg-card px-2 py-0.5 text-[11px] font-bold text-muted">
-            Smart Extract
+            Speech-to-Text
           </span>
         </div>
 
