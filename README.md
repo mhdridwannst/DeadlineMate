@@ -12,15 +12,50 @@ DeadlineMate menjawabnya dengan tiga pendekatan. AI Task Breakdown memecah tugas
 
 ## Screenshots
 
-![Dashboard](./docs/dashboard.png)
+### Halaman Login
 
-| Login (desktop) | Login (mobile) |
-| :---: | :---: |
-| ![Login desktop](./docs/loginpage_desktop.png) | ![Login mobile](./docs/loginpage_mobile.png) |
+<table>
+  <tr>
+    <td align="center" width="70%">
+      <img src="./docs/loginpage_desktop.png" alt="Halaman login di desktop"/><br />
+      <sub>Desktop</sub>
+    </td>
+    <td align="center" width="30%">
+      <img src="./docs/loginpage_mobile.png" alt="Halaman login di mobile"/><br />
+      <sub>Mobile</sub>
+    </td>
+  </tr>
+</table>
 
-| Daftar tugas (desktop) | Daftar tugas (mobile) |
-| :---: | :---: |
-| ![Task desktop](./docs/task_desktop.png) | ![Task mobile](./docs/task_mobile.png) |
+### Dashboard
+
+<table>
+  <tr>
+    <td align="center" width="70%">
+      <img src="./docs/dashboard_desktop.png" alt="Dashboard di desktop"/><br />
+      <sub>Desktop</sub>
+    </td>
+    <td align="center" width="30%">
+      <img src="./docs/dashboard_mobile.png" alt="Dashboard di mobile"/><br />
+      <sub>Mobile</sub>
+    </td>
+  </tr>
+</table>
+
+### Tugas
+
+<table>
+  <tr>
+    <td align="center" width="70%">
+      <img src="./docs/task_desktop.png" alt="Halaman tugas di desktop"/><br />
+      <sub>Desktop</sub>
+    </td>
+    <td align="center" width="30%">
+      <img src="./docs/task_mobile.png" alt="Halaman tugas di mobile"/><br />
+      <sub>Mobile</sub>
+    </td>
+  </tr>
+</table>
 
 ## Fitur Utama
 
