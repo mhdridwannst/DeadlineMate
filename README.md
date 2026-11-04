@@ -76,7 +76,7 @@ Versi Prisma dikunci di 7.x. Jangan memperbaruinya dengan `npm i prisma@latest` 
 | Variabel                       | Keterangan                                                                                                        |
 | ------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
 | `DATABASE_URL`                 | Connection string PostgreSQL. Pakai koneksi langsung, bukan pooled.                                               |
-| `AI_PROVIDER`                  | `google` atau `groq`.                                                                                             |
+| `AI_PROVIDER`                  | `groq`.                                                                                             |
 | `AI_MODEL`                     | Nama model persis seperti tertulis di dashboard penyedia. Nama model sering berganti, jadi tidak ditulis di kode. |
 | `GOOGLE_GENERATIVE_AI_API_KEY` | Dipakai kalau `AI_PROVIDER=google`.                                                                               |
 | `GROQ_API_KEY`                 | Dipakai kalau `AI_PROVIDER=groq`.                                                                                 |
