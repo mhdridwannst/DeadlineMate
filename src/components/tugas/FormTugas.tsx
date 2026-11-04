@@ -187,7 +187,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
       setPrioritas(res.data.prioritas);
       setPesanAI({
         ok: true,
-        teks: "Kolom berhasil terisi otomatis! Cek di bawah lalu klik Simpan.",
+        teks: "Tugas berhasil dibuat otomatis! Cek di bawah & periksa lalu klik Simpan.",
       });
     } finally {
       setLoadingAI(false);
@@ -232,7 +232,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
                 void prosesAutoFill();
               }
             }}
-            placeholder="mis. Belajar Kalkulus besok jam 19.00"
+            placeholder="contoh: Belajar Kalkulus besok jam 19.00"
             className="kolom kolom-gabung bg-card text-ink"
           />
           <button
@@ -292,7 +292,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
           required
           value={judul}
           onChange={(e) => setJudul(e.target.value)}
-          placeholder="Misal: Belajar & Latihan Soal Kalkulus"
+          placeholder="contoh: Belajar & Latihan Soal Kalkulus"
           className="kolom"
         />
       </div>
@@ -315,7 +315,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
             maxLength={500}
             value={catatan}
             onChange={(e) => setCatatan(e.target.value)}
-            placeholder="Misal: Bab 3-5, link referensi, dll."
+            placeholder="contoh: Tinggal nulis bab 3-5"
             className="block w-full resize-none bg-transparent px-3.5 pt-3 pb-11 text-sm font-semibold text-ink placeholder:text-muted/60 placeholder:font-medium focus:outline-none"
           />
 
