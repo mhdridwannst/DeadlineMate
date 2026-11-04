@@ -104,9 +104,17 @@ button,
 summary {
   min-height: 40px;
 }
-:focus-visible {
-  outline: 2px solid var(--biru);
-  outline-offset: 2px;
+
+a:focus-visible,
+button:focus-visible,
+select:focus-visible {
+  outline: 2px dashed var(--line);
+  outline-offset: 3px;
+}
+
+input:focus-visible,
+textarea:focus-visible {
+  outline: none !important;
 }
 
 .kartu {
@@ -228,9 +236,12 @@ summary {
   font-weight: 600;
 }
 .kolom:focus {
-  border-color: var(--biru);
+  border-color: var(--line);
   background: var(--card);
   outline: none;
+  box-shadow: 0 3px 0 var(--sh);
+  transform: translateY(-1px);
+  transition: all 120ms ease-out;
 }
 .kolom::placeholder {
   color: var(--placeholder);
