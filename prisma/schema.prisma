@@ -33,11 +33,12 @@ model User {
   email         String    @unique
   emailVerified DateTime?
   image         String?
-  password      String?   // <-- Buat Credentials login
+  password      String?   
 
   // Relasi Auth.js
   accounts      Account[]
   sessions      Session[]
+  pushSubscriptions PushSubscription[]
 
   // Relasi App DeadlineMate
   coachTone     CoachTone @default(SUPPORTIVE)
@@ -83,6 +84,17 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now()) 
+
+  @@index([email])
+}
+
 // ============ MODEL APP DEADLINEMATE ============
 
 model Task {
@@ -106,7 +118,26 @@ model Task {
   doneAt      DateTime?
   createdAt   DateTime   @default(now())
 
+  // Notifikasi tracking
+  notif24hSent     Boolean @default(false)  
+  notif3hSent      Boolean @default(false)  
+  notifOverdueSent Boolean @default(false) 
+
   @@index([userId, status, dueAt])
+}
+
+// <-- MODEL BARU
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Attendance {

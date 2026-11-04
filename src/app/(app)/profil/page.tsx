@@ -3,6 +3,7 @@ import { getBahasa, getDemoUser, setBahasa } from "@/server/demo-user";
 import { ubahProfilPreferensi } from "@/server/tugas-form";
 import { DICT } from "@/lib/i18n";
 import ThemeSwitch from "@/components/shell/ThemeSwitch";
+import NotifToggle from "@/components/shell/NotifToggle";
 import { Icon } from "@/components/ui/Icon";
 import { redirect } from "next/navigation";
 import ZonaBahaya from "@/components/shell/ZonaBahaya";
@@ -184,7 +185,7 @@ export default async function ProfilPage() {
             </div>
           </section>
 
-          {/* ZONA BERBAHAYA (COMPONENT BARU) */}
+          {/* ZONA BERBAHAYA */}
           <ZonaBahaya />
         </div>
 
@@ -233,6 +234,9 @@ export default async function ProfilPage() {
               <ThemeSwitch />
             </div>
           </section>
+
+          {/* ================= NOTIFIKASI PUSH (BARU) ================= */}
+          <NotifToggle />
 
           {/* Lencana (Trophy Room) */}
           <section className="kartu p-5 bg-card border-2 border-[color:var(--line)] shadow-[0_4px_0_var(--sh)] relative overflow-hidden">
