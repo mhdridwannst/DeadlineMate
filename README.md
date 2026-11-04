@@ -129,7 +129,7 @@ Dikembangkan oleh **Kelompok 2** dari UKM Software Development 2026:
     </td>
     <td align="center">
       <a href="https://github.com/ridho-novianto">
-        <img src="https://github.com/username2.png" width="100" style="border-radius:50%" alt="Muhammad Slamet Ridho"/><br />
+        <img src="https://github.com/ridho-novianto.png" width="100" style="border-radius:50%" alt="Muhammad Slamet Ridho"/><br />
         <sub><b>Muhammad Slamet Ridho</b></sub>
       </a><br />
       Hipster
@@ -144,8 +144,8 @@ Dikembangkan oleh **Kelompok 2** dari UKM Software Development 2026:
   </tr>
   <tr>
     <td align="center">
-      <a href="https://github.com/username7">
-        <img src="https://github.com/username7.png" width="100" style="border-radius:50%" alt="M Zaki Edi"/><br />
+      <a href="https://github.com/M-Zaki-Edi">
+        <img src="https://github.com/M-Zaki-Edi.png" width="100" style="border-radius:50%" alt="M Zaki Edi"/><br />
         <sub><b>M Zaki Edi</b></sub>
       </a><br />
       Hacker
