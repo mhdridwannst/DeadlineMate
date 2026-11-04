@@ -1,10 +1,17 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
 export async function kirimEmailResetPassword(email: string, token: string) {
+  // FIX: Cek API key dulu sebelum inisialisasi
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error("RESEND_API_KEY belum di-set di environment variables.");
+  }
+
+  // FIX: Inisialisasi Resend di dalam fungsi (Lazy Initialization)
+  // Biar halaman lain (kayak /login) gak ikut crash kalau API key bermasalah.
+  const resend = new Resend(process.env.RESEND_API_KEY);
+
   const linkReset = `${BASE_URL}/reset-password?token=${token}`;
 
   const html = `
