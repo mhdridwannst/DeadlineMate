@@ -12,15 +12,15 @@ DeadlineMate menjawabnya dengan tiga pendekatan. AI Task Breakdown memecah tugas
 
 ## Screenshots
 
-| Login Page (Desktop) | Login Page (Mobile) |
-| :---: | :---: |
-| ![Dashboard tema terang](./docs/dashboard-light.png) | ![Dashboard tema gelap](./docs/dashboard-dark.png) |
-| Daftar tugas hari ini, streak, dan level. | Tampilan yang sama dengan tema gelap. |
+![Dashboard](./docs/dashboard.png)
 
-| Tampilan tugas (Desktop) | Tampilan tugas (Mobile) |
+| Login (desktop) | Login (mobile) |
 | :---: | :---: |
-| ![Smart Scheduler](./docs/ai-split.png) | ![Progress 7 hari](./docs/progress.png) |
-| Satu tugas dipecah menjadi sub-langkah dengan tenggat internal. | Grafik penyelesaian tugas selama 7 hari terakhir. |
+| ![Login desktop](./docs/loginpage_desktop.png) | ![Login mobile](./docs/loginpage_mobile.png) |
+
+| Daftar tugas (desktop) | Daftar tugas (mobile) |
+| :---: | :---: |
+| ![Task desktop](./docs/task_desktop.png) | ![Task mobile](./docs/task_mobile.png) |
 
 ## Fitur Utama
 
