@@ -27,7 +27,7 @@ const TEKS = {
     descRegister:
       "Cukup nama, email, dan password. Progres dan XP-mu tersimpan aman.",
     labelNama: "Nama panggilan",
-    placeholderNama: "Mis. Go Yoon Jung",
+    placeholderNama: "Misal: Go Yoon Jung",
     labelEmail: "Email",
     placeholderEmail: "nama@email.com",
     labelPassword: "Password",

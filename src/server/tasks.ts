@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { del } from "@vercel/blob";
 import { db } from "@/lib/db";
 import { getDemoUser } from "./demo-user";
 
@@ -19,6 +20,7 @@ export async function buatTugas(formData: FormData) {
 
   const user = await getDemoUser();
   if (!user) throw new Error("Unauthorized");
+
   await db.task.create({
     data: {
       userId: user.id,
@@ -27,7 +29,6 @@ export async function buatTugas(formData: FormData) {
     },
   });
 
-  // SPESIFIK, JANGAN LAYOUT
   revalidatePath("/today");
   revalidatePath("/progress");
 }
@@ -39,9 +40,11 @@ export async function ubahStatus(
 ) {
   const user = await getDemoUser();
   if (!user) throw new Error("Unauthorized");
+
   const status = selesai ? "DONE" : "TODO";
   const doneAt = selesai ? new Date() : null;
 
+  // Kalau parentId udah diketahui, skip findFirst
   let idInduk = parentId;
   if (idInduk === undefined) {
     const task = await db.task.findFirst({
@@ -74,7 +77,6 @@ export async function ubahStatus(
     });
   }
 
-  // SPESIFIK
   revalidatePath("/today");
   revalidatePath("/progress");
 }
@@ -82,9 +84,38 @@ export async function ubahStatus(
 export async function hapusTugas(id: string) {
   const user = await getDemoUser();
   if (!user) throw new Error("Unauthorized");
+
+  // 1. Ambil data tugas dulu buat tau URL attachment-nya
+  const task = await db.task.findUnique({
+    where: { id, userId: user.id },
+    select: {
+      attachmentUrl: true,
+      subtasks: { select: { attachmentUrl: true } },
+    },
+  });
+
+  // 2. Hapus file dari Vercel Blob (kalau ada)
+  if (task) {
+    const urlsToDelete: string[] = [];
+    if (task.attachmentUrl) urlsToDelete.push(task.attachmentUrl);
+    task.subtasks.forEach((sub) => {
+      if (sub.attachmentUrl) urlsToDelete.push(sub.attachmentUrl);
+    });
+
+    if (urlsToDelete.length > 0) {
+      try {
+        await del(urlsToDelete);
+      } catch (e) {
+        console.warn("[blob] Gagal hapus file:", e);
+        // Jangan block proses hapus DB kalau file gagal dihapus
+      }
+    }
+  }
+
+  // 3. Hapus dari database
   await db.task.deleteMany({ where: { id, userId: user.id } });
 
-  // SPESIFIK
   revalidatePath("/today");
   revalidatePath("/progress");
+  revalidatePath("/kalender");
 }
