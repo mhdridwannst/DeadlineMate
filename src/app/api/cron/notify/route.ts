@@ -2,6 +2,15 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { kirimNotifKeUser } from "@/server/push-utils";
 
+// ==================== TIPE DATA ====================
+type KategoriNotif = {
+  key: "24h" | "3h" | "overdue";
+  title: string;
+  bodyTemplate: (judul: string) => string;
+  flagField: "notif24hSent" | "notif3hSent" | "notifOverdueSent";
+  getFilter: (now: Date, in3h: Date, in24h: Date) => object;
+};
+
 export async function GET(request: Request) {
   // 1. SECURITY: Cek header Authorization
   const authHeader = request.headers.get("authorization");
@@ -10,90 +19,89 @@ export async function GET(request: Request) {
   }
 
   const now = new Date();
-  const stats = { checked: 0, sent24h: 0, sent3h: 0, sentOverdue: 0 };
+  const in3h = new Date(now.getTime() + 3 * 60 * 60 * 1000);
+  const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-  try {
-    // ==================== KATEGORI 1: H-24 JAM ====================
-    const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-    const in3h = new Date(now.getTime() + 3 * 60 * 60 * 1000);
+  const stats = {
+    checked: 0,
+    sent24h: 0,
+    sent3h: 0,
+    sentOverdue: 0,
+  };
 
-    const tugas24h = await db.task.findMany({
-      where: {
+  // 2. KONFIGURASI KATEGORI (Data-Driven)
+  const KATEGORI: KategoriNotif[] = [
+    {
+      key: "24h",
+      title: "⏰ Deadline Besok!",
+      bodyTemplate: (judul) =>
+        `Jangan lupa, "${judul}" due dalam kurang dari 24 jam. Yuk cicil sekarang!`,
+      flagField: "notif24hSent",
+      getFilter: (now, in3h, in24h) => ({
         status: { not: "DONE" },
         dueAt: { gte: in3h, lte: in24h },
         notif24hSent: false,
         parentId: null,
-      },
-      select: { id: true, title: true, userId: true },
-    });
-
-    for (const t of tugas24h) {
-      const result = await kirimNotifKeUser(t.userId, {
-        title: "⏰ Deadline Besok!",
-        body: `Jangan lupa, "${t.title}" due dalam kurang dari 24 jam. Yuk cicil sekarang!`,
-        url: "/today",
-        tag: `24h-${t.id}`,
-      });
-      if (result.sukses > 0) {
-        await db.task.update({
-          where: { id: t.id },
-          data: { notif24hSent: true },
-        });
-        stats.sent24h++;
-      }
-    }
-
-    // ==================== KATEGORI 2: 3 JAM ====================
-    const tugas3h = await db.task.findMany({
-      where: {
+      }),
+    },
+    {
+      key: "3h",
+      title: "🚨 3 Jam Lagi, Deadline!",
+      bodyTemplate: (judul) =>
+        `"${judul}" mau habis waktunya. Fokus dan selesaikan sekarang!`,
+      flagField: "notif3hSent",
+      getFilter: (now, in3h) => ({
         status: { not: "DONE" },
         dueAt: { gt: now, lte: in3h },
         notif3hSent: false,
         parentId: null,
-      },
-      select: { id: true, title: true, userId: true },
-    });
-
-    for (const t of tugas3h) {
-      const result = await kirimNotifKeUser(t.userId, {
-        title: "🚨 3 Jam Lagi, Deadline!",
-        body: `"${t.title}" mau habis waktunya. Fokus dan selesaikan sekarang!`,
-        url: "/today",
-        tag: `3h-${t.id}`,
-      });
-      if (result.sukses > 0) {
-        await db.task.update({
-          where: { id: t.id },
-          data: { notif3hSent: true },
-        });
-        stats.sent3h++;
-      }
-    }
-
-    // ==================== KATEGORI 3: TELAT ====================
-    const tugasTelat = await db.task.findMany({
-      where: {
+      }),
+    },
+    {
+      key: "overdue",
+      title: "🔥 Deadline Terlewat!",
+      bodyTemplate: (judul) =>
+        `"${judul}" udah lewat deadline. Streak lo terancam!`,
+      flagField: "notifOverdueSent",
+      getFilter: (now) => ({
         status: { not: "DONE" },
         dueAt: { lt: now },
         notifOverdueSent: false,
         parentId: null,
-      },
-      select: { id: true, title: true, userId: true },
-    });
+      }),
+    },
+  ];
 
-    for (const t of tugasTelat) {
-      const result = await kirimNotifKeUser(t.userId, {
-        title: "🔥 Deadline Terlewat!",
-        body: `"${t.title}" udah lewat deadline. Streak lo terancam!`,
-        url: "/today",
-        tag: `overdue-${t.id}`,
+  try {
+    // 3. PROSES NOTIFIKASI BERDASARKAN KATEGORI
+    for (const kategori of KATEGORI) {
+      const tugasList = await db.task.findMany({
+        where: kategori.getFilter(now, in3h, in24h),
+        select: { id: true, title: true, userId: true },
       });
-      if (result.sukses > 0) {
-        await db.task.update({
-          where: { id: t.id },
-          data: { notifOverdueSent: true },
+
+      stats.checked += tugasList.length;
+
+      for (const tugas of tugasList) {
+        const hasil = await kirimNotifKeUser(tugas.userId, {
+          title: kategori.title,
+          body: kategori.bodyTemplate(tugas.title),
+          url: "/today",
+          tag: `${kategori.key}-${tugas.id}`,
         });
-        stats.sentOverdue++;
+
+        if (hasil.sukses > 0) {
+          // Update flag di database (dynamic key)
+          await db.task.update({
+            where: { id: tugas.id },
+            data: { [kategori.flagField]: true },
+          });
+
+          // Increment counter yang sesuai
+          if (kategori.key === "24h") stats.sent24h++;
+          if (kategori.key === "3h") stats.sent3h++;
+          if (kategori.key === "overdue") stats.sentOverdue++;
+        }
       }
     }
 
@@ -104,7 +112,6 @@ export async function GET(request: Request) {
     });
   } catch (e: unknown) {
     console.error("[cron] Error:", e);
-    // FIX: Cek dulu apakah e beneran Error object
     const message = e instanceof Error ? e.message : "Unknown error occurred";
     return NextResponse.json({ error: message }, { status: 500 });
   }
