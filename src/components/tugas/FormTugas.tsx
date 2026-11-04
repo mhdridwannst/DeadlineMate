@@ -1,12 +1,40 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import {
   isiOtomatisTugasAI,
   simpanTugas,
   type HasilForm,
 } from "@/server/tugas-form";
 import { sfxAiSuccess, sfxClick, sfxDelete } from "@/lib/sfx";
+
+interface SpeechRecognitionEvent {
+  results: {
+    [index: number]: {
+      [index: number]: {
+        transcript: string;
+      };
+    };
+  };
+}
+
+interface SpeechRecognitionConstructor {
+  new (): {
+    lang: string;
+    interimResults: boolean;
+    onstart: () => void;
+    onend: () => void;
+    onerror: () => void;
+    onresult: (event: SpeechRecognitionEvent) => void;
+    start: () => void;
+  };
+}
+
+type CustomWindow = Window &
+  typeof globalThis & {
+    SpeechRecognition?: SpeechRecognitionConstructor;
+    webkitSpeechRecognition?: SpeechRecognitionConstructor;
+  };
 
 export type DataAwalTugas = {
   id?: string;
@@ -72,20 +100,6 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
     { ok: false },
   );
 
-  useEffect(() => {
-    if (awal) {
-      setJudul(awal.judul ?? "");
-      setCatatan(awal.catatan ?? "");
-      setAttachmentUrl(awal.attachmentUrl ?? "");
-      setAttachmentName(awal.attachmentName ?? "");
-      setTanggal(awal.tanggal || besokDefault());
-      setJam(awal.jam || "23:59");
-      setKategori(awal.kategori || "Kuliah");
-      setEstimasi(awal.estimasiJam ?? 2);
-      setPrioritas(awal.prioritas ?? "MEDIUM");
-    }
-  }, [awal]);
-
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -117,7 +131,6 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
       setUploadError(msg);
     } finally {
       setUploading(false);
-      // Reset input file biar bisa upload file yang sama lagi kalau mau
       e.target.value = "";
     }
   }
@@ -131,12 +144,9 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
 
   function mulaiSuara() {
     sfxClick();
-    const Win = window as unknown as {
-      SpeechRecognition?: new () => any;
-      webkitSpeechRecognition?: new () => any;
-    };
-
+    const Win = window as CustomWindow;
     const SR = Win.SpeechRecognition || Win.webkitSpeechRecognition;
+
     if (!SR) {
       setPesanAI({
         ok: false,
@@ -151,7 +161,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
     rec.onstart = () => setRekam(true);
     rec.onend = () => setRekam(false);
     rec.onerror = () => setRekam(false);
-    rec.onresult = (e: any) => {
+    rec.onresult = (e: SpeechRecognitionEvent) => {
       const hasilSuara = e.results?.[0]?.[0]?.transcript ?? "";
       if (hasilSuara) {
         setInputCepat((lama) => (lama ? `${lama} ${hasilSuara}` : hasilSuara));
@@ -187,7 +197,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
       setPrioritas(res.data.prioritas);
       setPesanAI({
         ok: true,
-        teks: "Tugas berhasil dibuat otomatis! Cek di bawah & periksa lalu klik Simpan.",
+        teks: "Kolom berhasil terisi otomatis! Cek di bawah lalu klik Simpan.",
       });
     } finally {
       setLoadingAI(false);
@@ -232,7 +242,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
                 void prosesAutoFill();
               }
             }}
-            placeholder="contoh: Belajar Kalkulus besok jam 19.00"
+            placeholder="mis. Belajar Kalkulus besok jam 19.00"
             className="kolom kolom-gabung bg-card text-ink"
           />
           <button
@@ -292,7 +302,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
           required
           value={judul}
           onChange={(e) => setJudul(e.target.value)}
-          placeholder="contoh: Belajar & Latihan Soal Kalkulus"
+          placeholder="Misal: Belajar & Latihan Soal Kalkulus"
           className="kolom"
         />
       </div>
@@ -307,7 +317,8 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
           <span className="text-[10px] font-semibold text-muted">Opsional</span>
         </label>
 
-        <div className="relative rounded-xl border-2 border-[color:var(--line)] bg-[color:var(--surface-2)] focus-within:bg-card focus-within:border-[color:var(--biru)] transition-colors">
+        {/* FIX: Tambah outline-none dan focus-within:outline-none */}
+        <div className="relative rounded-xl border-2 border-[color:var(--line)] bg-[color:var(--surface-2)] transition-all duration-150 focus-within:bg-card focus-within:shadow-[0_4px_0_var(--sh)] focus-within:!outline-none outline-none">
           <textarea
             id="f-catatan"
             name="catatan"
@@ -315,14 +326,13 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
             maxLength={500}
             value={catatan}
             onChange={(e) => setCatatan(e.target.value)}
-            placeholder="contoh: Tinggal nulis bab 3-5"
-            className="block w-full resize-none bg-transparent px-3.5 pt-3 pb-11 text-sm font-semibold text-ink placeholder:text-muted/60 placeholder:font-medium focus:outline-none"
+            placeholder="Misal: Bab 3-5, link referensi, dll."
+            // Tambahin !outline-none juga di sini
+            className="block w-full resize-none bg-transparent px-3.5 pt-3 pb-11 text-sm font-semibold text-ink placeholder:text-muted/60 placeholder:font-medium !outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
           />
 
-          {/* Toolbar Bawah: Klip Kertas + Counter */}
-          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between border-t-2 border-[color:var(--line)]/10 bg-[color:var(--surface-2)]/50 px-2 py-1.5">
+          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between border-t-2 border-[color:var(--line)]/10 bg-[color:var(--surface-2)]/50 px-2 py-1.5 rounded-b-[10px]">
             <div className="flex items-center gap-1.5">
-              {/* Hidden file input */}
               <input
                 type="file"
                 id="file-upload"
@@ -332,7 +342,6 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
                 disabled={uploading}
               />
 
-              {/* Tombol Klip Kertas */}
               <label
                 htmlFor="file-upload"
                 className={`cursor-pointer inline-flex items-center gap-1.5 rounded-md border-2 border-[color:var(--line)]/30 bg-card px-2 py-1 text-[10px] font-black transition-all hover:border-[color:var(--line)] hover:-translate-y-0.5 ${
@@ -366,7 +375,6 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
                 <span>{uploading ? "Mengunggah..." : "Lampirkan"}</span>
               </label>
 
-              {/* Chip File Terlampir */}
               {attachmentUrl && !uploading && (
                 <div className="inline-flex items-center gap-1 rounded-md border-2 border-[color:var(--biru)]/40 bg-[color:var(--biru-soft)] px-2 py-0.5 text-[10px] font-bold text-biru max-w-[180px]">
                   <svg
