@@ -2,11 +2,6 @@
 
 Asisten tugas untuk mahasiswa yang memecah tenggat besar menjadi langkah kecil, lalu mengingatkan sebelum terlambat.
 
-Live demo: https://deadlinemate.vercel.app
-
-![Node](https://img.shields.io/badge/node-%3E%3D20-339933)
-![License](https://img.shields.io/badge/license-MIT-blue)
-
 ![DeadlineMate Banner](./docs/banner.png)
 
 ## Latar Belakang
@@ -17,12 +12,12 @@ DeadlineMate menjawabnya dengan tiga pendekatan. AI Task Breakdown memecah tugas
 
 ## Screenshots
 
-| Dashboard (tema terang) | Dashboard (tema gelap) |
+| Login Page (Desktop) | Login Page (Mobile) |
 | :---: | :---: |
 | ![Dashboard tema terang](./docs/dashboard-light.png) | ![Dashboard tema gelap](./docs/dashboard-dark.png) |
 | Daftar tugas hari ini, streak, dan level. | Tampilan yang sama dengan tema gelap. |
 
-| Smart Scheduler | Progress |
+| Tampilan tugas (Desktop) | Tampilan tugas (Mobile) |
 | :---: | :---: |
 | ![Smart Scheduler](./docs/ai-split.png) | ![Progress 7 hari](./docs/progress.png) |
 | Satu tugas dipecah menjadi sub-langkah dengan tenggat internal. | Grafik penyelesaian tugas selama 7 hari terakhir. |
