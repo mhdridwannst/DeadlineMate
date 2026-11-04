@@ -1,123 +1,151 @@
 # DeadlineMate
 
-Teman yang ngejar deadline bareng kamu.
+Asisten tugas untuk mahasiswa yang memecah tenggat besar menjadi langkah kecil, lalu mengingatkan sebelum terlambat.
 
-DeadlineMate adalah aplikasi web untuk mahasiswa dan pelajar yang sering menunda. Masalah utamanya jarang soal lupa tugas. Yang bikin telat biasanya menunda, salah memperkirakan waktu, dan semangat yang hilang di tengah jalan. Karena itu DeadlineMate tidak berhenti di daftar tugas: ada Mate, partner AI yang memecah tugas besar jadi langkah kecil dengan tenggatnya sendiri, lalu menemani kamu lewat streak, level, dan peringatan deadline.
+Live demo: https://deadlinemate.vercel.app
 
-Proyek ini dibuat untuk Final Project UKM Software Development, tema _Smart Student Productivity_.
+![Node](https://img.shields.io/badge/node-%3E%3D20-339933)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
-## Cara kerjanya
+![DeadlineMate Banner](./docs/banner.png)
 
-Kamu cukup menulis bebas, misalnya:
+## Latar Belakang
 
-> laporan kimia Jumat, makalah sosiologi Senin depan jam 12
+Mahasiswa jarang gagal karena tidak mampu. Mereka gagal karena tidak tahu harus mulai dari mana (Task Paralysis), meremehkan waktu pengerjaan (Planning Fallacy), dan berhenti total setelah satu hari terlewat (Streak Fragility). Aplikasi to-do biasa hanya mencatat tugas. Ketiga masalah ini tidak tersentuh.
 
-Mate memisahkan kalimat itu menjadi dua tugas, memecah masing-masing menjadi langkah yang tidak lebih dari 90 menit, lalu memberi tenggat internal untuk tiap langkah. Dengan begitu pengerjaan tersebar dari awal dan tidak menumpuk di malam sebelum deadline.
+DeadlineMate menjawabnya dengan tiga pendekatan. AI Task Breakdown memecah tugas menjadi sub-langkah yang jelas. Gamifikasi dengan sistem Shield menjaga streak tetap adil. Push notification mengingatkan secara proaktif sebelum tenggat, bukan setelahnya.
 
-AI di sini punya fungsi yang jelas dalam alur aplikasi, bukan fitur tempelan:
+## Screenshots
 
-- **Smart Scheduler** mengubah teks bebas menjadi tugas terstruktur: judul, kategori, prioritas, estimasi, tenggat, dan daftar langkah. Keluarannya divalidasi dengan skema Zod sebelum disimpan ke database.
-- **Catatan Mate** adalah komentar pendek yang menyesuaikan dengan tugas yang sedang dikerjakan.
-- Penyedia dan model AI dipilih lewat variabel lingkungan, jadi bisa diganti tanpa mengubah kode.
+| Dashboard (tema terang) | Dashboard (tema gelap) |
+| :---: | :---: |
+| ![Dashboard tema terang](./docs/dashboard-light.png) | ![Dashboard tema gelap](./docs/dashboard-dark.png) |
+| Daftar tugas hari ini, streak, dan level. | Tampilan yang sama dengan tema gelap. |
 
-## Fitur
+| Smart Scheduler | Progress |
+| :---: | :---: |
+| ![Smart Scheduler](./docs/ai-split.png) | ![Progress 7 hari](./docs/progress.png) |
+| Satu tugas dipecah menjadi sub-langkah dengan tenggat internal. | Grafik penyelesaian tugas selama 7 hari terakhir. |
 
-- Daftar tugas yang diurutkan berdasarkan prioritas, lengkap dengan kategori, estimasi, dan sisa waktu
-- Tambah tugas manual (nama, tanggal, jam, kategori, estimasi), dengan input suara bila browser mendukung Web Speech API
-- Edit dan hapus tugas, serta centang langkah satu per satu
-- Streak, level, dan EXP, beserta peringatan "streak terancam" saat deadline mendekat
-- Halaman Progress dengan grafik tugas selesai 7 hari terakhir
-- Kalender deadline per bulan
-- Tema terang, gelap, atau mengikuti sistem
-- Tampilan mobile dengan navigasi bawah, dan sidebar di desktop
-- Mode demo untuk memperagakan alur streak tanpa menunggu berhari-hari
-- Kalau tanggal tidak disebut, tenggat diisi otomatis ke besok pukul 23.59, dan bisa diubah sebelum disimpan
+## Fitur Utama
 
-## Aturan streak dan EXP
+### Smart Scheduler (AI)
 
-- Streak bertambah satu setiap tugas selesai sebelum tenggatnya.
-- Streak kembali ke nol kalau tenggat terlewat sebelum tugas selesai, atau tugas diselesaikan terlambat.
-- Setiap tugas atau langkah yang selesai bernilai 10 EXP. Setiap 100 EXP naik satu level.
-- Semua nilai ini dihitung dari data tugas yang ada, tidak disimpan sebagai angka terpisah.
-- Tanggal dan jam dihitung dalam WIB (Asia/Jakarta).
+Pengguna menulis tugas dalam teks bebas, termasuk pesan yang ditempel dari grup chat. Model dipanggil lewat Vercel AI SDK dengan Groq. Outputnya dipaksa mengikuti skema terstruktur.
 
-## Teknologi
+Setiap respons divalidasi dengan Zod sebelum disimpan. Jika model timeout, error, atau menghasilkan output yang gagal validasi, local parser mengambil alih. Pengguna tetap mendapat rencana, hanya tanpa bantuan model.
 
-- Next.js (App Router) dan TypeScript
-- Tailwind CSS v4
-- Prisma 7 dengan PostgreSQL (kami memakai Neon)
-- Vercel AI SDK, dengan penyedia Google Gemini atau Groq
-- Zod untuk validasi input dan keluaran AI
+Tenggat internal tiap sub-langkah dihitung otomatis dari tenggat utama.
 
-## Menjalankan di lokal
+### Autentikasi dan Keamanan
 
-Dibutuhkan Node.js (dikembangkan dengan v24), sebuah database PostgreSQL, dan API key dari salah satu penyedia AI (Google AI Studio atau Groq).
+Autentikasi memakai Auth.js v5 dengan dua provider: Google OAuth dan Credentials. Password di-hash dengan scrypt. Fitur forgot password mengirim tautan reset lewat Resend.
 
-```powershell
+Middleware melindungi seluruh route aplikasi. Request tanpa sesi valid diarahkan ke halaman login.
+
+### PWA dan Push Notifications
+
+Aplikasi dapat diinstal sebagai PWA. Service Worker menangani notifikasi lewat Web Push API dengan kunci VAPID.
+
+Pengingat dikirim oleh endpoint cron yang dipanggil terjadwal dan dilindungi `CRON_SECRET`. Tersedia juga endpoint untuk menguji push dari sisi pengembang.
+
+### Task Management
+
+- Deskripsi tugas dan file attachment lewat Vercel Blob
+- Input suara memakai Web Speech API
+- Filter kalender interaktif
+- Grafik progress 7 hari
+
+### Sistem Streak dan EXP
+
+EXP diberikan berdasarkan ketepatan waktu penyelesaian.
+
+| Kondisi | EXP |
+| :--- | :---: |
+| Selesai tepat waktu | +15 |
+| Selesai terlambat | +5 |
+| Terlambat dan tidak diselesaikan | -5 |
+
+Shield menahan streak agar tidak reset saat satu hari terlewat. Pengguna yang sempat berhenti tidak kehilangan seluruh progres.
+
+## Tech Stack
+
+| Layer | Teknologi |
+| :--- | :--- |
+| Framework | Next.js 15 (App Router, Server Actions) |
+| Bahasa | TypeScript strict mode |
+| Styling | Tailwind CSS v4 dengan custom design tokens |
+| Database | PostgreSQL (Neon) |
+| ORM | Prisma 7 |
+| Autentikasi | Auth.js v5 (NextAuth) |
+| AI Engine | Vercel AI SDK + Groq |
+| File Storage | Vercel Blob |
+| Email Service | Resend |
+| Push Notif | Web Push (VAPID) + Service Worker |
+| Validasi | Zod |
+
+## Menjalankan di Lokal
+
+### Prasyarat
+
+- Node.js v20 atau lebih baru
+- PostgreSQL, lokal atau hosted (Neon)
+- Kredensial Google OAuth, API key Groq, API key Resend, dan token Vercel Blob
+- Sepasang kunci VAPID, dibuat dengan `npx web-push generate-vapid-keys`
+
+### Instalasi
+
+```bash
 git clone https://github.com/mhdridwannst/DeadlineMate.git
 cd DeadlineMate
 npm install
-Copy-Item .env.example .env
-```
-
-Isi `.env` (penjelasannya di tabel bawah), lalu siapkan database dan jalankan aplikasinya:
-
-```powershell
-npx prisma migrate deploy
-npx prisma generate
+cp .env.example .env
+npx prisma migrate dev
 npm run dev
 ```
 
-Aplikasi berjalan di http://localhost:3000.
+Isi `.env` terlebih dahulu sebelum menjalankan migrasi. Aplikasi berjalan di `http://localhost:3000`.
 
-Versi Prisma dikunci di 7.x. Jangan memperbaruinya dengan `npm i prisma@latest` tanpa memeriksa versinya dulu, karena tag `latest` sudah mengarah ke generasi berikutnya yang cara kerjanya berbeda.
+### Environment Variables
 
-### Variabel lingkungan
+| Variabel | Keterangan |
+| :--- | :--- |
+| `DATABASE_URL` | Connection string PostgreSQL |
+| `AUTH_SECRET` | Secret untuk Auth.js. Generate dengan `openssl rand -base64 32` |
+| `AUTH_GOOGLE_ID` | Client ID Google OAuth |
+| `AUTH_GOOGLE_SECRET` | Client secret Google OAuth |
+| `GROQ_API_KEY` | API key Groq untuk Smart Scheduler |
+| `AI_MODEL` | Nama model, contoh `llama-3.3-70b-versatile` |
+| `RESEND_API_KEY` | API key Resend untuk email forgot password |
+| `BLOB_READ_WRITE_TOKEN` | Token Vercel Blob untuk file attachment |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Kunci publik VAPID, dibaca di sisi client |
+| `VAPID_PRIVATE_KEY` | Kunci privat VAPID, hanya di server |
+| `VAPID_SUBJECT` | Kontak pengirim push, format `mailto:email@domain.com` |
+| `CRON_SECRET` | Secret untuk mengamankan endpoint cron |
 
-| Variabel                       | Keterangan                                                                                                        |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`                 | Connection string PostgreSQL. Pakai koneksi langsung, bukan pooled.                                               |
-| `AI_PROVIDER`                  | `groq`.                                                                                             |
-| `AI_MODEL`                     | Nama model persis seperti tertulis di dashboard penyedia. Nama model sering berganti, jadi tidak ditulis di kode. |
-| `GOOGLE_GENERATIVE_AI_API_KEY` | Dipakai kalau `AI_PROVIDER=google`.                                                                               |
-| `GROQ_API_KEY`                 | Dipakai kalau `AI_PROVIDER=groq`.                                                                                 |
-| `DEMO_MODE`                    | Isi `1` untuk menampilkan panel Mode demo di production. Saat development panel selalu tampil.                    |
+## Design Philosophy
 
-## Mode demo
+Antarmuka memakai Neo-Brutalism: border tebal, shadow keras tanpa blur, dan kontras warna tinggi. Alasannya praktis. Hierarki visual terbaca cepat di layar kecil, dan elemen interaktif sulit salah dikenali.
 
-Panel di pojok kanan bawah punya tiga tombol:
+Ikon di UI fungsional adalah SVG buatan sendiri, bukan emoji. Emoji dirender berbeda di tiap OS, tidak mengikuti tema terang atau gelap, dan ukurannya tidak konsisten dengan teks di sekitarnya. SVG memberi kontrol penuh atas stroke, warna, dan ukuran.
 
-- **Isi data contoh** mengganti isi database dengan riwayat dan tugas contoh, lengkap dengan streak.
-- **Majukan waktu 1 hari** menggeser semua tanggal mundur sehari, seolah waktu berjalan maju.
-- **Lewati deadline #1** membuat tugas dengan deadline terdekat jadi terlambat, sehingga modal streak putus muncul.
+Interaksi memberi physical feedback. Tombol bergeser dan shadow-nya mengecil saat ditekan, sehingga setiap aksi punya konfirmasi visual yang langsung.
 
-Tombol-tombol ini mengubah data di database, jadi jangan diaktifkan pada data yang sungguhan.
-
-## Struktur folder
+## Struktur Folder
 
 ```
-prisma/                  skema dan migrasi database
-src/app/(app)/           halaman today, progress, kalender, profil
-src/components/shell/    sidebar, header, navigasi bawah, tema
-src/components/tugas/    daftar tugas, form, kalender, kartu statistik
-src/server/              server actions: tugas, Smart Scheduler, mode demo
-src/lib/                 koneksi database, waktu WIB, statistik, pemilih model AI
+prisma/                  Schema, migrasi, dan konfigurasi database
+src/app/(app)/           Halaman utama: today, progress, kalender, profil
+src/app/api/             API Routes (Auth, Upload, Cron, Push Test)
+src/components/shell/    Layout, navigasi, tema, notif toggle
+src/components/tugas/    Komponen domain tugas (DaftarTugas, Form, AI)
+src/server/              Server Actions (Auth, AI Plan, Task, Push)
+src/lib/                 Utilitas: DB, AI Model, Email, Waktu, Stats
 ```
-
-## Status dan rencana
-
-Saat ini semua data masuk ke satu pengguna demo karena belum ada autentikasi. Yang direncanakan berikutnya:
-
-- Login dengan Google dan data per pengguna
-- Mode fokus (Pomodoro) yang terhubung ke tugas
-- Rapor mingguan
-- Unggah silabus atau materi untuk dibuat rencana belajar
-- PWA dan notifikasi deadline
-- Integrasi Google Calendar
 
 ## Tim
 
-Dikembangkan oleh **Kelompok 2** dari UKM Software Development 2026:
+Dikembangkan oleh Kelompok 2 dari UKM Software Development 2026:
 
 <table>
   <tr>
@@ -167,3 +195,7 @@ Dikembangkan oleh **Kelompok 2** dari UKM Software Development 2026:
     </td>
   </tr>
 </table>
+
+## Lisensi
+
+MIT License.
