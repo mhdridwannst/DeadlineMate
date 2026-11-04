@@ -128,7 +128,7 @@ Dikembangkan oleh **Kelompok 2** dari UKM Software Development 2026:
       Hacker
     </td>
     <td align="center">
-      <a href="https://github.com/username2">
+      <a href="https://github.com/ridho-novianto">
         <img src="https://github.com/username2.png" width="100" style="border-radius:50%" alt="Muhammad Slamet Ridho"/><br />
         <sub><b>Muhammad Slamet Ridho</b></sub>
       </a><br />
