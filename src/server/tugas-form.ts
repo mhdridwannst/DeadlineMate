@@ -6,7 +6,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { ambilModel } from "@/lib/ai/model";
 import { getDemoUser } from "@/server/demo-user";
-import { dayKey, keDueAt, tambahHari } from "@/lib/waktu";
+import { dayKey, jamKey, keDueAt, tambahHari } from "@/lib/waktu";
 
 const skema = z.object({
   id: z.string().optional(),
@@ -184,7 +184,9 @@ function ekstrakKalimatLokal(teksAsli: string): z.infer<typeof autoFillSchema> {
     kategori = "Pribadi";
 
   let estimasiJam = 2;
-  const matchDurasi = lower.match(/(\d+(?:[.,]\d+)?)\s*jam\b/);
+  const matchDurasi = lower.match(
+    /(\d+(?:[.,]\d+)?)\s*jam\b(?!\s*(?:lagi|dari sekarang))/,
+  );
   if (matchDurasi && !matchJam?.[0]?.includes(matchDurasi[0])) {
     estimasiJam = Math.min(
       12,
@@ -227,6 +229,27 @@ function ekstrakKalimatLokal(teksAsli: string): z.infer<typeof autoFillSchema> {
   };
 }
 
+/** "2 jam lagi", "30 menit lagi", "1,5 jam lagi" → waktu absolut, atau null */
+function ekstrakRelatif(teks: string, now: Date): Date | null {
+  const m = teks
+    .toLowerCase()
+    .match(/(\d+(?:[.,]\d+)?)\s*(jam|menit)\s*(?:lagi|dari sekarang)\b/);
+  if (!m) return null;
+  const n = parseFloat(m[1].replace(",", "."));
+  if (!Number.isFinite(n) || n <= 0) return null;
+  const ms = m[2] === "jam" ? n * 3_600_000 : n * 60_000;
+  return new Date(now.getTime() + ms);
+}
+
+/** Kalau ada waktu relatif, kode yang menentukan tanggal dan jam, bukan AI. */
+function terapkanRelatif<T extends { tanggal: string; jam: string }>(
+  data: T,
+  relatif: Date | null,
+): T {
+  if (!relatif) return data;
+  return { ...data, tanggal: dayKey(relatif), jam: jamKey(relatif) };
+}
+
 export async function isiOtomatisTugasAI(
   kalimat: string,
 ): Promise<HasilAutoFill> {
@@ -240,6 +263,7 @@ export async function isiOtomatisTugasAI(
   const now = new Date();
   const hariIniIso = dayKey(now);
   const besokIso = tambahHari(hariIniIso, 1);
+  const relatif = ekstrakRelatif(teks, now);
 
   try {
     const infoModel = ambilModel();
@@ -251,6 +275,8 @@ export async function isiOtomatisTugasAI(
       system: [
         "Kamu asisten ekstraksi form tugas untuk mahasiswa Indonesia.",
         `Tanggal hari ini: ${hariIniIso}, besok: ${besokIso}.`,
+        `Sekarang: ${hariIniIso} ${jamKey(now)} WIB.`,
+        '"X jam lagi" atau "X menit lagi" adalah TENGGAT (dihitung dari sekarang), bukan estimasi pengerjaan.',
         "Kembalikan HANYA objek JSON murni tanpa markdown.",
         JSON.stringify({
           judul: "Belajar & Latihan Kalkulus",
@@ -270,14 +296,15 @@ export async function isiOtomatisTugasAI(
       const parsed = autoFillSchema.safeParse(
         JSON.parse(text.slice(awal, akhir + 1)),
       );
-      if (parsed.success) return { ok: true, data: parsed.data };
+      if (parsed.success)
+        return { ok: true, data: terapkanRelatif(parsed.data, relatif) };
     }
   } catch (e) {
     console.warn("[mate] Cloud AI fallback ke Smart NLP Lokal:", e);
   }
 
   const hasilLokal = ekstrakKalimatLokal(teks);
-  return { ok: true, data: hasilLokal };
+  return { ok: true, data: terapkanRelatif(hasilLokal, relatif) };
 }
 
 export async function ubahProfilPreferensi(formData: FormData) {
