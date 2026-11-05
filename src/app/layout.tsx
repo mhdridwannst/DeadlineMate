@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerRegister from "@/components/shell/ServiceWorkerRegister";
+import ThemeColorSync from "@/components/shell/ThemeColorSync";
+import PwaSplash from "@/components/shell/PwaSplash"; 
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -48,7 +50,9 @@ export default function RootLayout({
         <link rel="icon" href="/icon-192.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icon-192.svg" />
       </head>
-      <body>
+      <body
+        <PwaSplash /> 
+        <ThemeColorSync />
         <ServiceWorkerRegister />
         {children}
       </body>
