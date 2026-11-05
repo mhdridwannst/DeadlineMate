@@ -7,7 +7,7 @@ import { del } from "@vercel/blob";
 import { db } from "@/lib/db";
 import { ambilModel } from "@/lib/ai/model";
 import { getDemoUser } from "@/server/demo-user";
-import { dayKey, keDueAt, tambahHari } from "@/lib/waktu";
+import { dayKey, keDueAt, tambahHari, jamKey } from "@/lib/waktu";
 
 // ==================== SKEMA SIMPAN TUGAS ====================
 const skema = z.object({
@@ -212,14 +212,14 @@ function ekstrakKalimatLokal(teksAsli: string): z.infer<typeof autoFillSchema> {
   if (matchMenit) {
     const menit = parseInt(matchMenit[1], 10);
     const target = new Date(now.getTime() + menit * 60_000);
-    jam = `${String(target.getHours()).padStart(2, "0")}:${String(target.getMinutes()).padStart(2, "0")}`;
+    jam = jamKey(target); // <-- FIX: pakai jamKey, bukan getHours()
     tanggal = dayKey(target);
     offsetHari = 0;
     waktuSpesifikTerdeteksi = true;
   } else if (matchJamRelatif) {
     const jamTambahan = parseInt(matchJamRelatif[1], 10);
     const target = new Date(now.getTime() + jamTambahan * 3_600_000);
-    jam = `${String(target.getHours()).padStart(2, "0")}:${String(target.getMinutes()).padStart(2, "0")}`;
+    jam = jamKey(target); // <-- FIX: pakai jamKey, bukan getHours()
     tanggal = dayKey(target);
     offsetHari = 0;
     waktuSpesifikTerdeteksi = true;
