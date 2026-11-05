@@ -264,9 +264,7 @@ export default async function ProfilPage() {
                     className={`flex flex-col gap-2 rounded-xl border-2 p-3 transition-all relative ${b.terbuka ? "border-[#111] bg-lime shadow-[0_3px_0_var(--sh)] hover:-translate-y-0.5" : "border-[color:var(--line)]/30 bg-[color:var(--surface-2)] opacity-80"}`}
                   >
                     <div className="flex items-center gap-3">
-                      <span
-                        className={`grid size-12 shrink-0 place-items-center rounded-lg border-2 shadow-[0_2px_0_var(--sh)] transition-transform hover:rotate-6 ${b.terbuka ? "border-[#111] bg-card text-[#111]" : "border-[color:var(--line)]/20 bg-transparent text-muted opacity-50 grayscale"}`}
-                      >
+                      <span className={`grid size-12 shrink-0 place-items-center rounded-lg border-2 shadow-[0_2px_0_var(--sh)] transition-transform hover:rotate-6 ${b.terbuka ? "border-[#111] bg-card text-ink" : "border-[color:var(--line)]/20 bg-transparent text-muted opacity-50 grayscale"}`}>
                         <Icon
                           name={b.ikon}
                           className="size-6"
