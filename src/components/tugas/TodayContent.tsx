@@ -246,7 +246,7 @@ export default function TodayContent({
               <h2 className="mt-6 text-xl font-black text-ink">
                 {search || selectedDate
                   ? "Tidak ada tugas yang cocok"
-                  : "Semua tugas tuntas"}
+                  : "Semua tugas selesai!"}
               </h2>
               <p className="mx-auto mt-2 max-w-sm text-sm font-semibold text-muted leading-relaxed">
                 {search || selectedDate
