@@ -235,7 +235,7 @@ export default function NotifToggle() {
               className={`inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg border-2 border-[#111] px-3.5 py-1.5 text-[11px] font-black transition-all duration-150 ${
                 isTesting
                   ? "bg-[color:var(--surface-2)] text-muted cursor-wait translate-y-[2px] shadow-none"
-                  : "bg-white text-ink shadow-[0_3px_0_var(--sh)] hover:bg-lime hover:-translate-y-0.5 hover:shadow-[0_4px_0_var(--sh)] active:translate-y-1 active:shadow-none"
+                : "bg-white text-[#111] shadow-[0_3px_0_var(--sh)] hover:bg-lime hover:text-[#111] hover:-translate-y-0.5 hover:shadow-[0_4px_0_var(--sh)] active:translate-y-1 active:shadow-none"
               } disabled:opacity-60 disabled:cursor-not-allowed`}
             >
               {isTesting ? (
