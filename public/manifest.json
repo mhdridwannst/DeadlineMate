@@ -4,7 +4,7 @@
   "description": "Teman yang ngejar deadline bareng kamu. Pecah tugas besar jadi langkah kecil dengan bantuan AI.",
   "start_url": "/today",
   "display": "standalone",
-  "background_color": "#111315",
+  "background_color": "#ffffff",
   "theme_color": "#111315",
   "orientation": "portrait-primary",
   "scope": "/",
