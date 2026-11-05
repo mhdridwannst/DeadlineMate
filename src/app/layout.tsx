@@ -3,7 +3,7 @@ import { Outfit } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerRegister from "@/components/shell/ServiceWorkerRegister";
 import ThemeColorSync from "@/components/shell/ThemeColorSync";
-import PwaSplash from "@/components/shell/PwaSplash"; 
+import PwaSplash from "@/components/shell/PwaSplash";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -21,14 +21,19 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "DeadlineMate",
   },
+  openGraph: {
+    title: "DeadlineMate - Teman yang ngejar deadline bareng kamu",
+    description:
+      "Mate, asisten AI-mu, memecah tugas besar jadi langkah kecil dengan tenggatnya masing-masing.",
+    type: "website",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  // FIX: Ubah themeColor biar system bars netral, bukan Lime.
-  // Kita set ke putih untuk Light, tapi fallback ke CSS variable di bawah.
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
     { media: "(prefers-color-scheme: dark)", color: "#111315" },
@@ -50,8 +55,8 @@ export default function RootLayout({
         <link rel="icon" href="/icon-192.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icon-192.svg" />
       </head>
-      <body
-        <PwaSplash /> 
+      <body>
+        <PwaSplash />
         <ThemeColorSync />
         <ServiceWorkerRegister />
         {children}
