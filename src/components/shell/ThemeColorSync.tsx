@@ -12,19 +12,18 @@ export default function ThemeColorSync() {
       (tema === "sistem" &&
         window.matchMedia("(prefers-color-scheme: dark)").matches);
 
-    // Update meta tag theme-color secara dinamis
     const color = isDark ? "#111315" : "#ffffff";
 
-    let meta = document.querySelector(
-      'meta[name="theme-color"]',
-    ) as HTMLMetaElement | null;
+    // Hapus semua meta theme-color lama (kalau ada duplikat)
+    document
+      .querySelectorAll('meta[name="theme-color"]')
+      .forEach((el) => el.remove());
 
-    if (!meta) {
-      meta = document.createElement("meta");
-      meta.name = "theme-color";
-      document.head.appendChild(meta);
-    }
+    // Bikin meta baru
+    const meta = document.createElement("meta");
+    meta.name = "theme-color";
     meta.content = color;
+    document.head.appendChild(meta);
   }, [tema]);
 
   return null;
