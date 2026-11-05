@@ -7,7 +7,7 @@ import StatKartu from "./StatKartu";
 import MiniKalender from "./MiniKalender";
 import { MateChat } from "./MateChat";
 import { hariKe } from "@/lib/waktu";
-import { Icon } from "../ui/Icon";
+import { Icon } from "@/components/ui/Icon";
 
 export default function TodayContent({
   aktif,
@@ -62,7 +62,6 @@ export default function TodayContent({
     });
   };
 
-  // LOGIKA FILTERING
   const filteredAktif = aktif.filter((i) => {
     const matchDate = selectedDate ? i.tanggal === selectedDate : true;
     const matchSearch = search
@@ -107,15 +106,15 @@ export default function TodayContent({
 
         <div className="flex items-center gap-2 w-full lg:w-auto">
           {selectedDate && (
-            <span className="inline-flex items-center gap-1 rounded-lg border-2 border-[color:var(--line)] bg-[#FFE8A1] px-2 py-1.5 text-xs font-black text-[#111] shadow-[0_2px_0_var(--sh)] shrink-0 animate-in fade-in zoom-in">
-              <Icon name="calendar" className="size-3.5" />
-
+            <span className="inline-flex items-center gap-1.5 rounded-lg border-2 border-[color:var(--line)] bg-[#FFE8A1] px-2.5 py-1.5 text-xs font-black text-[#111] shadow-[0_2px_0_var(--sh)] shrink-0">
+              <Icon name="calendar" className="size-3.5" strokeWidth={2.5} />
               {selectedDate.split("-").reverse().join("/")}
               <button
                 onClick={() => setSelectedDate(null)}
-                className="ml-0.5 hover:text-red-600 transition-colors"
+                aria-label="Hapus filter tanggal"
+                className="ml-0.5 grid size-4 place-items-center rounded text-[#111] hover:bg-black/10 transition-colors"
               >
-                ✕
+                <Icon name="x" className="size-3" strokeWidth={3} />
               </button>
             </span>
           )}
@@ -143,9 +142,10 @@ export default function TodayContent({
             {search && (
               <button
                 onClick={() => setSearch("")}
+                aria-label="Hapus pencarian"
                 className="absolute right-2 top-1/2 -translate-y-1/2 grid size-5 place-items-center rounded bg-[color:var(--line)] text-[color:var(--bg)] hover:bg-[color:var(--bahaya)] transition-colors"
               >
-                ✕
+                <Icon name="x" className="size-3" strokeWidth={3} />
               </button>
             )}
           </div>
@@ -155,7 +155,7 @@ export default function TodayContent({
       {/* ================= BANNER DEADLINE ================= */}
       {mendesak && mendesak.tanggal && (
         <section
-          className="kartu flex items-center gap-3 p-3 animate-in slide-in-from-top-2"
+          className="kartu flex items-center gap-3 p-3"
           style={{
             background: "var(--warn)",
             borderColor: "var(--warn-line)",
@@ -163,15 +163,15 @@ export default function TodayContent({
             boxShadow: "0 3px 0 var(--warn-line)",
           }}
         >
-          <span className="grid size-8 shrink-0 place-items-center rounded-lg border-2 border-[color:var(--warn-line)] bg-[color:var(--card)] text-sm font-black text-[color:var(--warn-ink)] animate-pulse">
-            <Icon name="alert" className="size-4" />
+          <span className="grid size-8 shrink-0 place-items-center rounded-lg border-2 border-[color:var(--warn-line)] bg-[color:var(--card)] text-[color:var(--warn-ink)]">
+            <Icon name="alert" className="size-4" strokeWidth={3} />
           </span>
           <div className="min-w-0">
             <p className="text-[13px] font-extrabold leading-tight">
               Deadline Mendekat
             </p>
             <p className="text-[11px] font-semibold opacity-90 leading-tight mt-0.5 truncate">
-              “{mendesak.judul}” dalam <strong>{mendesak.sisa}</strong>
+              {mendesak.judul} dalam <strong>{mendesak.sisa}</strong>
             </p>
           </div>
         </section>
@@ -187,10 +187,8 @@ export default function TodayContent({
               <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted">
                 Streak
               </span>
-              <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="text-sm">
-                  <Icon name="flame" className="size-4 text-oranye" />
-                </span>
+              <div className="flex items-center gap-1 mt-0.5">
+                <Icon name="flame" className="size-3.5 text-ink" strokeWidth={2.5} />
                 <span className="text-xl font-black font-mono text-ink">
                   {r.streak}
                 </span>
@@ -237,39 +235,24 @@ export default function TodayContent({
             />
           </div>
 
-          {/* DAFTAR TUGAS */}
+          {/* DAFTAR TUGAS / EMPTY STATE CLEAN */}
           {filteredAktif.length > 0 ? (
             <DaftarTugas items={filteredAktif} />
           ) : (
-            <section className="kartu p-8 sm:p-12 text-center mt-2 bg-[color:var(--surface-2)] border-2 border-[color:var(--line)] shadow-[0_4px_0_var(--sh)] relative overflow-hidden group">
-              <div
-                className="absolute inset-0 opacity-5 pointer-events-none"
-                style={{
-                  backgroundImage: "radial-gradient(#111 2px, transparent 2px)",
-                  backgroundSize: "16px 16px",
-                }}
-              ></div>
-              <div className="relative z-10">
-                <div className="mx-auto grid size-20 place-items-center rounded-2xl border-2 border-[#141513] bg-lime text-[#111310] shadow-[0_4px_0_var(--sh)] transition-transform group-hover:-translate-y-2 group-hover:rotate-3">
-                  <span className="text-4xl animate-bounce">
-                    <Icon
-                      name="check"
-                      className="size-10 text-[#111]"
-                      strokeWidth={3}
-                    />
-                  </span>
-                </div>
-                <h2 className="mt-5 text-2xl font-black text-ink">
-                  {search || selectedDate
-                    ? "Tidak Ada Tugas yang Cocok"
-                    : "Tugas kamu udah selesai atau belum ada nih?"}
-                </h2>
-                <p className="mx-auto mt-2 max-w-md text-sm font-bold text-muted leading-relaxed">
-                  {search || selectedDate
-                    ? "Coba ubah kata kunci atau pilih tanggal lain di kalender."
-                    : "Kamu bisa nambah jadwal tugasmu di (+) Tugas Baru"}
-                </p>
+            <section className="kartu p-10 sm:p-14 text-center mt-2">
+              <div className="mx-auto grid size-16 place-items-center rounded-2xl border-2 border-[color:var(--line)] bg-lime text-[#111] shadow-[0_4px_0_var(--sh)]">
+                <Icon name="check" className="size-8" strokeWidth={3} />
               </div>
+              <h2 className="mt-6 text-xl font-black text-ink">
+                {search || selectedDate
+                  ? "Tidak ada tugas yang cocok"
+                  : "Semua tugas tuntas"}
+              </h2>
+              <p className="mx-auto mt-2 max-w-sm text-sm font-semibold text-muted leading-relaxed">
+                {search || selectedDate
+                  ? "Coba ubah kata kunci atau pilih tanggal lain di kalender."
+                  : "Belum ada tugas aktif. Tambah tugas baru untuk mulai produktif."}
+              </p>
             </section>
           )}
 
@@ -315,18 +298,7 @@ export default function TodayContent({
             <section className="kartu p-4" aria-label={t.nearestDeadline}>
               <div className="flex items-center gap-3">
                 <span className="grid size-10 shrink-0 place-items-center rounded-xl border-2 border-[#141513] bg-lime text-[#111310]">
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="size-5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2.2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="12" cy="12" r="9" />
-                    <path d="M12 7v5l3 2" />
-                  </svg>
+                  <Icon name="calendar" className="size-5" strokeWidth={2.5} />
                 </span>
                 <div className="min-w-0">
                   <p className="text-xs font-bold uppercase tracking-wide text-muted">
@@ -386,17 +358,7 @@ export default function TodayContent({
                       }`}
                     >
                       {aktifHari ? (
-                        <svg
-                          viewBox="0 0 24 24"
-                          className="size-3.5 sm:size-4"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth={3.5}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M5 12l5 5 9-10" />
-                        </svg>
+                        <Icon name="check" className="size-3.5 sm:size-4" strokeWidth={3.5} />
                       ) : isToday ? (
                         <span className="text-[9px] font-black uppercase">
                           INI
