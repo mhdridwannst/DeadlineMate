@@ -1,20 +1,49 @@
 // Service Worker DeadlineMate
-// Berjalan di background, meskipun tab utama ditutup
+const VERSION = "v2.0.0"; // Naikin versi biar cache lama kehapus
 
-const VERSION = "v1.0.0";
-const CACHE_NAME = `deadlinemate-${VERSION}`;
-
-// ==================== INSTALL ====================
 self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
-// ==================== ACTIVATE ====================
 self.addEventListener("activate", (event) => {
   event.waitUntil(clients.claim());
 });
 
-// ==================== PUSH EVENT (Notif Masuk) ====================
+// ==================== FETCH EVENT (CRITICAL FIX) ====================
+self.addEventListener("fetch", (event) => {
+  const url = new URL(event.request.url);
+
+  // 1. JANGAN CACHE API & NEXT.JS DATA FETCH
+  // Ini biar data selalu fresh dari server, gak bikin PWA nge-hang
+  if (
+    url.pathname.startsWith("/api/") ||
+    url.searchParams.has("_rsc") ||
+    event.request.method !== "GET"
+  ) {
+    return; // Biarin browser handle secara natural (Network First)
+  }
+
+  // 2. CACHE HANYA ASET STATIS (Gambar, Font, CSS, JS)
+  if (
+    url.pathname.startsWith("/_next/static/") ||
+    url.pathname.match(/\.(png|jpg|jpeg|svg|webp|ico|css|js|woff2?)$/)
+  ) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        return (
+          cached ||
+          fetch(event.request).then((response) => {
+            const clone = response.clone();
+            caches.open(VERSION).then((cache) => cache.put(event.request, clone));
+            return response;
+          })
+        );
+      })
+    );
+  }
+});
+
+// ==================== PUSH EVENT ====================
 self.addEventListener("push", (event) => {
   let data = {
     title: "DeadlineMate",
@@ -72,6 +101,6 @@ self.addEventListener("notificationclick", (event) => {
         if (clients.openWindow) {
           return clients.openWindow(urlToOpen);
         }
-      }),
+      })
   );
 });
