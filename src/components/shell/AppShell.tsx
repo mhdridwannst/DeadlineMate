@@ -11,12 +11,13 @@ import {
 } from "react";
 import { RencanaForm } from "@/components/paper/RencanaForm";
 import FormTugas from "@/components/tugas/FormTugas";
-import { setBahasa } from "@/server/demo-user"; // masukAkun DIHAPUS
-import { keluarAkunBaru } from "@/server/auth-actions"; // IMPORT BARU
+import { setBahasa } from "@/server/demo-user";
+import { keluarAkunBaru } from "@/server/auth-actions";
 import { isSfxEnabled, sfxClick, toggleSfx } from "@/lib/sfx";
 import { DICT, type Lang } from "@/lib/i18n";
 import DeadlineNotifier, { type ItemNotif } from "./DeadlineNotifier";
 import { useTema } from "./tema";
+import { Icon } from "@/components/ui/Icon"; // TAMBAH IMPORT INI
 
 const IKON: Record<string, string> = {
   home: "M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10",
@@ -86,7 +87,6 @@ export default function AppShell({
   const [kunci, setKunci] = useState(0);
   const [tabModal, setTabModal] = useState<"satuan" | "banyak">("satuan");
 
-  // FIX WARNING MERAH: Inisialisasi state secara lazy untuk menghindari useEffect
   const [sfxAktif, setSfxAktif] = useState(() => {
     if (typeof window !== "undefined") return isSfxEnabled();
     return true;
@@ -209,8 +209,9 @@ export default function AppShell({
             </span>
           </h2>
           <div className="flex items-center gap-2.5">
+            {/* FIX: Emoji api dihapus, ganti pakai Icon SVG */}
             <span
-              className="tag px-3 py-1"
+              className="tag px-3 py-1 flex items-center gap-1.5"
               style={{
                 background: "var(--lime-soft)",
                 color: "var(--lime-soft-ink)",
@@ -218,7 +219,7 @@ export default function AppShell({
                 fontSize: "0.8125rem",
               }}
             >
-              🔥 Streak {streak}
+              <Icon name="flame" className="size-3.5 text-oranye" /> Streak {streak}
             </span>
             <button
               type="button"
@@ -291,8 +292,9 @@ export default function AppShell({
                 <h2 className="text-base font-extrabold text-ink">
                   {t.hi}, {nama}!
                 </h2>
-                <p className="text-xs font-bold text-muted">
-                  Level {level} · 🔥 {streak}
+                {/* FIX: Emoji api dihapus, ganti pakai Icon SVG */}
+                <p className="text-xs font-bold text-muted flex items-center gap-1">
+                  Level {level} · <Icon name="flame" className="size-3 text-oranye" /> {streak}
                 </p>
               </div>
             </button>
@@ -428,7 +430,6 @@ export default function AppShell({
           </button>
         </div>
 
-        {/* FIX: Karena Auth.js yang atur profil, kita arahkan ke halaman Profil aja buat ubah nama */}
         <div className="mt-6 space-y-3">
           <p className="text-xs text-muted text-center leading-relaxed">
             Ingin mengubah nama atau preferensi akun? Silakan kunjungi halaman
@@ -436,6 +437,7 @@ export default function AppShell({
           </p>
           <Link
             href="/profil"
+            prefetch={false}
             onClick={() => dlgAkun.current?.close()}
             className="tombol w-full text-center block"
           >
