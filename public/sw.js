@@ -1,5 +1,5 @@
 // public/sw.js
-const VERSION = "v3.0.0"; // Versi baru, cache lama otomatis kehapus
+const VERSION = "v3.0.1"; // Naikin versi lagi biar cache lama kehapus
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -9,23 +9,23 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(clients.claim());
 });
 
-// ==================== FETCH EVENT (ANTI-LEMOT) ====================
+// ==================== FETCH EVENT ====================
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
-  // 1. JANGAN CACHE API, AUTH, DAN DATA NEXT.JS (_RSC)
+  // 1. JANGAN SENTUH SAMA SEKALI PROSES AUTH, API, DAN RSC
   if (
     url.pathname.startsWith("/api/") ||
-    url.pathname.includes("/_next/data/") ||
-    url.searchParams.has("_rsc") ||
-    url.pathname.startsWith("/login") ||
+    url.pathname.startsWith("/login") || // Biarin login langsung ke server
     url.pathname.startsWith("/forgot-password") ||
+    url.pathname.startsWith("/reset-password") ||
+    url.searchParams.has("_rsc") ||
     event.request.method !== "GET"
   ) {
-    return; // Biarin browser ambil langsung dari Network (Fresh)
+    return; // Biarin browser handle secara normal (Network only)
   }
 
-  // 2. CACHE HANYA ASET STATIS (Gambar, Font, CSS, JS)
+  // 2. CACHE HANYA ASET STATIS
   if (
     url.pathname.startsWith("/_next/static/") ||
     url.pathname.match(/\.(png|jpg|jpeg|svg|webp|ico|css|js|woff2?)$/)
