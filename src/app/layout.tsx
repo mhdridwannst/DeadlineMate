@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerRegister from "@/components/shell/ServiceWorkerRegister";
-import ThemeColorSync from "@/components/shell/ThemeColorSync";
 import PwaSplash from "@/components/shell/PwaSplash";
 
 const outfit = Outfit({
@@ -57,7 +56,6 @@ export default function RootLayout({
       </head>
       <body>
         <PwaSplash />
-        <ThemeColorSync />
         <ServiceWorkerRegister />
         {children}
       </body>

@@ -24,8 +24,9 @@ export async function loginDenganCredentials(
 
   if (mode === "register") {
     const existing = await db.user.findUnique({ where: { email } });
-    if (existing?.password)
+    if (existing?.password) {
       return { error: "Email sudah terdaftar. Silakan masuk." };
+    }
 
     const nama = String(formData.get("nama") ?? "").trim();
     if (nama.length < 2) return { error: "Nama panggilan minimal 2 karakter." };
@@ -47,11 +48,16 @@ export async function loginDenganCredentials(
   }
 
   try {
-    await signIn("credentials", { email, password, redirectTo: "/today" });
+    await signIn("credentials", {
+      email,
+      password,
+      redirectTo: "/today",
+    });
   } catch (error) {
     if (error instanceof AuthError) {
-      if (error.type === "CredentialsSignin")
+      if (error.type === "CredentialsSignin") {
         return { error: "Email atau password salah." };
+      }
       return { error: "Terjadi kesalahan sistem." };
     }
     throw error;
@@ -82,7 +88,6 @@ export async function kirimLinkResetPassword(
     return { error: "Email tidak valid." };
   }
 
-  // Security: jangan bocorin apakah email terdaftar atau nggak
   const pesanSukses = {
     ok: true,
     pesan:
@@ -92,7 +97,6 @@ export async function kirimLinkResetPassword(
   const user = await db.user.findUnique({ where: { email } });
   if (!user) return pesanSukses;
   if (!user.password) {
-    // User Google-only, gak punya password lokal
     return {
       error:
         "Akun ini terdaftar via Google. Silakan masuk pakai tombol 'Lanjutkan dengan Google'.",
@@ -100,11 +104,10 @@ export async function kirimLinkResetPassword(
   }
 
   try {
-    // Hapus token lama (kalau ada) biar gak numpuk
     await db.passwordResetToken.deleteMany({ where: { email } });
 
     const token = randomBytes(32).toString("hex");
-    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 jam
+    const expires = new Date(Date.now() + 60 * 60 * 1000);
 
     await db.passwordResetToken.create({
       data: { email, token, expires },

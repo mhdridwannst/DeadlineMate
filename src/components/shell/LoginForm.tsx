@@ -8,8 +8,7 @@ import {
   type HasilAuth,
 } from "@/server/auth-actions";
 import { Icon } from "@/components/ui/Icon";
-
-type Lang = "id" | "en";
+import type { Lang } from "@/lib/i18n";
 
 export default function LoginForm({ lang }: { lang: Lang }) {
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -70,7 +69,6 @@ export default function LoginForm({ lang }: { lang: Lang }) {
 
   return (
     <div className="kartu p-6 sm:p-8 relative">
-      {/* ================= LOGO ================= */}
       <div className="mb-6 flex flex-col items-center gap-2 text-center">
         <div className="relative">
           <span className="grid size-20 -rotate-3 cursor-default place-items-center rounded-2xl border-2 border-[#111] bg-lime text-4xl font-black text-[#111] shadow-[0_4px_0_var(--sh)] transition-transform hover:rotate-0">
@@ -85,7 +83,6 @@ export default function LoginForm({ lang }: { lang: Lang }) {
         </p>
       </div>
 
-      {/* ================= TABS (Masuk / Daftar) ================= */}
       <div className="mb-6 flex rounded-xl border-2 border-[color:var(--line)] bg-[color:var(--surface-2)] p-1">
         <button
           type="button"
@@ -111,7 +108,6 @@ export default function LoginForm({ lang }: { lang: Lang }) {
         </button>
       </div>
 
-      {/* ================= HEADER TEKS ================= */}
       <h2 className="text-xl font-extrabold text-ink">
         {isLogin ? t.titleLogin : t.titleRegister}
       </h2>
@@ -119,7 +115,6 @@ export default function LoginForm({ lang }: { lang: Lang }) {
         {isLogin ? t.descLogin : t.descRegister}
       </p>
 
-      {/* ================= TOMBOL GOOGLE OAUTH ================= */}
       <form action={loginDenganGoogle} className="mt-5">
         <button type="submit" className="relative w-full group">
           <div className="absolute inset-0 bg-[#111] rounded-xl translate-y-1 transition-transform group-hover:translate-y-1.5 group-active:translate-y-0" />
@@ -147,7 +142,6 @@ export default function LoginForm({ lang }: { lang: Lang }) {
         </button>
       </form>
 
-      {/* ================= DIVIDER ================= */}
       <div className="relative mt-6 mb-6">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">
           <div className="w-full border-t-2 border-dashed border-[color:var(--line)]/30"></div>
@@ -159,11 +153,9 @@ export default function LoginForm({ lang }: { lang: Lang }) {
         </div>
       </div>
 
-      {/* ================= FORM EMAIL & PASSWORD ================= */}
       <form action={formAction} className="space-y-4">
         <input type="hidden" name="mode" value={mode} />
 
-        {/* Nama (Hanya Muncul Saat Daftar) */}
         {!isLogin && (
           <div className="group">
             <label
@@ -191,7 +183,6 @@ export default function LoginForm({ lang }: { lang: Lang }) {
           </div>
         )}
 
-        {/* Email */}
         <div className="group">
           <label
             htmlFor="login-email"
@@ -217,7 +208,6 @@ export default function LoginForm({ lang }: { lang: Lang }) {
           </div>
         </div>
 
-        {/* Password */}
         <div className="group">
           <div className="mb-1.5 flex items-center justify-between">
             <label
@@ -226,7 +216,6 @@ export default function LoginForm({ lang }: { lang: Lang }) {
             >
               {t.labelPassword}
             </label>
-            {/* FIX: Link lupa password, cuma muncul di mode login */}
             {isLogin && (
               <Link
                 href="/forgot-password"
@@ -254,7 +243,6 @@ export default function LoginForm({ lang }: { lang: Lang }) {
           </div>
         </div>
 
-        {/* ERROR MESSAGE */}
         {state?.error && (
           <div className="flex items-start gap-2 rounded-lg border-2 border-[color:var(--bahaya)] bg-[color:var(--bahaya-bg)] px-3 py-2">
             <Icon
@@ -267,7 +255,6 @@ export default function LoginForm({ lang }: { lang: Lang }) {
           </div>
         )}
 
-        {/* Submit Button */}
         <button
           type="submit"
           disabled={pending}
@@ -298,7 +285,6 @@ export default function LoginForm({ lang }: { lang: Lang }) {
         </button>
       </form>
 
-      {/* Privacy Text */}
       <p className="mt-4 text-center text-[10px] leading-relaxed text-muted">
         {t.privacy}
       </p>
