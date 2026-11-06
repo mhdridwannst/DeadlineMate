@@ -1,3 +1,4 @@
+// src/auth.config.ts
 import type { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
 
@@ -14,19 +15,27 @@ export const authConfig = {
     error: "/login",
   },
   callbacks: {
-    // Logic middleware pindah ke sini
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const pathname = nextUrl.pathname;
-      const protectedRoutes = ["/today", "/progress", "/kalender", "/profil"];
-      const isProtected = protectedRoutes.some((route) =>
-        pathname.startsWith(route),
-      );
+      const isOnLogin = nextUrl.pathname.startsWith("/login");
+      const isOnAuthPages = ["/login", "/forgot-password", "/reset-password"].includes(nextUrl.pathname);
 
-      if (isProtected && !isLoggedIn) return false;
-      if (pathname === "/login" && isLoggedIn) {
-        return Response.redirect(new URL("/today", nextUrl));
+      // Kalau lagi di halaman auth dan udah login, tendang ke /today
+      if (isOnAuthPages) {
+        if (isLoggedIn) return Response.redirect(new URL("/today", nextUrl));
+        return true;
       }
+
+      // Kalau lagi di halaman protected dan belum login, block
+      const isProtected = ["/today", "/progress", "/kalender", "/profil"].some((route) =>
+        nextUrl.pathname.startsWith(route)
+      );
+      
+      if (isProtected) {
+        if (isLoggedIn) return true;
+        return false;
+      }
+
       return true;
     },
   },
