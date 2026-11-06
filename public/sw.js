@@ -1,5 +1,5 @@
-// Service Worker DeadlineMate
-const VERSION = "v2.0.0"; // Naikin versi biar cache lama kehapus
+// public/sw.js
+const VERSION = "v3.0.0"; // Versi baru, cache lama otomatis kehapus
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -9,18 +9,20 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(clients.claim());
 });
 
-// ==================== FETCH EVENT (CRITICAL FIX) ====================
+// ==================== FETCH EVENT (ANTI-LEMOT) ====================
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
-  // 1. JANGAN CACHE API & NEXT.JS DATA FETCH
-  // Ini biar data selalu fresh dari server, gak bikin PWA nge-hang
+  // 1. JANGAN CACHE API, AUTH, DAN DATA NEXT.JS (_RSC)
   if (
     url.pathname.startsWith("/api/") ||
+    url.pathname.includes("/_next/data/") ||
     url.searchParams.has("_rsc") ||
+    url.pathname.startsWith("/login") ||
+    url.pathname.startsWith("/forgot-password") ||
     event.request.method !== "GET"
   ) {
-    return; // Biarin browser handle secara natural (Network First)
+    return; // Biarin browser ambil langsung dari Network (Fresh)
   }
 
   // 2. CACHE HANYA ASET STATIS (Gambar, Font, CSS, JS)
@@ -50,7 +52,6 @@ self.addEventListener("push", (event) => {
     body: "Ada pengingat baru buat kamu!",
     url: "/today",
     icon: "/icon-192.svg",
-    badge: "/icon-192.svg",
     tag: "default",
   };
 
@@ -63,29 +64,22 @@ self.addEventListener("push", (event) => {
     console.warn("[sw] Gagal parse push data:", e);
   }
 
-  const options = {
-    body: data.body,
-    icon: data.icon,
-    badge: data.badge,
-    tag: data.tag,
-    data: { url: data.url },
-    vibrate: [200, 100, 200, 100, 200],
-    requireInteraction: data.tag === "overdue",
-    actions: [
-      { action: "open", title: "Buka App" },
-      { action: "close", title: "Tutup" },
-    ],
-  };
-
-  event.waitUntil(self.registration.showNotification(data.title, options));
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: data.icon,
+      badge: data.icon,
+      tag: data.tag,
+      data: { url: data.url },
+      vibrate: [200, 100, 200],
+      requireInteraction: data.tag === "overdue",
+    })
+  );
 });
 
 // ==================== NOTIFICATION CLICK ====================
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-
-  if (event.action === "close") return;
-
   const urlToOpen = event.notification.data?.url || "/today";
 
   event.waitUntil(
