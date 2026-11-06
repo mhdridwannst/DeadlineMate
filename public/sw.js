@@ -1,5 +1,5 @@
 // public/sw.js
-const VERSION = "v3.0.1"; // Naikin versi lagi biar cache lama kehapus
+const VERSION = "v3.0.2"; // Naikin versi biar cache lama kehapus
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -9,14 +9,18 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(clients.claim());
 });
 
-// ==================== FETCH EVENT ====================
+// ==================== FETCH EVENT (ANTI-EXTENSION CRASH) ====================
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
-  // 1. JANGAN SENTUH SAMA SEKALI PROSES AUTH, API, DAN RSC
+  // 1. TAMENG UTAMA: Abaikan request dari luar http/https (misal chrome-extension://)
+  // Tanpa ini, Cache API bakal crash dan bikin login gagal.
+  if (!url.protocol.startsWith("http")) return;
+
+  // 2. JANGAN CACHE API, AUTH, DAN RSC (DATA DINAMIS)
   if (
     url.pathname.startsWith("/api/") ||
-    url.pathname.startsWith("/login") || // Biarin login langsung ke server
+    url.pathname.startsWith("/login") ||
     url.pathname.startsWith("/forgot-password") ||
     url.pathname.startsWith("/reset-password") ||
     url.searchParams.has("_rsc") ||
@@ -25,7 +29,7 @@ self.addEventListener("fetch", (event) => {
     return; // Biarin browser handle secara normal (Network only)
   }
 
-  // 2. CACHE HANYA ASET STATIS
+  // 3. CACHE HANYA ASET STATIS KITA SENDIRI
   if (
     url.pathname.startsWith("/_next/static/") ||
     url.pathname.match(/\.(png|jpg|jpeg|svg|webp|ico|css|js|woff2?)$/)
@@ -35,12 +39,22 @@ self.addEventListener("fetch", (event) => {
         return (
           cached ||
           fetch(event.request).then((response) => {
+            // Pastiin response statusnya OK (200) sebelum di-cache
+            if (
+              !response ||
+              response.status !== 200 ||
+              response.type !== "basic"
+            ) {
+              return response;
+            }
             const clone = response.clone();
-            caches.open(VERSION).then((cache) => cache.put(event.request, clone));
+            caches
+              .open(VERSION)
+              .then((cache) => cache.put(event.request, clone));
             return response;
           })
         );
-      })
+      }),
     );
   }
 });
@@ -73,7 +87,7 @@ self.addEventListener("push", (event) => {
       data: { url: data.url },
       vibrate: [200, 100, 200],
       requireInteraction: data.tag === "overdue",
-    })
+    }),
   );
 });
 
@@ -95,6 +109,6 @@ self.addEventListener("notificationclick", (event) => {
         if (clients.openWindow) {
           return clients.openWindow(urlToOpen);
         }
-      })
+      }),
   );
 });
