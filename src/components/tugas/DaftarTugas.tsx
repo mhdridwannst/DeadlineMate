@@ -518,8 +518,13 @@ export default function DaftarTugas({
       >
         <div className="flex items-center justify-between gap-3 mb-3">
           <div className="flex items-center gap-2">
+<<<<<<< HEAD
             <span className="grid size-8 place-items-center rounded-lg border-2 border-[#111] bg-lime text-[#111]">
               <Icon name="bot" className="size-4" strokeWidth={2.5} />
+=======
+            <span className="grid size-8 place-items-center rounded-lg border-2 border-[#111] bg-lime text-sm">
+              <Icon name="x" className="size-4" strokeWidth={2.5} />
+>>>>>>> 535486174de92d693762bbc555dbbc9bf1871734
             </span>
             <h3 className="text-base font-black text-ink">Pesan dari Mate</h3>
           </div>
@@ -543,8 +548,12 @@ export default function DaftarTugas({
           onClick={() => dlgAi.current?.close()}
           className="tombol w-full mt-4 flex items-center justify-center gap-2"
         >
+<<<<<<< HEAD
           Gas, Mulai Kerjain
           <Icon name="arrow-right" className="size-4" strokeWidth={3} />
+=======
+          Ayo, Mulai Kerjain!
+>>>>>>> 535486174de92d693762bbc555dbbc9bf1871734
         </button>
       </dialog>
 
