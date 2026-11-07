@@ -504,7 +504,7 @@ export default function DaftarTugas({
         <div className="flex items-center justify-between gap-3 mb-3">
           <div className="flex items-center gap-2">
             <span className="grid size-8 place-items-center rounded-lg border-2 border-[#111] bg-lime text-sm">
-              🤖
+              <Icon name="x" className="size-4" strokeWidth={2.5} />
             </span>
             <h3 className="text-base font-black text-ink">Pesan dari Mate</h3>
           </div>
@@ -526,7 +526,7 @@ export default function DaftarTugas({
           onClick={() => dlgAi.current?.close()}
           className="tombol w-full mt-4"
         >
-          Gas, Mulai Kerjain! 🚀
+          Ayo, Mulai Kerjain!
         </button>
       </dialog>
 
