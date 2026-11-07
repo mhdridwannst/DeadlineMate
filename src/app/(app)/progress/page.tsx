@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { getBahasa, getDemoUser } from "@/server/demo-user";
 import { ambilRingkasan } from "@/lib/stats";
 import { hariKe, tambahHari } from "@/lib/waktu";
-import { DICT } from "@/lib/i18n";
+import { DICT, t as translate } from "@/lib/i18n";
 import StatKartu from "@/components/tugas/StatKartu";
 import { redirect } from "next/navigation";
 
@@ -24,10 +24,11 @@ export default async function ProgressPage() {
   });
 
   const selesai = semuaTask.filter((t) => t.status === "DONE" && t.doneAt);
-  const tepatWaktu = selesai.filter((t) => t.dueAt && t.doneAt! <= t.dueAt);
+  const selesaiBertenggat = selesai.filter((t) => t.dueAt !== null);
+  const tepatWaktu = selesaiBertenggat.filter((t) => t.doneAt! <= t.dueAt!);
   const onTimeRate =
-    selesai.length > 0
-      ? Math.round((tepatWaktu.length / selesai.length) * 100)
+    selesaiBertenggat.length > 0
+      ? Math.round((tepatWaktu.length / selesaiBertenggat.length) * 100)
       : 0;
 
   const hari = Array.from({ length: 7 }, (_, i) => tambahHari(r.today, i - 6));
@@ -43,21 +44,29 @@ export default async function ProgressPage() {
           huruf: "S",
           predikat: lang === "en" ? "Untouchable" : "Luar Biasa",
           warna: "bg-[color:var(--lime)] text-[#111]",
-          pesan: "Gila! Lo mesin produktivitas. Pertahankan ritme ini!",
+          pesan:
+            lang === "en"
+              ? "Excellent consistency. Keep up the momentum!"
+              : "Luar biasa, kamu sangat konsisten. Pertahankan ritme ini!",
         }
       : total7Hari >= 4 || r.streak >= 2
         ? {
             huruf: "A",
-            predikat: lang === "en" ? "On Fire" : "Sedang On Fire",
+            predikat: lang === "en" ? "Building Momentum" : "Makin Konsisten",
             warna: "bg-[#FFD700] text-[#111]",
-            pesan: "Kerja bagus! Dikit lagi tembus level dewa. Jangan kendor!",
+            pesan:
+              lang === "en"
+                ? "Great work! You are getting closer to the next level."
+                : "Kerja bagus! Sedikit lagi kamu mencapai level berikutnya.",
           }
         : {
             huruf: "C",
             predikat: lang === "en" ? "Warm Up" : "Pemanasan",
             warna: "bg-[color:var(--surface-2)] text-ink",
             pesan:
-              "Gak apa-apa mulai pelan. Sikat 1 tugas hari ini biar streak jalan!",
+              lang === "en"
+                ? "It is okay to start small. Complete one task today to build consistency."
+                : "Tidak apa-apa memulai perlahan. Selesaikan satu tugas hari ini untuk membangun konsistensi.",
           };
 
   return (
@@ -85,7 +94,7 @@ export default async function ProgressPage() {
           <section className="kartu p-5 sm:p-6 bg-card border-2 border-[color:var(--line)] shadow-[0_4px_0_var(--sh)]">
             <div className="flex items-center justify-between text-sm mb-4">
               <p className="font-extrabold text-ink uppercase tracking-wider">
-                Menuju Level {r.level + 1}
+                {t.towardsLevel} {r.level + 1}
               </p>
               <p className="font-extrabold text-biru px-3 py-1 bg-[color:var(--biru-soft)] rounded-lg border-2 border-biru">
                 {r.expLevel} / 100 XP
@@ -110,7 +119,7 @@ export default async function ProgressPage() {
                 {t.weeklyChart}
               </h2>
               <span className="rounded-full border-2 border-[#111] bg-lime px-3 py-1 text-xs font-extrabold text-[#111] shadow-[0_2px_0_var(--sh)]">
-                Total: {total7Hari} Tugas
+                {translate(lang, "weeklyTotalTasks", { count: total7Hari })}
               </span>
             </div>
 
@@ -118,7 +127,9 @@ export default async function ProgressPage() {
             <div
               className="mt-4 grid h-56 grid-cols-7 items-end gap-2 sm:gap-4"
               role="img"
-              aria-label={`Completed per day: ${nilai.join(", ")}`}
+              aria-label={translate(lang, "weeklyChartAccessibleLabel", {
+                values: nilai.join(", "),
+              })}
             >
               {hari.map((k, i) => {
                 const apakahHariIni = k === r.today;
@@ -157,50 +168,66 @@ export default async function ProgressPage() {
             </div>
           </section>
 
-          {/* KARTU BARU: On-Time Delivery Rate */}
+          {/* Ketepatan penyelesaian tugas bertenggat */}
           <section className="kartu p-5 sm:p-6 flex flex-col sm:flex-row items-center gap-5 bg-card border-2 border-[color:var(--line)] shadow-[0_4px_0_var(--sh)]">
             <div className="relative size-24 shrink-0">
-              <svg viewBox="0 0 36 36" className="size-full -rotate-90">
-                <circle
-                  cx="18"
-                  cy="18"
-                  r="16"
-                  fill="none"
-                  className="stroke-[color:var(--surface-2)]"
-                  strokeWidth="4"
-                />
-                <circle
-                  cx="18"
-                  cy="18"
-                  r="16"
-                  fill="none"
-                  className="stroke-biru transition-all duration-1000"
-                  strokeWidth="4"
-                  strokeDasharray="100"
-                  strokeDashoffset={100 - onTimeRate}
-                  strokeLinecap="round"
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-xl font-extrabold text-ink">
-                  {onTimeRate}%
-                </span>
-              </div>
+              {selesaiBertenggat.length > 0 ? (
+                <>
+                  <svg viewBox="0 0 36 36" className="size-full -rotate-90">
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="16"
+                      fill="none"
+                      className="stroke-[color:var(--surface-2)]"
+                      strokeWidth="4"
+                    />
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="16"
+                      fill="none"
+                      className="stroke-biru transition-all duration-1000"
+                      strokeWidth="4"
+                      strokeDasharray="100"
+                      strokeDashoffset={100 - onTimeRate}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xl font-extrabold text-ink">
+                      {onTimeRate}%
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="grid size-full place-items-center rounded-full border-4 border-dashed border-[color:var(--line)]/20">
+                  <span className="text-xl font-extrabold text-muted">—</span>
+                </div>
+              )}
             </div>
             <div>
               <p className="text-[11px] font-extrabold uppercase tracking-wider text-muted">
-                On-Time Delivery
+                {lang === "en" ? "SUMMARY" : "RINGKASAN"}
               </p>
               <h3 className="text-xl font-extrabold text-ink mt-0.5">
-                Tingkat Ketepatan Waktu
+                {t.onTimeRateTitle}
               </h3>
               <p className="text-sm text-muted mt-1 leading-snug">
-                Lo udah nyelesain <strong>{tepatWaktu.length}</strong> dari{" "}
-                <strong>{selesai.length}</strong> tugas sebelum deadline.{" "}
-                {onTimeRate >= 80
-                  ? "Gokil, lo anti nunda-nunda tugas nih"
-                  : "Yuk, mulai cicil lebih awal biar persentasenya naik!"}
+                {selesaiBertenggat.length > 0
+                  ? translate(lang, "onTimeRateDescription", {
+                      onTime: tepatWaktu.length,
+                      total: selesaiBertenggat.length,
+                    })
+                  : t.onTimeRateNoDataDescription}
               </p>
+              {selesaiBertenggat.length > 0 && (
+                <p className="mt-1 text-sm font-semibold text-muted">
+                  {onTimeRate >= 80
+                    ? t.onTimeRatePositive
+                    : t.onTimeRateImprove}
+                </p>
+              )}
             </div>
           </section>
         </div>
@@ -245,7 +272,11 @@ export default async function ProgressPage() {
                         <span
                           className={`size-2 rounded-full ${item.kat === "Kuliah" ? "bg-biru" : item.kat === "Organisasi" ? "bg-oranye" : "bg-santai"}`}
                         />
-                        {item.kat}
+                        {item.kat === "Kuliah"
+                          ? t.catStudy
+                          : item.kat === "Organisasi"
+                            ? t.catOrg
+                            : t.catPersonal}
                       </span>
                       <span className="text-muted">
                         {item.beres}/{item.total} ({persen}%)

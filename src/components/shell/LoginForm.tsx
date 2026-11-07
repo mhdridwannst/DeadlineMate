@@ -79,7 +79,7 @@ export default function LoginForm({ lang }: { lang: Lang }) {
           </span>
         </div>
         <p className="mt-4 text-3xl font-black tracking-tight text-ink">
-          Deadline Mate
+          DeadlineMate
         </p>
       </div>
 

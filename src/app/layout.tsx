@@ -3,6 +3,7 @@ import { Outfit } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerRegister from "@/components/shell/ServiceWorkerRegister";
 import PwaSplash from "@/components/shell/PwaSplash";
+import { PwaInstallProvider } from "@/components/shell/PwaInstall";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -11,9 +12,12 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Deadline Mate - App Scheduler",
+  title: "DeadlineMate | Asisten tugas untuk mahasiswa",
   description:
-    "Teman yang ngejar deadline bareng lu. Pecah tugas, jaga streak, selesaikan tepat waktu.",
+    "Pecah tenggat besar menjadi langkah kecil, atur tugas, dan pantau progres belajarmu bersama Mate.",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+  ),
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -21,11 +25,18 @@ export const metadata: Metadata = {
     title: "DeadlineMate",
   },
   openGraph: {
-    title: "DeadlineMate - Teman yang ngejar deadline bareng kamu",
+    title: "DeadlineMate | Asisten tugas untuk mahasiswa",
     description:
-      "Mate, asisten AI-mu, memecah tugas besar jadi langkah kecil dengan tenggatnya masing-masing.",
+      "Pecah tenggat besar menjadi langkah kecil, atur tugas, dan pantau progres belajarmu bersama Mate.",
     type: "website",
-    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "DeadlineMate, asisten tugas untuk mahasiswa",
+      },
+    ],
   },
 };
 
@@ -55,9 +66,11 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icon-192.svg" />
       </head>
       <body>
-        <PwaSplash />
-        <ServiceWorkerRegister />
-        {children}
+        <PwaInstallProvider>
+          <PwaSplash />
+          <ServiceWorkerRegister />
+          {children}
+        </PwaInstallProvider>
       </body>
     </html>
   );

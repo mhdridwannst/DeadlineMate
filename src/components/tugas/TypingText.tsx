@@ -5,15 +5,21 @@ export function TypingText({ text }: { text: string }) {
   const [tampil, setTampil] = useState("");
 
   useEffect(() => {
-    setTampil("");
-    let i = 0;
-    // Kecepatan ngetik 30ms per huruf
-    const timer = setInterval(() => {
-      setTampil(text.slice(0, i + 1));
-      i++;
-      if (i >= text.length) clearInterval(timer);
-    }, 30);
-    return () => clearInterval(timer);
+    let indeks = 0;
+    let timer: ReturnType<typeof setInterval> | undefined;
+    const mulai = setTimeout(() => {
+      setTampil("");
+      timer = setInterval(() => {
+        indeks += 1;
+        setTampil(text.slice(0, indeks));
+        if (indeks >= text.length && timer) clearInterval(timer);
+      }, 30);
+    }, 0);
+
+    return () => {
+      clearTimeout(mulai);
+      if (timer) clearInterval(timer);
+    };
   }, [text]);
 
   return (

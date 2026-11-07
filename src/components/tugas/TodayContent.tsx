@@ -8,6 +8,9 @@ import MiniKalender from "./MiniKalender";
 import { MateChat } from "./MateChat";
 import { hariKe } from "@/lib/waktu";
 import { Icon } from "@/components/ui/Icon";
+import type { ambilRingkasan } from "@/lib/stats";
+
+type Ringkasan = Awaited<ReturnType<typeof ambilRingkasan>>;
 
 export default function TodayContent({
   aktif,
@@ -24,11 +27,10 @@ export default function TodayContent({
   isiCatatanMate,
   mendesak,
   terdekat,
-  now,
 }: {
   aktif: Item[];
   sudah: Item[];
-  r: any;
+  r: Ringkasan;
   lang: Lang;
   tanggalPanjang: string;
   tahun: number;
@@ -40,7 +42,6 @@ export default function TodayContent({
   isiCatatanMate: string;
   mendesak: Item | null;
   terdekat: Item | null;
-  now: number;
 }) {
   const t = DICT[lang];
   const [search, setSearch] = useState("");
@@ -79,6 +80,21 @@ export default function TodayContent({
       : true;
     return matchDate && matchSearch;
   });
+  const filterAktif = Boolean(search.trim() || selectedDate);
+  const belumPernahPunyaTugas = aktif.length === 0 && sudah.length === 0;
+  const tampilkanEmptyState =
+    filteredAktif.length === 0 && (filteredSudah.length === 0 || !filterAktif);
+
+  const judulEmptyState = filterAktif
+    ? t.noMatchingTasks
+    : belumPernahPunyaTugas
+      ? t.emptyTitle
+      : t.allDoneTitle;
+  const deskripsiEmptyState = filterAktif
+    ? t.changeFilters
+    : belumPernahPunyaTugas
+      ? t.emptyDesc
+      : t.allDoneDesc;
 
   return (
     <div className="space-y-5 lg:space-y-6 pb-24 lg:pb-10">
@@ -99,7 +115,7 @@ export default function TodayContent({
               {filteredAktif.length}
             </span>
             <span className="text-[10px] font-extrabold uppercase text-[#111]">
-              Tugas
+              {t.taskCount}
             </span>
           </div>
         </div>
@@ -111,7 +127,8 @@ export default function TodayContent({
               {selectedDate.split("-").reverse().join("/")}
               <button
                 onClick={() => setSelectedDate(null)}
-                aria-label="Hapus filter tanggal"
+                type="button"
+                aria-label={t.clearDateFilter}
                 className="ml-0.5 grid size-4 place-items-center rounded text-[#111] hover:bg-black/10 transition-colors"
               >
                 <Icon name="x" className="size-3" strokeWidth={3} />
@@ -122,7 +139,8 @@ export default function TodayContent({
           <div className="relative w-full lg:w-64 group">
             <input
               type="text"
-              placeholder="Cari tugas..."
+              placeholder={t.searchTasks}
+              aria-label={t.searchTasks}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-[color:var(--surface)] border-2 border-[color:var(--line)] rounded-lg pl-9 pr-8 py-2 text-sm font-bold placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-[color:var(--lime)] focus:border-[color:var(--lime)] shadow-[0_2px_0_var(--sh)] transition-all group-hover:-translate-y-0.5 group-focus-within:shadow-[0_4px_0_var(--sh)]"
@@ -142,7 +160,8 @@ export default function TodayContent({
             {search && (
               <button
                 onClick={() => setSearch("")}
-                aria-label="Hapus pencarian"
+                type="button"
+                aria-label={t.clearSearch}
                 className="absolute right-2 top-1/2 -translate-y-1/2 grid size-5 place-items-center rounded bg-[color:var(--line)] text-[color:var(--bg)] hover:bg-[color:var(--bahaya)] transition-colors"
               >
                 <Icon name="x" className="size-3" strokeWidth={3} />
@@ -168,7 +187,7 @@ export default function TodayContent({
           </span>
           <div className="min-w-0">
             <p className="text-[13px] font-extrabold leading-tight">
-              Deadline Mendekat
+              {t.deadlineApproaching}
             </p>
             <p className="text-[11px] font-semibold opacity-90 leading-tight mt-0.5 truncate">
               {mendesak.judul} dalam <strong>{mendesak.sisa}</strong>
@@ -185,10 +204,14 @@ export default function TodayContent({
           <div className="lg:hidden flex w-full overflow-hidden rounded-xl border-2 border-[color:var(--line)] bg-card shadow-[0_3px_0_var(--sh)]">
             <div className="flex flex-1 flex-col items-center justify-center border-r-2 border-[color:var(--line)] py-2.5 px-1">
               <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted">
-                Streak
+                {t.streak}
               </span>
               <div className="flex items-center gap-1 mt-0.5">
-                <Icon name="flame" className="size-3.5 text-ink" strokeWidth={2.5} />
+                <Icon
+                  name="flame"
+                  className="size-3.5 text-ink"
+                  strokeWidth={2.5}
+                />
                 <span className="text-xl font-black font-mono text-ink">
                   {r.streak}
                 </span>
@@ -209,7 +232,7 @@ export default function TodayContent({
             </div>
             <div className="flex flex-1 flex-col items-center justify-center py-2.5 px-1">
               <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted">
-                Hari Ini
+                {t.today}
               </span>
               <div className="flex items-baseline gap-1 mt-0.5">
                 <span className="text-xl font-black font-mono text-ink">
@@ -238,23 +261,19 @@ export default function TodayContent({
           {/* DAFTAR TUGAS / EMPTY STATE CLEAN */}
           {filteredAktif.length > 0 ? (
             <DaftarTugas items={filteredAktif} />
-          ) : (
+          ) : tampilkanEmptyState ? (
             <section className="kartu p-10 sm:p-14 text-center mt-2">
               <div className="mx-auto grid size-16 place-items-center rounded-2xl border-2 border-[color:var(--line)] bg-lime text-[#111] shadow-[0_4px_0_var(--sh)]">
                 <Icon name="check" className="size-8" strokeWidth={3} />
               </div>
               <h2 className="mt-6 text-xl font-black text-ink">
-                {search || selectedDate
-                  ? "Tidak ada tugas yang cocok"
-                  : "Semua tugas selesai!"}
+                {judulEmptyState}
               </h2>
               <p className="mx-auto mt-2 max-w-sm text-sm font-semibold text-muted leading-relaxed">
-                {search || selectedDate
-                  ? "Coba ubah kata kunci atau pilih tanggal lain di kalender."
-                  : "Belum ada tugas aktif. Tambah tugas baru untuk mulai produktif."}
+                {deskripsiEmptyState}
               </p>
             </section>
-          )}
+          ) : null}
 
           {filteredSudah.length > 0 && (
             <details className="kartu group mt-4">
@@ -280,6 +299,7 @@ export default function TodayContent({
             <MiniKalender
               tahun={viewDate.tahun}
               bulan0={viewDate.bulan0}
+              lang={lang}
               hariIni={r.today}
               titik={titik}
               selectedDate={selectedDate}
@@ -323,6 +343,7 @@ export default function TodayContent({
           <MiniKalender
             tahun={viewDate.tahun}
             bulan0={viewDate.bulan0}
+            lang={lang}
             hariIni={r.today}
             titik={titik}
             selectedDate={selectedDate}
@@ -358,7 +379,11 @@ export default function TodayContent({
                       }`}
                     >
                       {aktifHari ? (
-                        <Icon name="check" className="size-3.5 sm:size-4" strokeWidth={3.5} />
+                        <Icon
+                          name="check"
+                          className="size-3.5 sm:size-4"
+                          strokeWidth={3.5}
+                        />
                       ) : isToday ? (
                         <span className="text-[9px] font-black uppercase">
                           INI

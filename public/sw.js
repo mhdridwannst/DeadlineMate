@@ -1,12 +1,30 @@
 // public/sw.js
-const VERSION = "v3.0.2"; // Naikin versi biar cache lama kehapus
+const VERSION = "deadlinemate-v3.0.3";
+const LEGACY_CACHES = ["v3.0.2"];
 
-self.addEventListener("install", (event) => {
+self.addEventListener("install", () => {
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(clients.claim());
+  event.waitUntil(
+    Promise.all([
+      clients.claim(),
+      caches
+        .keys()
+        .then((keys) =>
+          Promise.all(
+            keys
+              .filter(
+                (key) =>
+                  LEGACY_CACHES.includes(key) ||
+                  (key.startsWith("deadlinemate-") && key !== VERSION),
+              )
+              .map((key) => caches.delete(key)),
+          ),
+        ),
+    ]),
+  );
 });
 
 // ==================== FETCH EVENT (ANTI-EXTENSION CRASH) ====================

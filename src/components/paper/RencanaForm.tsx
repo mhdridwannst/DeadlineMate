@@ -14,6 +14,23 @@ const POLA_TENGGAT =
   /\b(?:hari ini|malam ini|besok|lusa|senin|selasa|rabu|kamis|jum'?at|sabtu|minggu)(?:\s+(?:depan|ini))?(?:\s+(?:pagi|siang|sore|malam))?|\bjam\s*\d{1,2}(?:[.:]\d{2})?|\b(?:pagi|siang|sore|malam)\b/gi;
 
 type Butir = { judul: string; tenggat: string[] };
+type HasilPengenalanSuara = {
+  results: ArrayLike<ArrayLike<{ transcript: string }>>;
+};
+type SpeechRecognitionInstance = {
+  lang: string;
+  interimResults: boolean;
+  onstart: (() => void) | null;
+  onend: (() => void) | null;
+  onerror: (() => void) | null;
+  onresult: ((event: HasilPengenalanSuara) => void) | null;
+  start: () => void;
+};
+type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance;
+type SpeechRecognitionWindow = Window & {
+  SpeechRecognition?: SpeechRecognitionConstructor;
+  webkitSpeechRecognition?: SpeechRecognitionConstructor;
+};
 
 function uraikan(teks: string): Butir[] {
   return teks
@@ -60,10 +77,7 @@ export function RencanaForm() {
 
   function mulaiSuara() {
     sfxClick();
-    const Win = window as unknown as {
-      SpeechRecognition?: new () => any;
-      webkitSpeechRecognition?: new () => any;
-    };
+    const Win = window as SpeechRecognitionWindow;
     const SR = Win.SpeechRecognition || Win.webkitSpeechRecognition;
     if (!SR) {
       alert("Browser ini belum mendukung mikrofon. Ketik manual ya!");
@@ -76,8 +90,8 @@ export function RencanaForm() {
     rec.onstart = () => setRekam(true);
     rec.onend = () => setRekam(false);
     rec.onerror = () => setRekam(false);
-    rec.onresult = (e: any) => {
-      const hasilSuara = e.results?.[0]?.[0]?.transcript ?? "";
+    rec.onresult = (event) => {
+      const hasilSuara = event.results?.[0]?.[0]?.transcript ?? "";
       if (hasilSuara) {
         setTeks((lama) => (lama ? `${lama}, ${hasilSuara}` : hasilSuara));
       }
@@ -128,7 +142,7 @@ export function RencanaForm() {
             onChange={(e) => setTeks(e.target.value)}
             spellCheck="false"
             placeholder={
-              "Ketik manual atau tinggal ngomong, bisa kok buat tugas!\ncontoh: Nulis laprak besok jam 4, tugas buat ppt senin depan jam 12"
+              "Tulis atau ucapkan tugas beserta tenggatnya.\nContoh: Laporan praktikum besok pukul 16.00, presentasi Senin depan pukul 12.00"
             }
             className="block w-full resize-none bg-transparent px-4 py-3 text-[13px] font-bold leading-relaxed text-ink placeholder:text-muted/70 focus:outline-none disabled:opacity-60 hide-scrollbar"
           />
@@ -146,7 +160,7 @@ export function RencanaForm() {
                 Pratinjau AI
               </span>
               <span className="text-[10px] font-bold text-biru bg-[color:var(--biru-soft)] px-1.5 py-0.5 rounded border border-biru/20">
-                Live Parse
+                Pratinjau langsung
               </span>
             </div>
             <ul className="max-h-48 space-y-2 overflow-y-auto pr-1 custom-scrollbar">

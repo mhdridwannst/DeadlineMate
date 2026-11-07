@@ -7,7 +7,6 @@ export const authConfig = {
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
-      allowDangerousEmailAccountLinking: true,
     }),
   ],
   pages: {
@@ -17,8 +16,11 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnLogin = nextUrl.pathname.startsWith("/login");
-      const isOnAuthPages = ["/login", "/forgot-password", "/reset-password"].includes(nextUrl.pathname);
+      const isOnAuthPages = [
+        "/login",
+        "/forgot-password",
+        "/reset-password",
+      ].includes(nextUrl.pathname);
 
       // Kalau lagi di halaman auth dan udah login, tendang ke /today
       if (isOnAuthPages) {
@@ -27,10 +29,10 @@ export const authConfig = {
       }
 
       // Kalau lagi di halaman protected dan belum login, block
-      const isProtected = ["/today", "/progress", "/kalender", "/profil"].some((route) =>
-        nextUrl.pathname.startsWith(route)
+      const isProtected = ["/today", "/progress", "/kalender", "/profil"].some(
+        (route) => nextUrl.pathname.startsWith(route),
       );
-      
+
       if (isProtected) {
         if (isLoggedIn) return true;
         return false;

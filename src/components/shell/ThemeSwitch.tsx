@@ -1,17 +1,23 @@
 "use client";
 
 import { useTema, type Tema } from "./tema";
+import { DICT, type Lang } from "@/lib/i18n";
 
-const OPSI: { n: Tema; l: string }[] = [
-  { n: "terang", l: "Terang" },
-  { n: "gelap", l: "Gelap" },
-  { n: "sistem", l: "Sistem" },
+const OPSI: { n: Tema; key: "themeLight" | "themeDark" | "themeSystem" }[] = [
+  { n: "terang", key: "themeLight" },
+  { n: "gelap", key: "themeDark" },
+  { n: "sistem", key: "themeSystem" },
 ];
 
-export default function ThemeSwitch() {
+export default function ThemeSwitch({ lang = "id" }: { lang?: Lang }) {
   const [tema, setTema] = useTema();
+  const t = DICT[lang];
   return (
-    <div role="group" aria-label="Tema" className="grid grid-cols-3 gap-2">
+    <div
+      role="group"
+      aria-label={t.themeTitle}
+      className="grid grid-cols-3 gap-2"
+    >
       {OPSI.map((o) => (
         <button
           key={o.n}
@@ -20,7 +26,7 @@ export default function ThemeSwitch() {
           onClick={() => setTema(o.n)}
           className={`tombol ${tema === o.n ? "" : "tombol-putih"}`}
         >
-          {o.l}
+          {t[o.key]}
         </button>
       ))}
     </div>

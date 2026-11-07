@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { sfxAiSuccess, sfxClick } from "@/lib/sfx";
 import type { Lang } from "@/lib/i18n";
 
@@ -12,6 +12,33 @@ export type ItemNotif = {
   status: "OVERDUE" | "URGENT_3H" | "H_MINUS_1";
 };
 
+type IzinNotifikasi = NotificationPermission | "unsupported" | "checking";
+
+const EVENT_IZIN_NOTIFIKASI = "deadline-mate:notification-permission";
+
+function bacaIzinNotifikasi(): IzinNotifikasi {
+  if (typeof window === "undefined" || !("Notification" in window)) {
+    return "unsupported";
+  }
+  return Notification.permission;
+}
+
+function subscribeIzinNotifikasi(callback: () => void) {
+  window.addEventListener("focus", callback);
+  window.addEventListener(EVENT_IZIN_NOTIFIKASI, callback);
+  document.addEventListener("visibilitychange", callback);
+
+  return () => {
+    window.removeEventListener("focus", callback);
+    window.removeEventListener(EVENT_IZIN_NOTIFIKASI, callback);
+    document.removeEventListener("visibilitychange", callback);
+  };
+}
+
+function bacaIzinServer(): IzinNotifikasi {
+  return "checking";
+}
+
 export default function DeadlineNotifier({
   items,
   lang = "id",
@@ -20,18 +47,12 @@ export default function DeadlineNotifier({
   lang?: Lang;
 }) {
   const [buka, setBuka] = useState(false);
-  const [izin, setIzin] = useState<NotificationPermission | "unsupported">(
-    "default",
+  const izin = useSyncExternalStore(
+    subscribeIzinNotifikasi,
+    bacaIzinNotifikasi,
+    bacaIzinServer,
   );
   const popRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || !("Notification" in window)) {
-      setIzin("unsupported");
-      return;
-    }
-    setIzin(Notification.permission);
-  }, []);
 
   useEffect(() => {
     if (izin !== "granted" || items.length === 0) return;
@@ -82,7 +103,7 @@ export default function DeadlineNotifier({
     sfxClick();
     if (typeof window === "undefined" || !("Notification" in window)) return;
     const hasil = await Notification.requestPermission();
-    setIzin(hasil);
+    window.dispatchEvent(new Event(EVENT_IZIN_NOTIFIKASI));
     if (hasil === "granted") {
       sfxAiSuccess();
       new Notification(
@@ -142,7 +163,13 @@ export default function DeadlineNotifier({
                   : "Pantauan otomatis H-1 & Mendesak"}
               </p>
             </div>
-            {izin !== "granted" && izin !== "unsupported" ? (
+            {izin === "checking" ? (
+              <span className="text-[10px] font-bold text-muted">
+                {lang === "en" ? "Checking..." : "Memeriksa..."}
+              </span>
+            ) : izin !== "granted" &&
+              izin !== "unsupported" &&
+              izin !== "denied" ? (
               <button
                 type="button"
                 onClick={mintaIzinNotif}
@@ -152,7 +179,17 @@ export default function DeadlineNotifier({
               </button>
             ) : (
               <span className="rounded-full border border-[#141513] bg-lime px-2.5 py-0.5 text-[10px] font-extrabold text-[#111310]">
-                {izin === "granted" ? "Push ON" : "In-App"}
+                {izin === "granted"
+                  ? lang === "en"
+                    ? "Push on"
+                    : "Aktif"
+                  : izin === "denied"
+                    ? lang === "en"
+                      ? "Blocked"
+                      : "Diblokir"
+                    : lang === "en"
+                      ? "In app"
+                      : "Dalam aplikasi"}
               </span>
             )}
           </div>

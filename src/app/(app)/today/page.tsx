@@ -9,7 +9,7 @@ import {
   tambahHari,
   ZONA,
 } from "@/lib/waktu";
-import { DICT, type Lang } from "@/lib/i18n";
+import type { Lang } from "@/lib/i18n";
 import type { Item } from "@/components/tugas/DaftarTugas";
 import TodayContent from "@/components/tugas/TodayContent";
 import { redirect } from "next/navigation";
@@ -31,14 +31,13 @@ function pesanDefaultMate(
   }
   if (jumlahAktif === 0)
     return "Semua target aktif sudah bersih! Ketik tugas berikutnya di kolom cepat atau klik Tugas baru.";
-  return `Ada ${jumlahAktif} tugas aktif. Yuk cicil "${judulTerdekat}" lebih dulu—klik Pecah Langkah AI kalau ingin dibagi jadi tahap ringan.`;
+  return `Ada ${jumlahAktif} tugas aktif. Mulai kerjakan "${judulTerdekat}" lebih dulu, atau gunakan Pecah Langkah AI untuk membaginya menjadi tahap yang lebih ringan.`;
 }
 
 export default async function TodayPage() {
   const [user, lang] = await Promise.all([getDemoUser(), getBahasa()]);
 
   if (!user) redirect("/login");
-  const t = DICT[lang];
   const now = new Date();
   const nowTimestamp = now.getTime();
 
@@ -83,10 +82,10 @@ export default async function TodayPage() {
       : null;
 
   // Fungsi Mapping Data (Diperbarui biar aman untuk Client Component)
-  const ke = (item: any, no: number): Item => {
+  const ke = (item: (typeof induk)[number], no: number): Item => {
     const menit =
       item.estimateMin ??
-      item.subtasks.reduce((n: number, s: any) => n + (s.estimateMin ?? 0), 0);
+      item.subtasks.reduce((n, s) => n + (s.estimateMin ?? 0), 0);
     return {
       id: item.id,
       no,
@@ -104,7 +103,7 @@ export default async function TodayPage() {
       sisa: item.dueAt ? sisaWaktu(item.dueAt, now) : "Tanpa tenggat",
       tenggat: item.dueAt ? formatTenggat(item.dueAt) : "",
       telat: !!item.dueAt && item.dueAt < now,
-      langkah: item.subtasks.map((s: any) => ({
+      langkah: item.subtasks.map((s) => ({
         id: s.id,
         judul: s.title,
         selesai: s.status === "DONE",
@@ -162,7 +161,6 @@ export default async function TodayPage() {
       isiCatatanMate={isiCatatanMate}
       mendesak={mendesakMapped}
       terdekat={terdekatMapped}
-      now={nowTimestamp}
     />
   );
 }

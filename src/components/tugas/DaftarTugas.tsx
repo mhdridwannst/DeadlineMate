@@ -134,11 +134,8 @@ export default function DaftarTugas({
   const [edit, setEdit] = useState<Item | null>(null);
   const [targetHapus, setTargetHapus] = useState<Item | null>(null);
 
-  // AI Popup state
   const [aiNote, setAiNote] = useState<string | null>(null);
   const dlgAi = useRef<HTMLDialogElement>(null);
-
-  // XP Floating Animation
   const [floatingXP, setFloatingXP] = useState<Record<string, boolean>>({});
 
   const dlg = useRef<HTMLDialogElement>(null);
@@ -248,7 +245,9 @@ export default function DaftarTugas({
           return (
             <li
               key={t.id}
-              className={`kartu p-4 transition-opacity relative ${AKSEN_PRIORITAS[t.prioritas]} ${sel ? "opacity-55" : ""}`}
+              className={`kartu p-4 transition-opacity relative ${AKSEN_PRIORITAS[t.prioritas]} ${
+                sel ? "opacity-55" : ""
+              }`}
             >
               {floatingXP[t.id] && (
                 <span className="absolute top-2 right-12 text-biru font-black text-sm animate-bounce z-10 pointer-events-none drop-shadow-md">
@@ -266,7 +265,9 @@ export default function DaftarTugas({
 
                   <div className="min-w-0 flex-1">
                     <p
-                      className={`text-base font-bold leading-snug ${sel ? "line-through text-muted" : "text-ink"}`}
+                      className={`text-base font-bold leading-snug ${
+                        sel ? "line-through text-muted" : "text-ink"
+                      }`}
                     >
                       <span className="mr-1.5 font-extrabold text-biru">
                         #{t.no}
@@ -297,7 +298,6 @@ export default function DaftarTugas({
                       )}
                     </div>
 
-                    {/* CATATAN / DESKRIPSI */}
                     {t.catatan && (
                       <div className="mt-2.5 rounded-lg border-2 border-[color:var(--line)]/30 bg-[color:var(--warn)]/30 px-3 py-2">
                         <div className="flex items-start gap-2">
@@ -312,7 +312,6 @@ export default function DaftarTugas({
                       </div>
                     )}
 
-                    {/* LAMPIRAN FILE */}
                     {t.attachmentUrl && (
                       <a
                         href={t.attachmentUrl}
@@ -339,11 +338,7 @@ export default function DaftarTugas({
                     )}
                   </div>
 
-                  <div className="hidden sm:block shrink-0 text-right">
-                    <span className="text-[11px] font-medium text-muted">
-                      {t.tenggat}
-                    </span>
-                  </div>
+                  {/* FIX: Hapus tenggat duplikat di kanan atas, cukup tampilkan di bawah judul */}
                 </div>
 
                 <div className="flex flex-wrap items-center justify-between gap-2 border-t-2 border-[color:var(--line)]/10 pt-3 mt-1">
@@ -351,7 +346,13 @@ export default function DaftarTugas({
                     <span className={`tag tag-${t.prioritas}`}>
                       {LABEL[t.prioritas]}
                     </span>
-                    {!sel && <span className="tag tag-exp">🔥 +1 streak</span>}
+                    {/* FIX: Hapus emoji api, ganti pakai Icon SVG */}
+                    {!sel && (
+                      <span className="tag tag-exp flex items-center gap-1">
+                        <Icon name="flame" className="size-3 text-oranye" />
+                        +1 streak
+                      </span>
+                    )}
 
                     {sedangAI ? (
                       <div className="inline-flex min-h-7 items-center gap-2 rounded-full border-2 border-[color:var(--line)] bg-[color:var(--ai-bg)] px-3 py-1">
@@ -386,7 +387,8 @@ export default function DaftarTugas({
                           onClick={() => jalankanPecahAI(t)}
                           className="inline-flex min-h-7 items-center gap-1 rounded-full border-2 border-[color:var(--line)] bg-[color:var(--ai-bg)] px-2.5 py-0.5 text-[11px] font-bold text-[color:var(--ai-ink)] transition hover:opacity-90"
                         >
-                          <span>✦ Pecah Langkah AI</span>
+                          <Icon name="sparkle" className="size-3" />
+                          <span>Pecah Langkah AI</span>
                         </button>
                       )
                     )}
@@ -425,44 +427,53 @@ export default function DaftarTugas({
                 </div>
               </div>
 
+              {/* FIX: Banner AI pakai warna warn (kuning), bukan ungu AI slop */}
               {infoAI[t.id] && (
-                <p className="mt-3 rounded-lg bg-[color:var(--ai-bg)] px-3 py-2 text-xs font-bold text-[color:var(--ai-ink)]">
-                  {infoAI[t.id]}
-                </p>
+                <div className="mt-3 flex items-start gap-2 rounded-lg border-2 border-[color:var(--warn-line)] bg-[color:var(--warn)] px-3 py-2">
+                  <Icon
+                    name="sparkle"
+                    className="size-3.5 shrink-0 mt-0.5 text-[color:var(--warn-ink)]"
+                  />
+                  <p className="text-xs font-bold text-[color:var(--warn-ink)]">
+                    {infoAI[t.id]}
+                  </p>
+                </div>
               )}
 
               {buka[t.id] && t.langkah.length > 0 && (
-                <div className="mt-3.5 rounded-xl border-2 border-[color:var(--line)]/30 bg-[color:var(--surface-2)] p-3">
-                  <div className="mb-2 flex items-center justify-between gap-2">
-                    <span className="text-xs font-extrabold text-muted">
-                      Sub-langkah AI ({dari}/{t.langkah.length} ·{" "}
-                      {persenLangkah}%)
+                <div className="mt-4 rounded-xl border-2 border-[color:var(--line)]/30 bg-[color:var(--surface-2)] p-3.5">
+                  {/* FIX: Spacing lebih lega */}
+                  <div className="mb-3 flex items-center justify-between gap-2">
+                    <span className="text-xs font-extrabold text-muted uppercase tracking-wide">
+                      Sub-langkah AI · {dari}/{t.langkah.length} ·{" "}
+                      {persenLangkah}%
                     </span>
                     {!sel && !sedangAI && (
                       <button
                         type="button"
                         onClick={() => jalankanPecahAI(t)}
-                        className="min-h-0 text-xs font-bold text-ink underline underline-offset-2 opacity-80 hover:opacity-100"
+                        className="inline-flex items-center gap-1 rounded-md border-2 border-[color:var(--line)]/40 bg-card px-2 py-0.5 text-[10px] font-bold text-ink transition hover:border-[color:var(--line)] hover:bg-lime-soft"
                       >
-                        ↻ Susun ulang
+                        <Icon name="sparkle" className="size-2.5" />
+                        <span>Susun ulang</span>
                       </button>
                     )}
                   </div>
-                  <div className="mb-3 h-2 overflow-hidden rounded-full border border-[color:var(--line)] bg-[color:var(--surface)]">
+                  <div className="mb-4 h-2 overflow-hidden rounded-full border border-[color:var(--line)] bg-[color:var(--surface)]">
                     <div
                       className="h-full bg-lime transition-all duration-300"
                       style={{ width: `${persenLangkah}%` }}
                     />
                   </div>
-                  <ol className="space-y-1.5">
+                  <ol className="space-y-2">
                     {t.langkah.map((l, idx) => {
                       const ls = on(l.id, l.selesai);
                       return (
                         <li
                           key={l.id}
-                          className="flex items-center justify-between gap-2 rounded-xl border border-[color:var(--line)]/25 bg-[color:var(--surface)] px-2.5 py-1.5"
+                          className="flex items-start justify-between gap-2 rounded-xl border border-[color:var(--line)]/25 bg-[color:var(--surface)] px-3 py-2"
                         >
-                          <div className="flex min-w-0 flex-1 items-center gap-2">
+                          <div className="flex min-w-0 flex-1 items-start gap-2">
                             <Kotak
                               kecil
                               on={ls}
@@ -471,14 +482,18 @@ export default function DaftarTugas({
                             />
                             <div className="min-w-0 flex-1">
                               <p
-                                className={`text-xs font-bold leading-snug sm:text-sm ${ls ? "line-through text-muted" : "text-ink"}`}
+                                className={`text-xs font-bold leading-snug sm:text-sm ${
+                                  ls ? "line-through text-muted" : "text-ink"
+                                }`}
                               >
                                 <span className="mr-1.5 font-mono text-xs text-muted">
                                   {idx + 1}.
                                 </span>
                                 {l.judul}
                               </p>
-                              <p className="text-[11px] text-muted">{l.info}</p>
+                              <p className="text-[11px] text-muted mt-0.5">
+                                {l.info}
+                              </p>
                             </div>
                           </div>
                         </li>
@@ -503,30 +518,33 @@ export default function DaftarTugas({
       >
         <div className="flex items-center justify-between gap-3 mb-3">
           <div className="flex items-center gap-2">
-            <span className="grid size-8 place-items-center rounded-lg border-2 border-[#111] bg-lime text-sm">
-              🤖
+            <span className="grid size-8 place-items-center rounded-lg border-2 border-[#111] bg-lime text-[#111]">
+              <Icon name="bot" className="size-4" strokeWidth={2.5} />
             </span>
             <h3 className="text-base font-black text-ink">Pesan dari Mate</h3>
           </div>
           <button
             type="button"
             onClick={() => dlgAi.current?.close()}
-            className="grid size-8 place-items-center rounded-lg border-2 border-[color:var(--line)] bg-[color:var(--surface-2)] hover:bg-lime"
+            className="grid size-8 place-items-center rounded-lg border-2 border-[color:var(--line)] bg-[color:var(--surface-2)] hover:bg-lime transition-colors"
           >
-            ✕
+            <Icon name="x" className="size-4" strokeWidth={2.5} />
           </button>
         </div>
+
         <div className="relative bg-[color:var(--surface-2)] border-2 border-[color:var(--line)] rounded-xl p-4 shadow-[0_3px_0_var(--sh)]">
           <p className="text-sm font-bold leading-relaxed text-ink">
             “{aiNote}”
           </p>
         </div>
+
         <button
           type="button"
           onClick={() => dlgAi.current?.close()}
-          className="tombol w-full mt-4"
+          className="tombol w-full mt-4 flex items-center justify-center gap-2"
         >
-          Gas, Mulai Kerjain! 🚀
+          Gas, Mulai Kerjain
+          <Icon name="arrow-right" className="size-4" strokeWidth={3} />
         </button>
       </dialog>
 
@@ -582,7 +600,7 @@ export default function DaftarTugas({
                 onClick={tutupEdit}
                 className="grid size-10 place-items-center rounded-xl border-2 border-[color:var(--line)]"
               >
-                ✕
+                <Icon name="x" className="size-5" />
               </button>
             </div>
             <FormTugas

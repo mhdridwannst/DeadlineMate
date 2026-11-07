@@ -8,6 +8,7 @@ import {
 } from "@/server/push-actions";
 import { Icon } from "@/components/ui/Icon";
 import { sfxClick, sfxAiSuccess } from "@/lib/sfx";
+import { t as translate, type Lang } from "@/lib/i18n";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -20,7 +21,7 @@ function urlBase64ToUint8Array(base64String: string) {
   return outputArray;
 }
 
-export default function NotifToggle() {
+export default function NotifToggle({ lang = "id" }: { lang?: Lang }) {
   const [status, setStatus] = useState<
     "loading" | "unsupported" | "denied" | "inactive" | "active" | "working"
   >("loading");
@@ -33,7 +34,11 @@ export default function NotifToggle() {
     async function check() {
       if (typeof window === "undefined") return;
 
-      if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      if (
+        !("serviceWorker" in navigator) ||
+        !("PushManager" in window) ||
+        !("Notification" in window)
+      ) {
         setStatus("unsupported");
         return;
       }
@@ -43,19 +48,25 @@ export default function NotifToggle() {
         return;
       }
 
-      const reg = await navigator.serviceWorker.ready;
-      const sub = await reg.pushManager.getSubscription();
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
 
-      if (sub) {
-        setStatus("active");
-        const cek = await cekSubscription();
-        setJumlah(cek.total);
-      } else {
+        if (sub) {
+          setStatus("active");
+          const cek = await cekSubscription();
+          setJumlah(cek.total);
+        } else {
+          setStatus("inactive");
+        }
+      } catch (error) {
+        console.error("[push] Gagal memeriksa subscription:", error);
         setStatus("inactive");
+        setInfo(translate(lang, "notificationSubscribeFailed"));
       }
     }
     check();
-  }, []);
+  }, [lang]);
 
   async function aktifkan() {
     sfxClick();
@@ -66,7 +77,7 @@ export default function NotifToggle() {
       const permission = await Notification.requestPermission();
       if (permission !== "granted") {
         setStatus("denied");
-        setInfo("Izin notifikasi ditolak. Aktifkan manual di setting browser.");
+        setInfo(translate(lang, "notificationPermissionDeniedInfo"));
         return;
       }
 
@@ -92,17 +103,17 @@ export default function NotifToggle() {
       if (result.ok) {
         setStatus("active");
         sfxAiSuccess();
-        setInfo("Notifikasi aktif! Lo bakal dapet reminder deadline.");
+        setInfo(translate(lang, "notificationsActive"));
         const cek = await cekSubscription();
         setJumlah(cek.total);
       } else {
         setStatus("inactive");
-        setInfo(result.error ?? "Gagal aktifkan notifikasi.");
+        setInfo(translate(lang, "notificationSubscribeFailed"));
       }
     } catch (e) {
       console.error(e);
       setStatus("inactive");
-      setInfo("Gagal subscribe. Cek console untuk detail.");
+      setInfo(translate(lang, "notificationSubscribeFailed"));
     }
   }
 
@@ -120,11 +131,11 @@ export default function NotifToggle() {
       }
       setStatus("inactive");
       setJumlah(0);
-      setInfo("Notifikasi dimatikan.");
+      setInfo(translate(lang, "notificationDisableSuccess"));
     } catch (e) {
       console.error(e);
       setStatus("active");
-      setInfo("Gagal mematikan notifikasi.");
+      setInfo(translate(lang, "notificationDisableFailed"));
     }
   }
 
@@ -139,13 +150,16 @@ export default function NotifToggle() {
       if (data.ok) {
         sfxAiSuccess();
         setInfo(
-          `Test terkirim! Sukses: ${data.sukses}, Gagal: ${data.gagal}. Cek notifikasi OS lo.`,
+          translate(lang, "notificationTestSuccess", {
+            success: data.sukses,
+            failed: data.gagal,
+          }),
         );
       } else {
-        setInfo(data.error ?? "Gagal kirim test.");
+        setInfo(translate(lang, "notificationTestFailed"));
       }
     } catch {
-      setInfo("Gagal kirim test.");
+      setInfo(translate(lang, "notificationTestFailed"));
     } finally {
       setIsTesting(false);
     }
@@ -155,7 +169,7 @@ export default function NotifToggle() {
   if (status === "loading") {
     return (
       <div className="rounded-xl border-2 border-[color:var(--line)] bg-card p-4 text-center text-xs text-muted">
-        Memuat status notifikasi...
+        {translate(lang, "notificationLoading")}
       </div>
     );
   }
@@ -163,10 +177,11 @@ export default function NotifToggle() {
   if (status === "unsupported") {
     return (
       <div className="rounded-xl border-2 border-[color:var(--line)] bg-[color:var(--surface-2)] p-4">
-        <p className="text-xs font-bold text-ink">Notifikasi tidak didukung</p>
+        <p className="text-xs font-bold text-ink">
+          {translate(lang, "notificationUnsupported")}
+        </p>
         <p className="mt-1 text-[11px] text-muted">
-          Browser ini gak support push notification. Coba pakai
-          Chrome/Edge/Firefox terbaru.
+          {translate(lang, "notificationUnsupportedDescription")}
         </p>
       </div>
     );
@@ -176,11 +191,10 @@ export default function NotifToggle() {
     return (
       <div className="rounded-xl border-2 border-[color:var(--bahaya)] bg-[color:var(--bahaya-bg)] p-4">
         <p className="text-xs font-bold text-[color:var(--bahaya)]">
-          Izin notifikasi ditolak
+          {translate(lang, "notificationPermissionDenied")}
         </p>
         <p className="mt-1 text-[11px] text-[color:var(--bahaya)]/80">
-          Buka setting browser → Site settings → Notifications → izinkan untuk
-          site ini.
+          {translate(lang, "notificationPermissionDeniedDescription")}
         </p>
       </div>
     );
@@ -202,12 +216,16 @@ export default function NotifToggle() {
 
         <div className="min-w-0 flex-1">
           <h3 className="text-sm font-black text-ink">
-            {isActive ? "Notifikasi Aktif" : "Aktifkan Pengingat Deadline"}
+            {isActive
+              ? translate(lang, "notificationsActive")
+              : translate(lang, "enableDeadlineReminders")}
           </h3>
           <p className="mt-0.5 text-[11px] font-semibold text-muted leading-relaxed">
             {isActive
-              ? `Lo bakal dapet reminder H-1, 3 jam sebelum, & saat telat. ${jumlah} device terdaftar.`
-              : "Dapet notif di HP/laptop meskipun browser ditutup. Biar streak gak putus."}
+              ? translate(lang, "notificationsActiveDescription", {
+                  count: jumlah,
+                })
+              : translate(lang, "notificationsInactiveDescription")}
           </p>
         </div>
       </div>
@@ -235,7 +253,7 @@ export default function NotifToggle() {
               className={`inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg border-2 border-[#111] px-3.5 py-1.5 text-[11px] font-black transition-all duration-150 ${
                 isTesting
                   ? "bg-[color:var(--surface-2)] text-muted cursor-wait translate-y-[2px] shadow-none"
-                : "bg-white text-[#111] shadow-[0_3px_0_var(--sh)] hover:bg-lime hover:text-[#111] hover:-translate-y-0.5 hover:shadow-[0_4px_0_var(--sh)] active:translate-y-1 active:shadow-none"
+                  : "bg-white text-[#111] shadow-[0_3px_0_var(--sh)] hover:bg-lime hover:text-[#111] hover:-translate-y-0.5 hover:shadow-[0_4px_0_var(--sh)] active:translate-y-1 active:shadow-none"
               } disabled:opacity-60 disabled:cursor-not-allowed`}
             >
               {isTesting ? (
@@ -254,7 +272,7 @@ export default function NotifToggle() {
               ) : (
                 <>
                   <Icon name="check" className="size-3.5" />
-                  Kirim Test Notif
+                  {translate(lang, "notificationTestButton")}
                 </>
               )}
             </button>
@@ -265,7 +283,7 @@ export default function NotifToggle() {
               disabled={isTesting || isWorking}
               className="rounded-lg px-3 py-1.5 text-[11px] font-bold text-muted transition-colors hover:bg-[color:var(--bahaya-bg)] hover:text-[color:var(--bahaya)] disabled:opacity-50"
             >
-              Matikan
+              {translate(lang, "notificationDisableButton")}
             </button>
           </>
         ) : (
@@ -277,7 +295,9 @@ export default function NotifToggle() {
           >
             <div className="absolute inset-0 bg-[#111] rounded-xl translate-y-1.5 transition-transform group-hover:translate-y-2 group-active:translate-y-0" />
             <div className="relative flex items-center justify-center gap-2 w-full bg-lime text-[#111] border-2 border-[#111] rounded-xl py-2 text-xs font-black transition-transform group-hover:-translate-y-0.5 group-active:translate-y-1">
-              {isWorking ? "Memproses..." : "Aktifkan Notifikasi"}
+              {isWorking
+                ? translate(lang, "notificationWorking")
+                : translate(lang, "notificationEnableButton")}
             </div>
           </button>
         )}

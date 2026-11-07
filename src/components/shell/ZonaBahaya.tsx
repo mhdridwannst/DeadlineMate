@@ -3,18 +3,20 @@
 import { useRef } from "react";
 import { keluarAkunBaru } from "@/server/auth-actions";
 import { Icon } from "@/components/ui/Icon";
+import { DICT, type Lang } from "@/lib/i18n";
 
-export default function ZonaBahaya() {
+export default function ZonaBahaya({ lang = "id" }: { lang?: Lang }) {
   const dlgLogout = useRef<HTMLDialogElement>(null);
+  const t = DICT[lang];
 
   return (
     <>
       <section className="kartu p-5 bg-[color:var(--bahaya-bg)] border-2 border-[color:var(--bahaya)] shadow-[0_4px_0_var(--bahaya)]">
         <h3 className="font-extrabold text-[color:var(--bahaya)] text-sm mb-1 uppercase tracking-wider">
-          Logout
+          {t.logoutSection}
         </h3>
         <p className="text-[11px] font-semibold text-[color:var(--bahaya)]/80 mb-3">
-          Sesimu akan berakhir. Pastikan semua tugas udah disimpan.
+          {t.logoutWarning}
         </p>
 
         <button
@@ -22,7 +24,7 @@ export default function ZonaBahaya() {
           onClick={() => dlgLogout.current?.showModal()}
           className="w-full rounded-xl border-2 border-[color:var(--bahaya)] bg-card py-2 text-xs font-black text-[color:var(--bahaya)] shadow-[0_2px_0_var(--bahaya)] transition-all hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none"
         >
-          Keluar dari Akun
+          {t.logoutFromAccount}
         </button>
       </section>
 
@@ -42,10 +44,8 @@ export default function ZonaBahaya() {
             <Icon name="logout" />
           </span>
           <div>
-            <h3 className="text-lg font-extrabold">Yakin mau keluar?</h3>
-            <p className="text-xs text-muted">
-              Pastikan semua tugasmu udah disimpan ya.
-            </p>
+            <h3 className="text-lg font-extrabold">{t.logoutConfirmTitle}</h3>
+            <p className="text-xs text-muted">{t.logoutConfirmDescription}</p>
           </div>
         </div>
 
@@ -55,7 +55,7 @@ export default function ZonaBahaya() {
             onClick={() => dlgLogout.current?.close()}
             className="tombol tombol-putih"
           >
-            Batal
+            {t.cancel}
           </button>
           <form action={keluarAkunBaru} className="w-full">
             <button
@@ -63,7 +63,7 @@ export default function ZonaBahaya() {
               className="tombol w-full"
               style={{ background: "var(--bahaya-bg)", color: "var(--bahaya)" }}
             >
-              Ya, Keluar
+              {t.confirmLogout}
             </button>
           </form>
         </div>

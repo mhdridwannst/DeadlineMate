@@ -506,7 +506,7 @@ export async function isiOtomatisTugasAI(
   if (teks.length < 2) {
     return {
       ok: false,
-      error: "Ketik atau ucapkan dulu tugasnya singkat aja.",
+      error: "Ketik atau ucapkan deskripsi tugas singkat terlebih dahulu.",
     };
   }
 
