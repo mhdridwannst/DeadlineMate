@@ -4,12 +4,13 @@ import { getBahasa } from "@/server/demo-user";
 import { Icon } from "@/components/ui/Icon";
 import LoginThemeToggle from "@/components/shell/LoginThemeToggle";
 import LoginForm from "@/components/shell/LoginForm";
+import { PwaInstallButton } from "@/components/shell/PwaInstall";
 
 const TEKS = {
   id: {
     metaTitle: "Masuk | DeadlineMate",
     headline: "Teman yang ngejar deadline bareng kamu.",
-    desc: "Mate, asisten AI-mu, memecah tugas besar jadi langkah kecil dengan tenggatnya masing-masing, jadi kamu nggak numpuk di malam sebelum deadline.",
+    desc: "Mate, asisten AI-mu, membagi tugas besar menjadi langkah kecil dengan tenggat masing-masing, sehingga pekerjaanmu tidak menumpuk menjelang deadline.",
     caption: "Contoh tampilan. Langkah dan tenggatnya disusun Mate.",
     steps: [
       {
@@ -32,7 +33,7 @@ const TEKS = {
     taskMeta: "Kumpul Jumat, 16.00 · Kuliah",
     priority: "Tinggi",
     done: "Selesai",
-    streak: "Streak 3 hari",
+    streak: "3 tugas tepat waktu",
     fiturAndalan: "Fitur Andalan",
     f1: "AI Pecah Tugas",
     f2: "Gamifikasi Streak",
@@ -68,7 +69,7 @@ const TEKS = {
     taskMeta: "Due Friday, 16.00 · Study",
     priority: "High",
     done: "Completed",
-    streak: "3-day streak",
+    streak: "3 on-time tasks",
     fiturAndalan: "Core Features",
     f1: "AI Task Splitter",
     f2: "Streak Gamification",
@@ -128,6 +129,7 @@ export default async function LoginPage() {
         {/* ============ FORM LOGIN ============ */}
         <section className="mx-auto w-full max-w-[26rem] lg:order-2 lg:mx-0 lg:w-[26rem] lg:shrink-0">
           <LoginForm lang={lang} />
+          <PwaInstallButton className="mt-3" />
         </section>
 
         {/* ============ PITCH, MOCKUP, FITUR ============ */}

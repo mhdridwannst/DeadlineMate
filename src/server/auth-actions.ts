@@ -24,7 +24,7 @@ export async function loginDenganCredentials(
 
   if (mode === "register") {
     const existing = await db.user.findUnique({ where: { email } });
-    if (existing?.password) {
+    if (existing) {
       return { error: "Email sudah terdaftar. Silakan masuk." };
     }
 
@@ -35,16 +35,9 @@ export async function loginDenganCredentials(
     const hash = scryptSync(password, salt, 64).toString("hex");
     const hashedPassword = `${salt}:${hash}`;
 
-    if (existing) {
-      await db.user.update({
-        where: { email },
-        data: { password: hashedPassword, name: nama },
-      });
-    } else {
-      await db.user.create({
-        data: { email, name: nama, password: hashedPassword },
-      });
-    }
+    await db.user.create({
+      data: { email, name: nama, password: hashedPassword },
+    });
   }
 
   try {
@@ -95,13 +88,7 @@ export async function kirimLinkResetPassword(
   };
 
   const user = await db.user.findUnique({ where: { email } });
-  if (!user) return pesanSukses;
-  if (!user.password) {
-    return {
-      error:
-        "Akun ini terdaftar via Google. Silakan masuk pakai tombol 'Lanjutkan dengan Google'.",
-    };
-  }
+  if (!user?.password) return pesanSukses;
 
   try {
     await db.passwordResetToken.deleteMany({ where: { email } });
@@ -153,15 +140,25 @@ export async function resetPasswordBaru(
   const hash = scryptSync(password, salt, 64).toString("hex");
   const hashedPassword = `${salt}:${hash}`;
 
-  await db.user.update({
-    where: { id: user.id },
-    data: { password: hashedPassword },
+  const sekarang = new Date();
+  const berhasil = await db.$transaction(async (tx) => {
+    const tokenTerpakai = await tx.passwordResetToken.updateMany({
+      where: { token, usedAt: null, expires: { gt: sekarang } },
+      data: { usedAt: sekarang },
+    });
+    if (tokenTerpakai.count !== 1) return false;
+
+    await tx.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword },
+    });
+    return true;
   });
 
-  await db.passwordResetToken.update({
-    where: { token },
-    data: { usedAt: new Date() },
-  });
+  if (!berhasil)
+    return {
+      error: "Link reset tidak valid, kedaluwarsa, atau sudah dipakai.",
+    };
 
   return {
     ok: true,

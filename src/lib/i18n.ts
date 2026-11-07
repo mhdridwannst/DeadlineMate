@@ -22,14 +22,23 @@ const id = {
   hi: "Hai",
   streak: "Streak",
   activeStreak: "Streak Aktif",
-  daysInRow: "hari beruntun",
+  daysInRow: "tugas tepat waktu beruntun",
   bestRecord: "Rekor",
+  levelLabel: "Level",
   levelExp: "Level & XP",
   todayTarget: "Target Hari Ini",
   done: "selesai",
 
   // ── Beranda ──────────────────────────────────────────────
   taskList: "Daftar Tugas",
+  taskCount: "Tugas",
+  searchTasks: "Cari tugas...",
+  clearDateFilter: "Hapus filter tanggal",
+  clearSearch: "Hapus pencarian",
+  deadlineApproaching: "Tenggat Mendekat",
+  noMatchingTasks: "Tidak ada tugas yang cocok",
+  changeFilters: "Coba ubah kata kunci atau pilih tanggal lain di kalender.",
+  todayMarker: "Hari ini",
   priority: "Prioritas",
   habitSoon: "Segera",
   completedTasks: "Sudah selesai",
@@ -68,11 +77,46 @@ const id = {
   categoryDist: "Distribusi Kategori",
   gradeNone: "Belum ada nilai",
   gradeNoneDesc: "Selesaikan 1 tugas untuk mulai dinilai.",
+  weeklyTotalTasks: "Total: {count} Tugas",
+  weeklyChartAccessibleLabel: "Jumlah tugas selesai per hari: {values}",
+  onTimeRateTitle: "Tingkat Ketepatan Waktu",
+  onTimeRateDescription:
+    "{onTime} dari {total} tugas bertenggat selesai tepat waktu.",
+  onTimeRatePositive: "Bagus, kamu berhasil menyelesaikan tugas tepat waktu.",
+  onTimeRateImprove:
+    "Mulai kerjakan tugas lebih awal agar ketepatan waktumu meningkat.",
+  onTimeRateNoDataTitle: "Belum ada data ketepatan waktu",
+  onTimeRateNoDataDescription:
+    "Selesaikan tugas yang memiliki tenggat untuk melihat ringkasan ini.",
+
+  // ── Kalender ────────────────────────────────────────────
+  calendarTitle: "Kalender tugas",
+  calendarDescription: "Lihat dan pilih tanggal tenggat tugasmu.",
+  calendarRegion: "Kalender",
+  previousMonth: "Bulan sebelumnya",
+  nextMonth: "Bulan berikutnya",
+  calendarHasDeadline: "Ada tenggat",
+  calendarTasksForDate: "Tugas {date} {month}",
+  calendarEmpty: "Tidak ada tugas pada tanggal ini.",
 
   // ── Profil & pengaturan ──────────────────────────────────
   profileTitle: "Profil & Pengaturan",
   profileSub: "Kelola akun, bahasa, pengingat deadline, dan karakter Mate.",
   accountSection: "Akun & Penyimpanan Cloud",
+  synced: "Tersinkron",
+  localSession: "Sesi Lokal",
+  permanentEmail: "Email (Permanen)",
+  saveProfile: "Simpan Profil",
+  productivityStats: "Statistik Produktivitas",
+  streakRecordTasks: "Rekor Tugas Beruntun",
+  totalTasks: "Total Selesai",
+  totalExpEarned: "Total EXP Terkumpul",
+  logoutSection: "Logout",
+  logoutWarning: "Sesimu akan berakhir. Pastikan semua tugas sudah tersimpan.",
+  logoutFromAccount: "Keluar dari Akun",
+  logoutConfirmTitle: "Yakin mau keluar?",
+  logoutConfirmDescription: "Pastikan semua tugasmu sudah tersimpan.",
+  confirmLogout: "Ya, Keluar",
   accountDesc:
     "Masuk dengan email agar daftar tugas, streak, dan XP tersimpan permanen di akunmu.",
   cloudSynced: "Tersinkron",
@@ -109,7 +153,8 @@ const id = {
   badgeFirstStepTitle: "Langkah Pertama",
   badgeFirstStepDesc: "Selesaikan minimal 1 tugas",
   badgeConsistentTitle: "Pejuang Konsisten",
-  badgeConsistentDesc: "Jaga streak minimal 3 hari berturut-turut",
+  badgeConsistentDesc:
+    "Selesaikan 3 tugas bertenggat tepat waktu secara beruntun",
   badgeAntiSksTitle: "Anti-SKS Club",
   badgeAntiSksDesc: "Capai Level 2 dengan mengumpulkan 100 XP",
   badgeProgress: "{a}/{b}",
@@ -170,6 +215,32 @@ const id = {
   close: "Tutup",
   toggleTheme: "Ganti tema",
   notifications: "Notifikasi",
+  notificationLoading: "Memuat status notifikasi...",
+  notificationUnsupported: "Notifikasi tidak didukung",
+  notificationUnsupportedDescription:
+    "Browser ini tidak mendukung push notification. Coba gunakan Chrome, Edge, atau Firefox versi terbaru.",
+  notificationPermissionDenied: "Izin notifikasi ditolak",
+  notificationPermissionDeniedDescription:
+    "Ubah izin notifikasi untuk situs ini melalui pengaturan browser.",
+  enableDeadlineReminders: "Aktifkan Pengingat Tenggat",
+  notificationsActive: "Notifikasi Aktif",
+  notificationsActiveDescription:
+    "Pengingat dijadwalkan H-1, 3 jam sebelum tenggat, dan setelah tenggat terlewat. {count} perangkat terdaftar.",
+  notificationsInactiveDescription:
+    "Notifikasi mungkin tetap diterima saat browser ditutup jika browser, perangkat, dan pengaturannya mendukung.",
+  notificationPermissionDeniedInfo:
+    "Izin notifikasi ditolak. Ubah izin situs ini di pengaturan browser.",
+  notificationSubscribeFailed: "Notifikasi gagal diaktifkan. Coba lagi.",
+  notificationDisableSuccess: "Notifikasi dimatikan.",
+  notificationDisableFailed: "Notifikasi gagal dimatikan. Coba lagi.",
+  notificationTestSuccess:
+    "Tes terkirim. Berhasil: {success}, gagal: {failed}. Periksa notifikasi perangkatmu.",
+  notificationTestFailed: "Tes notifikasi gagal dikirim.",
+  notificationEnableButton: "Aktifkan Notifikasi",
+  notificationTestButton: "Kirim Tes Notifikasi",
+  notificationDisableButton: "Matikan",
+  notificationWorking: "Memproses...",
+  notificationSendingTest: "Mengirim...",
 };
 
 export type KunciTeks = keyof typeof id;
@@ -187,14 +258,23 @@ const en: Record<KunciTeks, string> = {
   hi: "Hi",
   streak: "Streak",
   activeStreak: "Active Streak",
-  daysInRow: "day streak",
+  daysInRow: "on-time tasks in a row",
   bestRecord: "Best",
+  levelLabel: "Level",
   levelExp: "Level & XP",
   todayTarget: "Today's Goal",
   done: "done",
 
   // ── Home ─────────────────────────────────────────────────
   taskList: "Task List",
+  taskCount: "Tasks",
+  searchTasks: "Search tasks...",
+  clearDateFilter: "Clear date filter",
+  clearSearch: "Clear search",
+  deadlineApproaching: "Deadline approaching",
+  noMatchingTasks: "No matching tasks",
+  changeFilters: "Try another search term or select a different date.",
+  todayMarker: "Today",
   priority: "Priority",
   habitSoon: "Soon",
   completedTasks: "Completed",
@@ -231,12 +311,47 @@ const en: Record<KunciTeks, string> = {
   categoryDist: "Category Breakdown",
   gradeNone: "No grade yet",
   gradeNoneDesc: "Complete 1 task to get your first grade.",
+  weeklyTotalTasks: "Total: {count} tasks",
+  weeklyChartAccessibleLabel: "Tasks completed per day: {values}",
+  onTimeRateTitle: "On-time completion rate",
+  onTimeRateDescription:
+    "{onTime} of {total} tasks with deadlines were completed on time.",
+  onTimeRatePositive: "Great work completing your tasks on time.",
+  onTimeRateImprove:
+    "Start tasks earlier to improve your on-time completion rate.",
+  onTimeRateNoDataTitle: "No on-time data yet",
+  onTimeRateNoDataDescription:
+    "Complete a task with a deadline to see this summary.",
+
+  // ── Calendar ────────────────────────────────────────────
+  calendarTitle: "Task calendar",
+  calendarDescription: "View and select task deadline dates.",
+  calendarRegion: "Calendar",
+  previousMonth: "Previous month",
+  nextMonth: "Next month",
+  calendarHasDeadline: "Has a deadline",
+  calendarTasksForDate: "Tasks for {date} {month}",
+  calendarEmpty: "No tasks on this date.",
 
   // ── Profile & settings ───────────────────────────────────
   profileTitle: "Profile & Settings",
   profileSub:
     "Manage your account, language, deadline reminders, and Mate's personality.",
   accountSection: "Cloud Account & Sync",
+  synced: "Synced",
+  localSession: "Local session",
+  permanentEmail: "Email (permanent)",
+  saveProfile: "Save profile",
+  productivityStats: "Productivity statistics",
+  streakRecordTasks: "Best task streak",
+  totalTasks: "Tasks completed",
+  totalExpEarned: "Total EXP earned",
+  logoutSection: "Sign out",
+  logoutWarning: "Your session will end. Make sure your tasks are saved.",
+  logoutFromAccount: "Sign out of account",
+  logoutConfirmTitle: "Are you sure you want to sign out?",
+  logoutConfirmDescription: "Make sure your tasks are saved.",
+  confirmLogout: "Sign out",
   accountDesc:
     "Sign in with your email so your tasks, streaks, and XP stay saved to your account.",
   cloudSynced: "Synced",
@@ -273,7 +388,7 @@ const en: Record<KunciTeks, string> = {
   badgeFirstStepTitle: "First Step",
   badgeFirstStepDesc: "Complete at least 1 task",
   badgeConsistentTitle: "Consistency Fighter",
-  badgeConsistentDesc: "Keep a streak going for 3 days in a row",
+  badgeConsistentDesc: "Complete 3 deadline tasks on time in a row",
   badgeAntiSksTitle: "Anti-Cramming Club",
   badgeAntiSksDesc: "Reach Level 2 by earning 100 XP",
   badgeProgress: "{a}/{b}",
@@ -335,6 +450,32 @@ const en: Record<KunciTeks, string> = {
   close: "Close",
   toggleTheme: "Switch theme",
   notifications: "Notifications",
+  notificationLoading: "Loading notification status...",
+  notificationUnsupported: "Notifications not supported",
+  notificationUnsupportedDescription:
+    "This browser does not support push notifications. Try the latest Chrome, Edge, or Firefox.",
+  notificationPermissionDenied: "Notification permission denied",
+  notificationPermissionDeniedDescription:
+    "Change this site's notification permission in your browser settings.",
+  enableDeadlineReminders: "Enable deadline reminders",
+  notificationsActive: "Notifications enabled",
+  notificationsActiveDescription:
+    "Reminders are scheduled for one day before, three hours before, and after a missed deadline. {count} devices registered.",
+  notificationsInactiveDescription:
+    "Notifications may still arrive while the browser is closed if your browser, device, and settings support it.",
+  notificationPermissionDeniedInfo:
+    "Notification permission was denied. Change this site's permission in your browser settings.",
+  notificationSubscribeFailed: "Could not enable notifications. Try again.",
+  notificationDisableSuccess: "Notifications disabled.",
+  notificationDisableFailed: "Could not disable notifications. Try again.",
+  notificationTestSuccess:
+    "Test sent. Succeeded: {success}, failed: {failed}. Check your device notifications.",
+  notificationTestFailed: "Could not send the notification test.",
+  notificationEnableButton: "Enable notifications",
+  notificationTestButton: "Send notification test",
+  notificationDisableButton: "Turn off",
+  notificationWorking: "Working...",
+  notificationSendingTest: "Sending...",
 };
 
 export const DICT: Record<Lang, Record<KunciTeks, string>> = { id, en };

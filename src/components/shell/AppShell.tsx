@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  useEffect,
-  useRef,
-  useState,
-  useTransition,
-  type ReactNode,
-} from "react";
+import { useRef, useState, useTransition, type ReactNode } from "react";
 import { RencanaForm } from "@/components/paper/RencanaForm";
 import FormTugas from "@/components/tugas/FormTugas";
 import { setBahasa } from "@/server/demo-user";
@@ -18,6 +12,7 @@ import { DICT, type Lang } from "@/lib/i18n";
 import DeadlineNotifier, { type ItemNotif } from "./DeadlineNotifier";
 import { useTema } from "./tema";
 import { Icon } from "@/components/ui/Icon"; // TAMBAH IMPORT INI
+import { PwaInstallButton } from "./PwaInstall";
 
 const IKON: Record<string, string> = {
   home: "M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10",
@@ -219,7 +214,8 @@ export default function AppShell({
                 fontSize: "0.8125rem",
               }}
             >
-              <Icon name="flame" className="size-3.5 text-oranye" /> Streak {streak}
+              <Icon name="flame" className="size-3.5 text-oranye" /> Streak{" "}
+              {streak}
             </span>
             <button
               type="button"
@@ -294,7 +290,8 @@ export default function AppShell({
                 </h2>
                 {/* FIX: Emoji api dihapus, ganti pakai Icon SVG */}
                 <p className="text-xs font-bold text-muted flex items-center gap-1">
-                  Level {level} · <Icon name="flame" className="size-3 text-oranye" /> {streak}
+                  Level {level} ·{" "}
+                  <Icon name="flame" className="size-3 text-oranye" /> {streak}
                 </p>
               </div>
             </button>
@@ -381,7 +378,7 @@ export default function AppShell({
           <div>
             <h3 className="text-lg font-extrabold">Yakin mau keluar?</h3>
             <p className="text-xs text-muted">
-              Pastikan semua tugasmu udah disimpan ya.
+              Pastikan semua tugasmu sudah tersimpan.
             </p>
           </div>
         </div>
@@ -443,6 +440,7 @@ export default function AppShell({
           >
             Ke Halaman Profil
           </Link>
+          <PwaInstallButton />
         </div>
 
         <button

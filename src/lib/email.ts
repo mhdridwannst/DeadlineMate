@@ -1,18 +1,32 @@
 import { Resend } from "resend";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-
 export async function kirimEmailResetPassword(email: string, token: string) {
   // FIX: Cek API key dulu sebelum inisialisasi
   if (!process.env.RESEND_API_KEY) {
     throw new Error("RESEND_API_KEY belum di-set di environment variables.");
   }
 
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL?.trim().replace(/\/+$/, "") ||
+    (process.env.NODE_ENV === "production" ? "" : "http://localhost:3000");
+  const from =
+    process.env.RESEND_FROM_EMAIL?.trim() ||
+    (process.env.NODE_ENV === "production"
+      ? ""
+      : "DeadlineMate <onboarding@resend.dev>");
+
+  if (!baseUrl) {
+    throw new Error("NEXT_PUBLIC_APP_URL belum diatur untuk production.");
+  }
+  if (!from) {
+    throw new Error("RESEND_FROM_EMAIL belum diatur untuk production.");
+  }
+
   // FIX: Inisialisasi Resend di dalam fungsi (Lazy Initialization)
   // Biar halaman lain (kayak /login) gak ikut crash kalau API key bermasalah.
   const resend = new Resend(process.env.RESEND_API_KEY);
 
-  const linkReset = `${BASE_URL}/reset-password?token=${token}`;
+  const linkReset = `${baseUrl}/reset-password?token=${token}`;
 
   const html = `
 <!DOCTYPE html>
@@ -43,7 +57,7 @@ export async function kirimEmailResetPassword(email: string, token: string) {
               
               <h2 style="margin:16px 0 8px;font-size:20px;font-weight:900;color:#111;">Lupa password, ya?</h2>
               <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#374151;font-weight:500;">
-                Tenang, gak perlu panik. Klik tombol di bawah buat bikin password baru. Link ini cuma berlaku <strong>1 jam</strong>.
+                Tidak perlu khawatir. Klik tombol di bawah untuk membuat password baru. Tautan ini hanya berlaku <strong>1 jam</strong>.
               </p>
 
               <!-- CTA BUTTON -->
@@ -66,7 +80,7 @@ export async function kirimEmailResetPassword(email: string, token: string) {
           <tr>
             <td style="padding:20px 32px 32px;border-top:2px dashed #e5e7eb;">
               <p style="margin:0;font-size:11px;color:#9ca3af;font-weight:600;text-align:center;line-height:1.5;">
-                Kalau kamu gak minta reset password, abaikan email ini.<br/>
+                Jika kamu tidak meminta reset password, abaikan email ini.<br/>
                 Password kamu tetap aman.
               </p>
             </td>
@@ -85,7 +99,7 @@ export async function kirimEmailResetPassword(email: string, token: string) {
   `;
 
   const { error } = await resend.emails.send({
-    from: "DeadlineMate <onboarding@resend.dev>",
+    from,
     to: email,
     subject: "Reset password DeadlineMate kamu",
     html,

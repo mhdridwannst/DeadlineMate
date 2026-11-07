@@ -242,7 +242,7 @@ function susunRencanaLokal(teks: string): z.infer<typeof rencanaSchema> {
 
   return {
     tugas: daftar,
-    catatanMate: `Jadwalmu sudah kubuat menjadi langkah ringan! Yuk mulai cicil "${daftar[0].langkah[0].judul}" selama ${daftar[0].langkah[0].estimasiMenit} menit sekarang.`,
+    catatanMate: `Rencanamu sudah dibagi menjadi langkah-langkah kecil. Mulai dari "${daftar[0].langkah[0].judul}" selama ${daftar[0].langkah[0].estimasiMenit} menit.`,
   };
 }
 
@@ -296,7 +296,7 @@ export async function rencanakan(
             },
           ],
           catatanMate:
-            "Yuk cicil rekap tabel datanya dulu 35 menit malam ini biar besok tinggal pembahasan!",
+            "Kerjakan rekap tabel data selama 35 menit malam ini agar besok kamu bisa fokus pada pembahasan.",
         }),
       ].join("\n"),
       prompt: `Tulisan user:\n"""\n${teks}\n"""\nJSON:`,
@@ -397,7 +397,7 @@ export async function pecahLangkahAI(
               targetSelesai: "2026-10-27T19:00:00+07:00",
             },
           ],
-          catatanMate: "Mulai dari langkah pertama 25 menit aja dulu bro!",
+          catatanMate: "Mulai dari langkah pertama selama 25 menit.",
         }),
       ].join("\n"),
       prompt: `Tugas: "${tugas.title}" (${tugas.category ?? "Kuliah"})\nJSON:`,
@@ -411,7 +411,7 @@ export async function pecahLangkahAI(
     const langkahKontekstual = buatLangkahKontekstual(tugas.title, due);
     output = {
       langkah: langkahKontekstual,
-      catatanMate: `Tugas "${tugas.title}" sudah kubuat jadi ${langkahKontekstual.length} tahap ringan. Sikat langkah #1 dulu!`,
+      catatanMate: `Tugas "${tugas.title}" sudah dibagi menjadi ${langkahKontekstual.length} tahap. Mulai dari langkah pertama.`,
     };
   }
 

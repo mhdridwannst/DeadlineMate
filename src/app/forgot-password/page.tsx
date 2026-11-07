@@ -32,8 +32,8 @@ export default function ForgotPasswordPage() {
           </div>
           <h1 className="mt-4 text-2xl font-black text-ink">Lupa Password?</h1>
           <p className="mt-2 text-sm font-semibold text-muted">
-            Tenang, gak perlu panik. Masukkan emailmu, kami kirim link buat
-            bikin password baru.
+            Tidak perlu khawatir. Masukkan emailmu dan kami akan mengirim tautan
+            untuk membuat password baru.
           </p>
         </div>
 

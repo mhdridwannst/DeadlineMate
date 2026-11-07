@@ -14,7 +14,8 @@ type KategoriNotif = {
 export async function GET(request: Request) {
   // 1. SECURITY: Cek header Authorization
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -35,7 +36,7 @@ export async function GET(request: Request) {
       key: "24h",
       title: "⏰ Deadline Besok!",
       bodyTemplate: (judul) =>
-        `Jangan lupa, "${judul}" due dalam kurang dari 24 jam. Yuk cicil sekarang!`,
+        `Tenggat "${judul}" kurang dari 24 jam lagi. Mulai kerjakan sekarang, ya.`,
       flagField: "notif24hSent",
       getFilter: (now, in3h, in24h) => ({
         status: { not: "DONE" },
@@ -61,7 +62,7 @@ export async function GET(request: Request) {
       key: "overdue",
       title: "🔥 Deadline Terlewat!",
       bodyTemplate: (judul) =>
-        `"${judul}" udah lewat deadline. Streak lo terancam!`,
+        `Tenggat "${judul}" sudah terlewat. Selesaikan saat kamu siap untuk kembali ke rencanamu.`,
       flagField: "notifOverdueSent",
       getFilter: (now) => ({
         status: { not: "DONE" },

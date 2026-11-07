@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import { useTema, type Tema } from "./tema";
 
-type Pilihan = "terang" | "gelap" | "sistem";
-
-const OPSI: { nilai: Pilihan; label: string; ikon: ReactNode }[] = [
+const OPSI: { nilai: Tema; label: string; ikon: ReactNode }[] = [
   {
     nilai: "terang",
     label: "Terang",
@@ -59,40 +58,8 @@ const OPSI: { nilai: Pilihan; label: string; ikon: ReactNode }[] = [
   },
 ];
 
-function terapkan(p: Pilihan) {
-  const gelap =
-    p === "gelap" ||
-    (p === "sistem" && matchMedia("(prefers-color-scheme: dark)").matches);
-  document.documentElement.dataset.theme = gelap ? "dark" : "light";
-}
-
 export default function ThemeToggle() {
-  const [pilihan, setPilihan] = useState<Pilihan>("sistem");
-  const [siap, setSiap] = useState(false);
-
-  useEffect(() => {
-    try {
-      const s = localStorage.getItem("tema");
-      if (s === "terang" || s === "gelap" || s === "sistem") setPilihan(s);
-    } catch {}
-    setSiap(true);
-  }, []);
-
-  useEffect(() => {
-    if (!siap) return;
-    terapkan(pilihan);
-    const mq = matchMedia("(prefers-color-scheme: dark)");
-    const f = () => pilihan === "sistem" && terapkan("sistem");
-    mq.addEventListener("change", f);
-    return () => mq.removeEventListener("change", f);
-  }, [pilihan, siap]);
-
-  function pilih(p: Pilihan) {
-    setPilihan(p);
-    try {
-      localStorage.setItem("tema", p);
-    } catch {}
-  }
+  const [pilihan, setPilihan] = useTema();
 
   return (
     <div
@@ -104,7 +71,7 @@ export default function ThemeToggle() {
         <button
           key={o.nilai}
           type="button"
-          onClick={() => pilih(o.nilai)}
+          onClick={() => setPilihan(o.nilai)}
           aria-pressed={pilihan === o.nilai}
           aria-label={o.label}
           title={o.label}

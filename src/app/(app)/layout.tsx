@@ -14,7 +14,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   }
 
   const r = await ambilRingkasan(user.id);
-  const now = Date.now();
+  const now = new Date().getTime();
 
   const notifikasi: ItemNotif[] = r.aktifBerTenggat.flatMap(
     (t): ItemNotif[] => {

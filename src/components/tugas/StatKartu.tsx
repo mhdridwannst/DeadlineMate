@@ -38,7 +38,10 @@ export default function StatKartu({
             {lang === "en" ? "Active streak" : "Streak aktif"}
           </p>
           <p className="text-base font-extrabold leading-snug text-ink sm:text-lg">
-            {streak} {lang === "en" ? "tasks in a row" : "tugas beruntun"}
+            {streak}{" "}
+            {lang === "en"
+              ? "on-time tasks in a row"
+              : "tugas tepat waktu beruntun"}
           </p>
           <p className="text-xs text-muted">
             {t.bestRecord}: {rekor}

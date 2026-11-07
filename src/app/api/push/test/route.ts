@@ -28,7 +28,7 @@ export async function POST() {
 
   const payload = JSON.stringify({
     title: "🔔 Test Notifikasi Berhasil!",
-    body: "Kalau lo liat ini, berarti push notification DeadlineMate udah jalan. Mantap!",
+    body: "Jika kamu melihat notifikasi ini, pengingat DeadlineMate berhasil berfungsi.",
     url: "/today",
     tag: "test-notif",
   });

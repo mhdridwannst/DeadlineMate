@@ -1,4 +1,5 @@
 import { TypingText } from "./TypingText";
+import { Icon } from "../ui/Icon";
 
 export function MateChat({ text, title }: { text: string; title: string }) {
   return (
@@ -9,7 +10,7 @@ export function MateChat({ text, title }: { text: string; title: string }) {
           className="w-12 h-12 bg-lime border-2 border-ink shadow-[0_3px_0_var(--sh)] rounded-xl flex items-center justify-center text-2xl"
           style={{ animation: "float 3s ease-in-out infinite" }}
         >
-          🤖
+          <Icon name="bot" className="size-4" strokeWidth={2.5} />
         </div>
       </div>
 
