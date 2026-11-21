@@ -70,8 +70,19 @@ export default function NotifToggle({ lang = "id" }: { lang?: Lang }) {
 
   async function aktifkan() {
     sfxClick();
-    setStatus("working");
     setInfo(null);
+
+    // FIX: guard VAPID key SEBELUM set status "working"
+    const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+    if (!publicKey) {
+      console.error(
+        "[push] NEXT_PUBLIC_VAPID_PUBLIC_KEY belum di-set di environment",
+      );
+      setInfo(translate(lang, "notificationSubscribeFailed"));
+      return;
+    }
+
+    setStatus("working");
 
     try {
       const permission = await Notification.requestPermission();
@@ -84,9 +95,7 @@ export default function NotifToggle({ lang = "id" }: { lang?: Lang }) {
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(
-          process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-        ),
+        applicationServerKey: urlBase64ToUint8Array(publicKey),
       });
 
       const subJSON = sub.toJSON() as {
@@ -245,7 +254,6 @@ export default function NotifToggle({ lang = "id" }: { lang?: Lang }) {
       <div className="mt-3 flex flex-wrap items-center gap-2">
         {isActive ? (
           <>
-            {/* FIX UI: Tombol Test pakai hover:Lime */}
             <button
               type="button"
               onClick={kirimTest}

@@ -59,7 +59,7 @@ export function PwaInstallProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function PwaInstallButton({ className = "" }: { className?: string }) {
+export function PwaInstallButton({ className = "" }) {
   const context = useContext(PwaInstallContext);
   if (!context) {
     throw new Error(

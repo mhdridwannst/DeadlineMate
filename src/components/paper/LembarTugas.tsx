@@ -77,7 +77,24 @@ export default function LembarTugas({ tugas }: { tugas: TugasView[] }) {
     const nilai = !selesai(id, asli);
     mulai(async () => {
       setStatus({ id, nilai });
-      await ubahStatus(id, nilai);
+      try {
+        await ubahStatus(id, nilai);
+      } catch (e) {
+        console.error("[ubahStatus] Gagal:", e);
+        // Status akan revert otomatis saat revalidate selesai
+      }
+    });
+  }
+
+  function hapus(id: string, judul: string) {
+    if (!confirm(`Hapus "${judul}"?`)) return;
+    mulai(async () => {
+      try {
+        await hapusTugas(id);
+      } catch (e) {
+        console.error("[hapusTugas] Gagal:", e);
+        alert("Gagal menghapus tugas. Coba lagi.");
+      }
     });
   }
 
@@ -125,10 +142,7 @@ export default function LembarTugas({ tugas }: { tugas: TugasView[] }) {
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  if (confirm(`Hapus "${t.judul}"?`))
-                    mulai(async () => void (await hapusTugas(t.id)));
-                }}
+                onClick={() => hapus(t.id, t.judul)}
                 aria-label={`Hapus ${t.judul}`}
                 className="grid size-11 place-items-center rounded-full text-pensil/50 hover:text-merah"
               >

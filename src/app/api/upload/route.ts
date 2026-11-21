@@ -71,15 +71,14 @@ export async function POST(request: Request) {
       (ext === "pdf" && startsWith([0x25, 0x50, 0x44, 0x46])) ||
       (ext === "png" &&
         startsWith([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) ||
-      ((ext === "jpg" || ext === "jpeg") &&
-        startsWith([0xff, 0xd8, 0xff])) ||
-      ((ext === "webp" &&
+      ((ext === "jpg" || ext === "jpeg") && startsWith([0xff, 0xd8, 0xff])) ||
+      (ext === "webp" &&
         startsWith([0x52, 0x49, 0x46, 0x46]) &&
         bytes[8] === 0x57 &&
         bytes[9] === 0x45 &&
         bytes[10] === 0x42 &&
-        bytes[11] === 0x50)) ||
-      (ext === "txt") ||
+        bytes[11] === 0x50) ||
+      ext === "txt" ||
       ((ext === "doc" || ext === "xls" || ext === "ppt") &&
         startsWith([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1])) ||
       ((ext === "docx" || ext === "xlsx" || ext === "pptx") &&
@@ -95,7 +94,9 @@ export async function POST(request: Request) {
     // Sanitasi nama file (buang karakter aneh yang bisa bikin URL rusak)
     const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
 
-    const blob = await put(safeName, file, {
+    const userId = session.user.id;
+
+    const blob = await put(`${userId}/${safeName}`, file, {
       access: "private",
       addRandomSuffix: true,
     });

@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useRef, useState, useTransition, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+  type ReactNode,
+} from "react";
 import { RencanaForm } from "@/components/paper/RencanaForm";
 import FormTugas from "@/components/tugas/FormTugas";
 import { setBahasa } from "@/server/demo-user";
@@ -11,7 +17,7 @@ import { isSfxEnabled, sfxClick, toggleSfx } from "@/lib/sfx";
 import { DICT, type Lang } from "@/lib/i18n";
 import DeadlineNotifier, { type ItemNotif } from "./DeadlineNotifier";
 import { useTema } from "./tema";
-import { Icon } from "@/components/ui/Icon"; // TAMBAH IMPORT INI
+import { Icon } from "@/components/ui/Icon";
 import { PwaInstallButton } from "./PwaInstall";
 
 const IKON: Record<string, string> = {
@@ -82,10 +88,14 @@ export default function AppShell({
   const [kunci, setKunci] = useState(0);
   const [tabModal, setTabModal] = useState<"satuan" | "banyak">("satuan");
 
-  const [sfxAktif, setSfxAktif] = useState(() => {
-    if (typeof window !== "undefined") return isSfxEnabled();
-    return true;
-  });
+  // FIX: hindari hydration mismatch & aturan React 19 (async setState)
+  const [sfxAktif, setSfxAktif] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSfxAktif(isSfxEnabled());
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   const NAV = [
     { href: "/today", label: t.navHome, ikon: "home" },
@@ -204,7 +214,6 @@ export default function AppShell({
             </span>
           </h2>
           <div className="flex items-center gap-2.5">
-            {/* FIX: Emoji api dihapus, ganti pakai Icon SVG */}
             <span
               className="tag px-3 py-1 flex items-center gap-1.5"
               style={{
@@ -288,7 +297,6 @@ export default function AppShell({
                 <h2 className="text-base font-extrabold text-ink">
                   {t.hi}, {nama}!
                 </h2>
-                {/* FIX: Emoji api dihapus, ganti pakai Icon SVG */}
                 <p className="text-xs font-bold text-muted flex items-center gap-1">
                   Level {level} ·{" "}
                   <Icon name="flame" className="size-3 text-oranye" /> {streak}
