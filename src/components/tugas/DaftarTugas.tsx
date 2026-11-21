@@ -459,7 +459,7 @@ export default function DaftarTugas({
                   </div>
 
                   <ol className="space-y-2">
-                    {t.langkah.map((l, idx) => {
+                    {t.langkah.map((l) => {
                       const ls = on(l.id, l.selesai);
                       return (
                         <li

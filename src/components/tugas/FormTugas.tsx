@@ -371,6 +371,8 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
           <span>Catatan</span>
           <span className="text-[10px] font-semibold text-muted">Opsional</span>
         </label>
+
+        {/* Kotak Input Catatan */}
         <div className="relative rounded-xl border-2 border-[color:var(--line)] bg-[color:var(--surface-2)] transition-all focus-within:bg-card focus-within:shadow-[0_3px_0_var(--sh)]">
           <textarea
             id="f-catatan"
@@ -382,6 +384,8 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
             placeholder="Tambahkan detail, link, atau lampiran..."
             className="block w-full resize-none bg-transparent px-3 pt-2 pb-8 text-sm font-medium text-ink placeholder:text-muted/60 focus:outline-none"
           />
+
+          {/* Footer Lampiran & Counter */}
           <div className="absolute inset-x-0 bottom-0 flex items-center justify-between border-t border-[color:var(--line)]/10 bg-[color:var(--surface-2)]/80 px-2 py-1 rounded-b-xl">
             <div className="flex items-center gap-1">
               <input
@@ -417,6 +421,13 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
             </span>
           </div>
         </div>
+
+        {/* PESAN ERROR UPLOAD */}
+        {uploadError && (
+          <p className="mt-1.5 rounded-lg border-2 border-[color:var(--bahaya)] bg-[color:var(--bahaya-bg)] px-2.5 py-1 text-[10px] font-bold text-[color:var(--bahaya)]">
+            {uploadError}
+          </p>
+        )}
       </div>
 
       {/* TOGGLE ADVANCED SETTINGS */}

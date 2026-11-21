@@ -25,6 +25,7 @@
     "dotenv": "^18.0.9",
     "next": "16.4.6",
     "next-auth": "^5.0.0-beta.32",
+    "officeparser": "^8.9.0",
     "pg": "^8.23.1",
     "prisma": "^7.10.1",
     "react": "19.3.0",
@@ -51,5 +52,10 @@
   },
   "overrides": {
     "effect": "3.22.5"
+  },
+  "allowScripts": {
+    "@prisma/engines@7.10.1": true,
+    "prisma@7.10.1": true,
+    "esbuild@0.28.2": true
   }
 }
