@@ -104,7 +104,9 @@ self.addEventListener("push", (event) => {
       tag: data.tag,
       data: { url: data.url },
       vibrate: [200, 100, 200],
-      requireInteraction: data.tag === "overdue",
+      requireInteraction:
+        data.tag === "overdue" ||
+        (typeof data.tag === "string" && data.tag.startsWith("overdue-")),
     }),
   );
 });

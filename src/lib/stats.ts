@@ -76,7 +76,7 @@ export const ambilRingkasan = cache(async (userId: string) => {
     } else {
       // Kalau telat, kurangi nyawa. Kalau nyawa habis, streak reset.
       nyawa -= 1;
-      if (nyawa < 0) {
+      if (nyawa <= 0) {
         streak = 0;
         nyawa = 2; // Reset nyawa buat kesempatan berikutnya
       }

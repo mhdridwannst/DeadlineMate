@@ -45,8 +45,13 @@ export async function masukDenganPassword(
   if (!email || !email.includes("@")) {
     return { error: "Email tidak valid." };
   }
-  if (password.length < 6) {
-    return { error: "Password minimal 6 karakter." };
+  if (password.length < (mode === "register" ? 8 : 6)) {
+    return {
+      error:
+        mode === "register"
+          ? "Password minimal 8 karakter."
+          : "Password minimal 6 karakter.",
+    };
   }
   if (mode === "register" && nama.length < 2) {
     return { error: "Nama panggilan minimal 2 karakter." };

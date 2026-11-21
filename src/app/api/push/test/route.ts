@@ -3,17 +3,22 @@ import webpush from "web-push";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT!,
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!,
-);
-
 export async function POST() {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const subject = process.env.VAPID_SUBJECT?.trim();
+  const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim();
+  const privateKey = process.env.VAPID_PRIVATE_KEY?.trim();
+  if (!subject || !publicKey || !privateKey) {
+    return NextResponse.json(
+      { error: "Konfigurasi push notification belum lengkap." },
+      { status: 503 },
+    );
+  }
+  webpush.setVapidDetails(subject, publicKey, privateKey);
 
   const subs = await db.pushSubscription.findMany({
     where: { userId: session.user.id },

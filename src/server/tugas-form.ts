@@ -74,8 +74,11 @@ export async function simpanTugas(
   if (d.id) {
     const existing = await db.task.findUnique({
       where: { id: d.id, userId: user.id },
-      select: { attachmentUrl: true },
+      select: { attachmentUrl: true, dueAt: true },
     });
+
+    const deadlineBerubah =
+      existing?.dueAt?.getTime() !== dueAt.getTime();
 
     const r = await db.task.updateMany({
       where: { id: d.id, userId: user.id, parentId: null },
@@ -87,6 +90,13 @@ export async function simpanTugas(
         dueAt,
         category: d.kategori,
         estimateMin,
+        ...(deadlineBerubah
+          ? {
+              notif24hSent: false,
+              notif3hSent: false,
+              notifOverdueSent: false,
+            }
+          : {}),
         ...(d.prioritas ? { priority: d.prioritas } : {}),
       },
     });

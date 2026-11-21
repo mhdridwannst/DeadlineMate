@@ -5,39 +5,69 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { ambilModel } from "@/lib/ai/model";
+import { dayKey, hariKe, tambahHari, keDueAt } from "@/lib/waktu";
 import { getDemoUser } from "./demo-user";
+import { cekRateLimit } from "@/lib/rate-limit";
 
 export type HasilRencana = { ok: boolean; pesan: string } | null;
 
 const rencanaSchema = z.object({
   tugas: z.array(
     z.object({
-      judul: z.string(),
-      tenggat: z.string(),
-      kategori: z.string(),
+      judul: z.string().trim().min(3).max(120),
+      tenggat: z
+        .string()
+        .refine(
+          (value) => !Number.isNaN(new Date(value).getTime()),
+          "Tenggat tidak valid",
+        ),
+      kategori: z.string().trim().min(1).max(40),
       prioritas: z.enum(["LOW", "MEDIUM", "HIGH"]),
-      estimasiMenit: z.number().int(),
+      estimasiMenit: z.number().int().min(10).max(2400),
       langkah: z.array(
         z.object({
-          judul: z.string(),
-          estimasiMenit: z.number().int(),
-          targetSelesai: z.string(),
+          judul: z.string().trim().min(3).max(120),
+          estimasiMenit: z.number().int().min(10).max(480),
+          targetSelesai: z
+            .string()
+            .refine(
+              (value) => !Number.isNaN(new Date(value).getTime()),
+              "Target tidak valid",
+            ),
         }),
-      ),
+      ).min(1).max(5),
     }),
-  ),
-  catatanMate: z.string(),
+  ).min(1).max(8),
+  catatanMate: z.string().trim().min(1).max(300),
+}).superRefine((value, ctx) => {
+  for (const [taskIndex, task] of value.tugas.entries()) {
+    const due = new Date(task.tenggat);
+    for (const [stepIndex, step] of task.langkah.entries()) {
+      if (new Date(step.targetSelesai) > due) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Target subtask melewati tenggat tugas",
+          path: ["tugas", taskIndex, "langkah", stepIndex, "targetSelesai"],
+        });
+      }
+    }
+  }
 });
 
 const pecahSatuSchema = z.object({
   langkah: z.array(
     z.object({
-      judul: z.string(),
-      estimasiMenit: z.number().int(),
-      targetSelesai: z.string(),
+      judul: z.string().trim().min(3).max(120),
+      estimasiMenit: z.number().int().min(10).max(480),
+      targetSelesai: z
+        .string()
+        .refine(
+          (value) => !Number.isNaN(new Date(value).getTime()),
+          "Target tidak valid",
+        ),
     }),
-  ),
-  catatanMate: z.string(),
+  ).min(1).max(5),
+  catatanMate: z.string().trim().min(1).max(300),
 });
 
 function ekstrakJson<T>(teksMentah: string, skema: z.ZodType<T>): T | null {
@@ -181,6 +211,7 @@ function susunRencanaLokal(teks: string): z.infer<typeof rencanaSchema> {
     (kalimat) => {
       const lower = kalimat.toLowerCase();
       const now = new Date();
+      const hariIni = dayKey(now);
       let offsetHari = 2;
 
       const petaHari: Record<string, number> = {
@@ -194,7 +225,7 @@ function susunRencanaLokal(teks: string): z.infer<typeof rencanaSchema> {
       };
       for (const [h, idx] of Object.entries(petaHari)) {
         if (lower.includes(h)) {
-          let selisih = idx - now.getDay();
+          let selisih = idx - hariKe(hariIni);
           if (selisih <= 0) selisih += 7;
           if (lower.includes("depan")) selisih += 7;
           offsetHari = selisih;
@@ -205,8 +236,7 @@ function susunRencanaLokal(teks: string): z.infer<typeof rencanaSchema> {
       if (lower.includes("hari ini") || lower.includes("malam ini"))
         offsetHari = 0;
 
-      const due = new Date(now.getTime() + offsetHari * 86_400_000);
-      due.setHours(23, 59, 0, 0);
+      const due = keDueAt(tambahHari(hariIni, offsetHari), "23:59");
 
       const judulBersih = kalimat
         .replace(
@@ -258,6 +288,10 @@ export async function rencanakan(
 
   const user = await getDemoUser();
   if (!user) throw new Error("Unauthorized");
+  const aiLimit = await cekRateLimit("ai-plan", user.id, 20, 24 * 60 * 60 * 1000);
+  if (!aiLimit.allowed) {
+    return { ok: false, pesan: "Batas penggunaan AI harian sudah tercapai." };
+  }
   const sekarang = new Intl.DateTimeFormat("id-ID", {
     dateStyle: "full",
     timeStyle: "short",
@@ -415,8 +449,6 @@ export async function pecahLangkahAI(
     };
   }
 
-  await db.task.deleteMany({ where: { parentId: tugas.id, userId: user.id } });
-
   const daftarLangkah = output.langkah.slice(0, 5).map((l, idx) => {
     const target = new Date(l.targetSelesai);
     const fallbackDate = new Date(
@@ -433,13 +465,22 @@ export async function pecahLangkahAI(
     };
   });
 
-  await db.task.createMany({ data: daftarLangkah });
-  await db.coachNote.create({
-    data: {
-      userId: user.id,
-      taskId: tugas.id,
-      body: output.catatanMate.slice(0, 300),
-    },
+  await db.$transaction(async (tx) => {
+    await tx.task.deleteMany({
+      where: {
+        parentId: tugas.id,
+        userId: user.id,
+        status: { not: "DONE" },
+      },
+    });
+    await tx.task.createMany({ data: daftarLangkah });
+    await tx.coachNote.create({
+      data: {
+        userId: user.id,
+        taskId: tugas.id,
+        body: output.catatanMate.slice(0, 300),
+      },
+    });
   });
 
   // SPESIFIK

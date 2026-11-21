@@ -1,12 +1,6 @@
 import webpush from "web-push";
 import { db } from "@/lib/db";
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT!,
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!,
-);
-
 export type NotifPayload = {
   title: string;
   body: string;
@@ -15,6 +9,15 @@ export type NotifPayload = {
 };
 
 export async function kirimNotifKeUser(userId: string, payload: NotifPayload) {
+  const subject = process.env.VAPID_SUBJECT?.trim();
+  const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim();
+  const privateKey = process.env.VAPID_PRIVATE_KEY?.trim();
+  if (!subject || !publicKey || !privateKey) {
+    return { sukses: 0, gagal: 0 };
+  }
+
+  webpush.setVapidDetails(subject, publicKey, privateKey);
+
   const subs = await db.pushSubscription.findMany({ where: { userId } });
   if (subs.length === 0) return { sukses: 0, gagal: 0 };
 

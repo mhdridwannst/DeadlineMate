@@ -8,6 +8,8 @@
     "vercel-build": "prisma generate && prisma migrate deploy && next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -16,12 +18,12 @@
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
     "@tanstack/react-query": "^5.104.5",
-    "@vercel/blob": "^2.8.2",
+    "@vercel/blob": "2.4.0",
     "ai": "^7.0.153",
     "canvas-confetti": "^1.9.4",
     "date-fns": "^4.4.0",
     "dotenv": "^18.0.9",
-    "next": "16.4.3",
+    "next": "16.4.6",
     "next-auth": "^5.0.0-beta.32",
     "pg": "^8.23.1",
     "prisma": "^7.10.1",
@@ -41,9 +43,13 @@
     "@types/web-push": "^3.6.4",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
-    "eslint-config-next": "16.4.3",
+    "eslint-config-next": "16.4.6",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "4.1.12"
+  },
+  "overrides": {
+    "effect": "3.22.5"
   }
 }
