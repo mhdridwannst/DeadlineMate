@@ -314,7 +314,7 @@ export default function DaftarTugas({
 
                     {t.attachmentUrl && (
                       <a
-                        href={t.attachmentUrl}
+                        href={`/api/attachment?url=${encodeURIComponent(t.attachmentUrl)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         download={t.attachmentName ?? undefined}

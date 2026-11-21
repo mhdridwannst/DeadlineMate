@@ -29,6 +29,9 @@ export async function majukanHari() {
           dueAt: geser(t.dueAt),
           softDueAt: geser(t.softDueAt),
           doneAt: geser(t.doneAt),
+          notif24hSent: false,
+          notif3hSent: false,
+          notifOverdueSent: false,
         },
       }),
     ),
@@ -53,7 +56,12 @@ export async function lewatiDeadline() {
   if (target) {
     await db.task.update({
       where: { id: target.id },
-      data: { dueAt: new Date(Date.now() - 3_600_000) },
+      data: {
+        dueAt: new Date(Date.now() - 3_600_000),
+        notif24hSent: false,
+        notif3hSent: false,
+        notifOverdueSent: false,
+      },
     });
   }
   revalidatePath("/", "layout");

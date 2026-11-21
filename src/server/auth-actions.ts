@@ -1,12 +1,17 @@
 "use server";
 
-import { randomBytes, scryptSync } from "crypto";
+import { createHash, randomBytes, scryptSync } from "crypto";
 import { AuthError } from "next-auth";
 import { db } from "@/lib/db";
 import { signIn } from "@/auth";
 import { kirimEmailResetPassword } from "@/lib/email";
+import { cekRateLimit } from "@/lib/rate-limit";
 
 export type HasilAuth = { error?: string; ok?: boolean; pesan?: string } | null;
+
+function hashResetToken(token: string) {
+  return createHash("sha256").update(token).digest("hex");
+}
 
 // ==================== LOGIN / REGISTER ====================
 export async function loginDenganCredentials(
@@ -19,8 +24,23 @@ export async function loginDenganCredentials(
   const password = String(formData.get("password") ?? "");
   const mode = String(formData.get("mode") ?? "login");
 
+  const loginLimit = await cekRateLimit(
+    mode === "register" ? "register" : "login",
+    email,
+    mode === "register" ? 5 : 10,
+    15 * 60 * 1000,
+  );
+  if (!loginLimit.allowed) {
+    return { error: "Terlalu banyak percobaan. Coba lagi dalam 15 menit." };
+  }
+
   if (!email || !email.includes("@")) return { error: "Email tidak valid." };
-  if (password.length < 6) return { error: "Password minimal 6 karakter." };
+  if (mode === "register" && password.length < 8) {
+    return { error: "Password minimal 8 karakter." };
+  }
+  if (mode !== "register" && password.length < 6) {
+    return { error: "Password minimal 6 karakter." };
+  }
 
   if (mode === "register") {
     const existing = await db.user.findUnique({ where: { email } });
@@ -81,6 +101,20 @@ export async function kirimLinkResetPassword(
     return { error: "Email tidak valid." };
   }
 
+  const resetLimit = await cekRateLimit(
+    "forgot-password",
+    email,
+    3,
+    60 * 60 * 1000,
+  );
+  if (!resetLimit.allowed) {
+    return {
+      ok: true,
+      pesan:
+        "Kalau email kamu terdaftar, kami sudah kirim link reset. Cek inbox (atau folder spam) dalam 1-2 menit.",
+    };
+  }
+
   const pesanSukses = {
     ok: true,
     pesan:
@@ -97,7 +131,7 @@ export async function kirimLinkResetPassword(
     const expires = new Date(Date.now() + 60 * 60 * 1000);
 
     await db.passwordResetToken.create({
-      data: { email, token, expires },
+      data: { email, token: hashResetToken(token), expires },
     });
 
     await kirimEmailResetPassword(email, token);
@@ -118,12 +152,12 @@ export async function resetPasswordBaru(
   const konfirmasi = String(formData.get("konfirmasi") ?? "");
 
   if (!token) return { error: "Token tidak valid." };
-  if (password.length < 6) return { error: "Password minimal 6 karakter." };
+  if (password.length < 8) return { error: "Password minimal 8 karakter." };
   if (password !== konfirmasi)
     return { error: "Password dan konfirmasi tidak sama." };
 
   const resetToken = await db.passwordResetToken.findUnique({
-    where: { token },
+    where: { token: hashResetToken(token) },
   });
 
   if (!resetToken)
@@ -143,7 +177,7 @@ export async function resetPasswordBaru(
   const sekarang = new Date();
   const berhasil = await db.$transaction(async (tx) => {
     const tokenTerpakai = await tx.passwordResetToken.updateMany({
-      where: { token, usedAt: null, expires: { gt: sekarang } },
+      where: { token: hashResetToken(token), usedAt: null, expires: { gt: sekarang } },
       data: { usedAt: sekarang },
     });
     if (tokenTerpakai.count !== 1) return false;

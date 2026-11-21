@@ -84,6 +84,15 @@ export async function GET(request: Request) {
       stats.checked += tugasList.length;
 
       for (const tugas of tugasList) {
+        const claimed = await db.task.updateMany({
+          where: {
+            id: tugas.id,
+            [kategori.flagField]: false,
+          },
+          data: { [kategori.flagField]: true },
+        });
+        if (claimed.count !== 1) continue;
+
         const hasil = await kirimNotifKeUser(tugas.userId, {
           title: kategori.title,
           body: kategori.bodyTemplate(tugas.title),
@@ -92,16 +101,16 @@ export async function GET(request: Request) {
         });
 
         if (hasil.sukses > 0) {
-          // Update flag di database (dynamic key)
-          await db.task.update({
-            where: { id: tugas.id },
-            data: { [kategori.flagField]: true },
-          });
-
           // Increment counter yang sesuai
           if (kategori.key === "24h") stats.sent24h++;
           if (kategori.key === "3h") stats.sent3h++;
           if (kategori.key === "overdue") stats.sentOverdue++;
+        } else {
+          // Beri kesempatan retry jika tidak ada subscription yang berhasil menerima.
+          await db.task.updateMany({
+            where: { id: tugas.id, [kategori.flagField]: true },
+            data: { [kategori.flagField]: false },
+          });
         }
       }
     }
