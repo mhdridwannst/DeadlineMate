@@ -7,6 +7,7 @@ import {
   type HasilForm,
 } from "@/server/tugas-form";
 import { sfxAiSuccess, sfxClick, sfxDelete } from "@/lib/sfx";
+import { Icon } from "@/components/ui/Icon";
 
 interface SpeechRecognitionEvent {
   results: {
@@ -88,6 +89,9 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
   );
   const [rekam, setRekam] = useState(false);
 
+  // State untuk melipat form tambahan
+  const [showAdvanced, setShowAdvanced] = useState(!!awal?.id);
+
   const [state, formAction, pending] = useActionState<HasilForm, FormData>(
     async (prev, fd) => {
       const hasil = await simpanTugas(prev, fd);
@@ -150,7 +154,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
     if (!SR) {
       setPesanAI({
         ok: false,
-        teks: "Browser ini belum mendukung mikrofon. Ketik kalimat di atas ya!",
+        teks: "Browser ini belum mendukung mikrofon.",
       });
       return;
     }
@@ -175,7 +179,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
     if (!targetTeks) {
       setPesanAI({
         ok: false,
-        teks: "Ketik dulu kalimat singkat tugasmu di kotak atas.",
+        teks: "Ketik dulu kalimat singkat tugasmu.",
       });
       return;
     }
@@ -195,9 +199,12 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
       setKategori(res.data.kategori);
       setEstimasi(res.data.estimasiJam);
       setPrioritas(res.data.prioritas);
+
+      // Buka form advanced kalau AI berhasil isi
+      setShowAdvanced(true);
       setPesanAI({
         ok: true,
-        teks: "Kolom berhasil terisi otomatis! Cek di bawah lalu klik Simpan.",
+        teks: "Kolom berhasil terisi otomatis!",
       });
     } finally {
       setLoadingAI(false);
@@ -219,18 +226,22 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
       <input type="hidden" name="attachmentUrl" value={attachmentUrl} />
       <input type="hidden" name="attachmentName" value={attachmentName} />
 
-      {/* AI Auto-Fill */}
-      <div className="kartu-lime p-3.5">
+      {/* AI Auto-Fill (Smart Box) */}
+      <div className="relative overflow-hidden rounded-xl border-2 border-[color:var(--line)] bg-[color:var(--ai-bg)] p-3.5 shadow-[0_3px_0_var(--sh)]">
         <div className="mb-2 flex items-center justify-between gap-2">
-          <label htmlFor="ai-cepat" className="text-sm font-extrabold text-ink">
-            Ketik atau ucapkan tugasmu
+          <label
+            htmlFor="ai-cepat"
+            className="flex items-center gap-1.5 text-sm font-extrabold text-[color:var(--ai-ink)]"
+          >
+            <Icon name="sparkle" className="size-4" />
+            Asisten Pintar
           </label>
-          <span className="rounded-md border border-[color:var(--line)] bg-card px-2 py-0.5 text-[11px] font-bold text-muted">
-            Speech-to-Text
+          <span className="rounded border border-[color:var(--ai-ink)]/20 bg-card px-1.5 py-0.5 text-[9px] font-black text-[color:var(--ai-ink)]">
+            AI & SUARA
           </span>
         </div>
 
-        <div className="flex items-stretch">
+        <div className="flex items-stretch gap-2">
           <input
             id="ai-cepat"
             type="text"
@@ -242,29 +253,20 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
                 void prosesAutoFill();
               }
             }}
-            placeholder="mis. Belajar Kalkulus besok jam 19.00"
-            className="kolom kolom-gabung bg-card text-ink"
+            placeholder="Ketik: Belajar Kalkulus besok jam 19.00"
+            className="kolom flex-1 bg-card/80 text-sm"
           />
           <button
             type="button"
             onClick={mulaiSuara}
-            aria-label="Ucapkan tugas dengan mikrofon"
-            className={`tombol tombol-gabung px-3.5 ${
-              rekam ? "animate-pulse bg-[color:var(--bahaya-bg)]" : ""
+            aria-label="Ucapkan tugas"
+            className={`grid place-items-center rounded-xl border-2 border-[color:var(--line)] px-3 transition-colors ${
+              rekam
+                ? "bg-[color:var(--bahaya)] text-white"
+                : "bg-card text-ink hover:bg-lime"
             }`}
           >
-            <svg
-              viewBox="0 0 24 24"
-              className="size-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M8 22h8" />
-            </svg>
+            <Icon name="mic" className="size-5" />
           </button>
         </div>
 
@@ -272,18 +274,14 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
           type="button"
           disabled={loadingAI}
           onClick={() => void prosesAutoFill()}
-          className="tombol mt-2.5 w-full text-sm"
+          className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-[color:var(--ai-ink)]/30 bg-[color:var(--ai-ink)] py-1.5 text-xs font-bold text-white transition-all hover:bg-[color:var(--ai-ink)]/90 disabled:opacity-50"
         >
-          {loadingAI ? "Mengekstrak jadwal..." : "Isi otomatis dengan AI"}
+          {loadingAI ? "Mengekstrak..." : "Isi Otomatis"}
         </button>
 
         {pesanAI && (
           <p
-            className={`mt-2.5 rounded-lg border px-2.5 py-1.5 text-xs font-bold ${
-              pesanAI.ok
-                ? "border-[color:var(--santai)] bg-[color:var(--santai-bg)] text-[color:var(--santai)]"
-                : "border-[color:var(--bahaya)] bg-[color:var(--bahaya-bg)] text-[color:var(--bahaya)]"
-            }`}
+            className={`mt-2 text-center text-[10px] font-bold ${pesanAI.ok ? "text-green-700" : "text-red-600"}`}
           >
             {pesanAI.teks}
           </p>
@@ -293,7 +291,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
       {/* Judul */}
       <div>
         <label htmlFor="f-judul" className="mb-1.5 block text-sm font-bold">
-          Nama Tugas
+          Nama Tugas <span className="text-[color:var(--bahaya)]">*</span>
         </label>
         <input
           id="f-judul"
@@ -302,126 +300,16 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
           required
           value={judul}
           onChange={(e) => setJudul(e.target.value)}
-          placeholder="Misal: Belajar & Latihan Soal Kalkulus"
+          placeholder="Misal: Latihan Soal Kalkulus"
           className="kolom"
         />
       </div>
 
-      {/* ================= CATATAN + ATTACHMENT ================= */}
-      <div>
-        <label
-          htmlFor="f-catatan"
-          className="mb-1.5 flex items-center justify-between text-sm font-bold"
-        >
-          <span>Catatan / Deskripsi</span>
-          <span className="text-[10px] font-semibold text-muted">Opsional</span>
-        </label>
-
-        {/* FIX: Tambah outline-none dan focus-within:outline-none */}
-        <div className="relative rounded-xl border-2 border-[color:var(--line)] bg-[color:var(--surface-2)] transition-all duration-150 focus-within:bg-card focus-within:shadow-[0_4px_0_var(--sh)] focus-within:!outline-none outline-none">
-          <textarea
-            id="f-catatan"
-            name="catatan"
-            rows={3}
-            maxLength={500}
-            value={catatan}
-            onChange={(e) => setCatatan(e.target.value)}
-            placeholder="Misal: Bab 3-5, link referensi, dll."
-            // Tambahin !outline-none juga di sini
-            className="block w-full resize-none bg-transparent px-3.5 pt-3 pb-11 text-sm font-semibold text-ink placeholder:text-muted/60 placeholder:font-medium !outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
-          />
-
-          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between border-t-2 border-[color:var(--line)]/10 bg-[color:var(--surface-2)]/50 px-2 py-1.5 rounded-b-[10px]">
-            <div className="flex items-center gap-1.5">
-              <input
-                type="file"
-                id="file-upload"
-                className="hidden"
-                onChange={handleFileUpload}
-                accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp,.txt,.xls,.xlsx,.ppt,.pptx"
-                disabled={uploading}
-              />
-
-              <label
-                htmlFor="file-upload"
-                className={`cursor-pointer inline-flex items-center gap-1.5 rounded-md border-2 border-[color:var(--line)]/30 bg-card px-2 py-1 text-[10px] font-black transition-all hover:border-[color:var(--line)] hover:-translate-y-0.5 ${
-                  uploading ? "opacity-50 pointer-events-none" : ""
-                }`}
-                title="Lampirkan file (max 4MB)"
-              >
-                {uploading ? (
-                  <svg
-                    className="animate-spin size-3.5 text-ink"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={3}
-                  >
-                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                  </svg>
-                ) : (
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="size-3.5 text-ink"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2.5}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-                  </svg>
-                )}
-                <span>{uploading ? "Mengunggah..." : "Lampirkan"}</span>
-              </label>
-
-              {attachmentUrl && !uploading && (
-                <div className="inline-flex items-center gap-1 rounded-md border-2 border-[color:var(--biru)]/40 bg-[color:var(--biru-soft)] px-2 py-0.5 text-[10px] font-bold text-biru max-w-[180px]">
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="size-3 shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2.5}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-                  </svg>
-                  <span className="truncate">{attachmentName || "file"}</span>
-                  <button
-                    type="button"
-                    onClick={hapusAttachment}
-                    aria-label="Hapus lampiran"
-                    className="ml-0.5 rounded text-biru/70 hover:text-[color:var(--bahaya)] hover:bg-card transition-colors"
-                  >
-                    ✕
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <span className="text-[10px] font-semibold text-muted">
-              {catatan.length}/500
-            </span>
-          </div>
-        </div>
-
-        {uploadError && (
-          <p className="mt-1.5 rounded-lg border-2 border-[color:var(--bahaya)] bg-[color:var(--bahaya-bg)] px-2.5 py-1 text-[10px] font-bold text-[color:var(--bahaya)]">
-            {uploadError}
-          </p>
-        )}
-      </div>
-
-      {/* Tanggal & Jam */}
-      <div className="grid gap-3 sm:grid-cols-[1fr_9.5rem]">
+      {/* Tanggal & Jam (Sejajar) */}
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label htmlFor="f-tanggal" className="mb-1.5 block text-sm font-bold">
-            Tanggal deadline{" "}
-            <span className="text-xs font-semibold text-[color:var(--bahaya)]">
-              (wajib)
-            </span>
+            Tanggal <span className="text-[color:var(--bahaya)]">*</span>
           </label>
           <input
             id="f-tanggal"
@@ -430,36 +318,12 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
             required
             value={tanggal}
             onChange={(e) => setTanggal(e.target.value)}
-            className="kolom"
+            className="kolom text-sm"
           />
-          <div className="mt-2 grid grid-cols-3 gap-1.5">
-            <button
-              type="button"
-              onClick={() => pilihTanggalCepat(0)}
-              className="tombol tombol-putih tombol-kecil min-h-9 text-xs"
-            >
-              Hari ini
-            </button>
-            <button
-              type="button"
-              onClick={() => pilihTanggalCepat(1)}
-              className="tombol tombol-putih tombol-kecil min-h-9 text-xs"
-            >
-              Besok
-            </button>
-            <button
-              type="button"
-              onClick={() => pilihTanggalCepat(7)}
-              className="tombol tombol-putih tombol-kecil min-h-9 text-xs"
-            >
-              Minggu depan
-            </button>
-          </div>
         </div>
-
         <div>
           <label htmlFor="f-jam" className="mb-1.5 block text-sm font-bold">
-            Jam
+            Jam <span className="text-[color:var(--bahaya)]">*</span>
           </label>
           <input
             id="f-jam"
@@ -468,49 +332,166 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
             required
             value={jam}
             onChange={(e) => setJam(e.target.value)}
-            className="kolom min-h-[46px]"
+            className="kolom text-sm"
           />
         </div>
       </div>
 
-      {/* Kategori & Estimasi */}
-      <div className="grid gap-3 sm:grid-cols-[1fr_10.5rem]">
-        <div>
-          <label
-            htmlFor="f-kategori"
-            className="mb-1.5 block text-sm font-bold"
-          >
-            Kategori
-          </label>
-          <select
-            id="f-kategori"
-            name="kategori"
-            value={kategori}
-            onChange={(e) => setKategori(e.target.value)}
-            className="kolom"
-          >
-            <option value="Kuliah">Kuliah</option>
-            <option value="Organisasi">Organisasi</option>
-            <option value="Pribadi">Pribadi</option>
-          </select>
+      {/* Quick Date Buttons */}
+      <div className="flex gap-1.5">
+        <button
+          type="button"
+          onClick={() => pilihTanggalCepat(0)}
+          className="flex-1 rounded-md border-2 border-[color:var(--line)]/20 bg-[color:var(--surface)] py-1 text-[10px] font-bold hover:bg-lime"
+        >
+          Hari ini
+        </button>
+        <button
+          type="button"
+          onClick={() => pilihTanggalCepat(1)}
+          className="flex-1 rounded-md border-2 border-[color:var(--line)]/20 bg-[color:var(--surface)] py-1 text-[10px] font-bold hover:bg-lime"
+        >
+          Besok
+        </button>
+        <button
+          type="button"
+          onClick={() => pilihTanggalCepat(7)}
+          className="flex-1 rounded-md border-2 border-[color:var(--line)]/20 bg-[color:var(--surface)] py-1 text-[10px] font-bold hover:bg-lime"
+        >
+          Minggu dpn
+        </button>
+      </div>
+
+      {/* Catatan (Collapsible text area) */}
+      <div>
+        <label
+          htmlFor="f-catatan"
+          className="mb-1.5 flex items-center justify-between text-sm font-bold"
+        >
+          <span>Catatan</span>
+          <span className="text-[10px] font-semibold text-muted">Opsional</span>
+        </label>
+        <div className="relative rounded-xl border-2 border-[color:var(--line)] bg-[color:var(--surface-2)] transition-all focus-within:bg-card focus-within:shadow-[0_3px_0_var(--sh)]">
+          <textarea
+            id="f-catatan"
+            name="catatan"
+            rows={2}
+            maxLength={500}
+            value={catatan}
+            onChange={(e) => setCatatan(e.target.value)}
+            placeholder="Tambahkan detail, link, atau lampiran..."
+            className="block w-full resize-none bg-transparent px-3 pt-2 pb-8 text-sm font-medium text-ink placeholder:text-muted/60 focus:outline-none"
+          />
+          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between border-t border-[color:var(--line)]/10 bg-[color:var(--surface-2)]/80 px-2 py-1 rounded-b-xl">
+            <div className="flex items-center gap-1">
+              <input
+                type="file"
+                id="file-upload"
+                className="hidden"
+                onChange={handleFileUpload}
+                disabled={uploading}
+                accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+              />
+              <label
+                htmlFor="file-upload"
+                className={`cursor-pointer inline-flex items-center gap-1 text-[10px] font-bold text-muted hover:text-ink ${uploading ? "opacity-50" : ""}`}
+              >
+                <Icon name="download" className="size-3 rotate-180" />
+                {uploading ? "Upload..." : "Lampirkan File"}
+              </label>
+              {attachmentUrl && (
+                <span className="ml-2 flex items-center gap-1 rounded bg-[color:var(--biru-soft)] px-1.5 text-[10px] font-bold text-biru">
+                  {attachmentName}
+                  <button
+                    type="button"
+                    onClick={hapusAttachment}
+                    className="hover:text-red-500"
+                  >
+                    ✕
+                  </button>
+                </span>
+              )}
+            </div>
+            <span className="text-[9px] font-bold text-muted">
+              {catatan.length}/500
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* TOGGLE ADVANCED SETTINGS */}
+      <div className="pt-1">
+        <button
+          type="button"
+          onClick={() => setShowAdvanced(!showAdvanced)}
+          className="flex w-full items-center justify-between rounded-lg border-2 border-dashed border-[color:var(--line)]/30 px-3 py-2 text-xs font-bold text-muted hover:border-[color:var(--line)] hover:text-ink transition-colors"
+        >
+          <span>Pengaturan Lanjutan (Prioritas, Kategori, dll)</span>
+          <span className="text-lg leading-none">
+            {showAdvanced ? "−" : "+"}
+          </span>
+        </button>
+      </div>
+
+      {/* ADVANCED FIELDS */}
+      <div
+        className={`grid gap-3 overflow-hidden transition-all duration-300 ${showAdvanced ? "max-h-96 opacity-100 mt-2" : "max-h-0 opacity-0 m-0"}`}
+      >
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label
+              htmlFor="f-kategori"
+              className="mb-1.5 block text-xs font-bold"
+            >
+              Kategori
+            </label>
+            <select
+              id="f-kategori"
+              name="kategori"
+              value={kategori}
+              onChange={(e) => setKategori(e.target.value)}
+              className="kolom text-xs"
+            >
+              <option value="Kuliah">Kuliah</option>
+              <option value="Organisasi">Organisasi</option>
+              <option value="Pribadi">Pribadi</option>
+            </select>
+          </div>
+          <div>
+            <label
+              htmlFor="f-prioritas"
+              className="mb-1.5 block text-xs font-bold"
+            >
+              Prioritas
+            </label>
+            <select
+              id="f-prioritas"
+              name="prioritas"
+              value={prioritas}
+              onChange={(e) =>
+                setPrioritas(e.target.value as "LOW" | "MEDIUM" | "HIGH")
+              }
+              className="kolom text-xs"
+            >
+              <option value="HIGH">Tinggi (Mendesak)</option>
+              <option value="MEDIUM">Sedang</option>
+              <option value="LOW">Santai</option>
+            </select>
+          </div>
         </div>
 
         <div>
           <label
             htmlFor="f-estimasi"
-            className="mb-1.5 block text-sm font-bold"
+            className="mb-1.5 block text-xs font-bold"
           >
-            Estimasi (jam)
+            Estimasi Waktu (Jam)
           </label>
           <div className="flex items-stretch">
             <button
               type="button"
-              aria-label="Kurangi jam"
-              onClick={() => {
-                sfxClick();
-                setEstimasi((v) => Math.max(0.5, Number((v - 0.5).toFixed(1))));
-              }}
-              className="tombol rounded-r-none border-r-0 px-3 text-lg"
+              onClick={() => setEstimasi((v) => Math.max(0.5, v - 0.5))}
+              className="grid w-10 place-items-center rounded-l-lg border-2 border-r-0 border-[color:var(--line)] bg-[color:var(--surface-2)] font-bold"
             >
               −
             </button>
@@ -523,16 +504,12 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
               max="40"
               value={estimasi}
               onChange={(e) => setEstimasi(Number(e.target.value) || 1)}
-              className="kolom rounded-none text-center font-extrabold"
+              className="kolom rounded-none border-x-0 text-center font-black"
             />
             <button
               type="button"
-              aria-label="Tambah jam"
-              onClick={() => {
-                sfxClick();
-                setEstimasi((v) => Math.min(40, Number((v + 0.5).toFixed(1))));
-              }}
-              className="tombol rounded-l-none border-l-0 px-3 text-lg"
+              onClick={() => setEstimasi((v) => Math.min(40, v + 0.5))}
+              className="grid w-10 place-items-center rounded-r-lg border-2 border-l-0 border-[color:var(--line)] bg-[color:var(--surface-2)] font-bold"
             >
               +
             </button>
@@ -540,38 +517,19 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
         </div>
       </div>
 
-      {/* Prioritas */}
-      <div>
-        <label htmlFor="f-prioritas" className="mb-1.5 block text-sm font-bold">
-          Prioritas
-        </label>
-        <select
-          id="f-prioritas"
-          name="prioritas"
-          value={prioritas}
-          onChange={(e) =>
-            setPrioritas(e.target.value as "LOW" | "MEDIUM" | "HIGH")
-          }
-          className="kolom"
-        >
-          <option value="HIGH">Tinggi (Mendesak)</option>
-          <option value="MEDIUM">Sedang</option>
-          <option value="LOW">Santai</option>
-        </select>
-      </div>
-
       {state.error && (
-        <p className="rounded-xl border-2 border-[color:var(--bahaya)] bg-[color:var(--bahaya-bg)] px-3 py-2 text-sm font-bold text-[color:var(--bahaya)]">
+        <p className="rounded-lg bg-red-100 p-2 text-xs font-bold text-red-600">
           {state.error}
         </p>
       )}
 
-      <div className="flex items-center justify-end gap-2.5 pt-2">
+      {/* Action Buttons (Sticky di dalam form) */}
+      <div className="flex items-center justify-end gap-2 pt-3 border-t-2 border-[color:var(--line)]/10">
         {onBatal && (
           <button
             type="button"
             onClick={onBatal}
-            className="tombol tombol-putih px-5"
+            className="tombol tombol-putih px-4 text-xs"
           >
             Batal
           </button>
@@ -579,7 +537,7 @@ export default function FormTugas({ awal, onSelesai, onBatal }: Props) {
         <button
           type="submit"
           disabled={pending || !judul.trim()}
-          className="tombol px-6"
+          className="tombol px-6 text-xs"
         >
           {pending ? "Menyimpan..." : "Simpan Tugas"}
         </button>

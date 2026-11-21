@@ -12,7 +12,7 @@ type KategoriNotif = {
 };
 
 export async function GET(request: Request) {
-  // 1. SECURITY: Cek header Authorization
+  // 1. SECURITY: Cek header Authorization (fail-closed)
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
@@ -28,6 +28,8 @@ export async function GET(request: Request) {
     sent24h: 0,
     sent3h: 0,
     sentOverdue: 0,
+    skippedNoSubs: 0,
+    rollbackFailed: 0,
   };
 
   // 2. KONFIGURASI KATEGORI (Data-Driven)
@@ -84,6 +86,7 @@ export async function GET(request: Request) {
       stats.checked += tugasList.length;
 
       for (const tugas of tugasList) {
+        // Atomic claim: hanya proses kalau flag masih false
         const claimed = await db.task.updateMany({
           where: {
             id: tugas.id,
@@ -101,16 +104,21 @@ export async function GET(request: Request) {
         });
 
         if (hasil.sukses > 0) {
-          // Increment counter yang sesuai
+          // Berhasil terkirim minimal ke 1 device
           if (kategori.key === "24h") stats.sent24h++;
           if (kategori.key === "3h") stats.sent3h++;
           if (kategori.key === "overdue") stats.sentOverdue++;
-        } else {
-          // Beri kesempatan retry jika tidak ada subscription yang berhasil menerima.
+        } else if (hasil.gagal > 0) {
+          // ADA subscription tapi semua gagal → rollback flag untuk retry
           await db.task.updateMany({
             where: { id: tugas.id, [kategori.flagField]: true },
             data: { [kategori.flagField]: false },
           });
+          stats.rollbackFailed++;
+        } else {
+          // sukses === 0 && gagal === 0 → user BELUM punya subscription
+          // Biarkan flag tetap true, jangan retry terus-menerus
+          stats.skippedNoSubs++;
         }
       }
     }

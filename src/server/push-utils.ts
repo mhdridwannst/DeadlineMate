@@ -12,7 +12,12 @@ export async function kirimNotifKeUser(userId: string, payload: NotifPayload) {
   const subject = process.env.VAPID_SUBJECT?.trim();
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim();
   const privateKey = process.env.VAPID_PRIVATE_KEY?.trim();
+
   if (!subject || !publicKey || !privateKey) {
+    console.warn(
+      "[push] VAPID keys tidak lengkap — skip pengiriman. " +
+        `subject=${!!subject}, publicKey=${!!publicKey}, privateKey=${!!privateKey}`,
+    );
     return { sukses: 0, gagal: 0 };
   }
 
@@ -42,10 +47,17 @@ export async function kirimNotifKeUser(userId: string, payload: NotifPayload) {
       );
       sukses++;
     } catch (e: unknown) {
-      // FIX: Type guard buat web-push error
-      const err = e as { statusCode?: number };
+      const err = e as { statusCode?: number; message?: string };
+
+      // Cleanup: subscription sudah tidak valid di sisi browser
       if (err.statusCode === 410 || err.statusCode === 404) {
         await db.pushSubscription.delete({ where: { id: sub.id } });
+      } else {
+        // Log error yang bukan cleanup-case biar bisa di-debug
+        console.warn(
+          `[push] Gagal kirim ke sub ${sub.id} ` +
+            `(status=${err.statusCode ?? "?"}): ${err.message ?? "unknown"}`,
+        );
       }
       gagal++;
     }
