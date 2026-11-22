@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { getBahasa, getDemoUser } from "@/server/demo-user";
+import { getBahasa, getCurrentUser } from "@/lib/session";
 import { dayKey, ZONA } from "@/lib/waktu";
 import KalenderTugas, { type ItemKal } from "@/components/tugas/KalenderTugas";
 import { DICT, type Lang } from "@/lib/i18n";
@@ -24,7 +24,7 @@ function formatSisa(dueAt: Date, now: Date, lang: Lang) {
 }
 
 export default async function KalenderPage() {
-  const [user, lang] = await Promise.all([getDemoUser(), getBahasa()]);
+  const [user, lang] = await Promise.all([getCurrentUser(), getBahasa()]);
 
   // TAMBAH GUARD CLAUSE INI
   if (!user) redirect("/login");

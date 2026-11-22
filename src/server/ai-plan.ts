@@ -6,7 +6,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { ambilModel } from "@/lib/ai/model";
 import { dayKey, hariKe, tambahHari, keDueAt } from "@/lib/waktu";
-import { getDemoUser } from "./demo-user";
+import { getCurrentUser } from "@/lib/session";
 import { cekRateLimit } from "@/lib/rate-limit";
 
 export type HasilRencana = { ok: boolean; pesan: string } | null;
@@ -471,7 +471,7 @@ export async function rencanakan(
     return { ok: false, pesan: "Terlalu panjang. Maksimal 1500 karakter." };
   }
 
-  const user = await getDemoUser();
+  const user = await getCurrentUser();
   if (!user) {
     return { ok: false, pesan: "Sesi berakhir. Silakan login kembali." };
   }
@@ -653,7 +653,7 @@ export async function pecahLangkahAI(
     return { ok: false, pesan: "ID tugas tidak valid." };
   }
 
-  const user = await getDemoUser();
+  const user = await getCurrentUser();
   if (!user) {
     return { ok: false, pesan: "Sesi berakhir. Silakan login kembali." };
   }

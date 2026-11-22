@@ -1,12 +1,37 @@
 import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { cekRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
     const session = await auth();
-    if (!session?.user) {
+    const userId = session?.user?.id;
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const batasUnggah = await cekRateLimit(
+      "upload",
+      userId,
+      30,
+      60 * 60 * 1000,
+    );
+    if (!batasUnggah.allowed) {
+      return NextResponse.json(
+        { error: "Terlalu banyak unggahan. Coba lagi nanti." },
+        { status: 429 },
+      );
+    }
+
+    // Tolak lebih awal sebelum body dibaca ke memori (Content-Length bisa saja kosong,
+    // pengecekan file.size di bawah tetap berlaku).
+    const panjangBody = Number(request.headers.get("content-length") ?? "0");
+    if (panjangBody > 5 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: "File maksimal 4MB." },
+        { status: 413 },
+      );
     }
 
     const formData = await request.formData();
@@ -93,8 +118,6 @@ export async function POST(request: Request) {
 
     // Sanitasi nama file (buang karakter aneh yang bisa bikin URL rusak)
     const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
-
-    const userId = session.user.id;
 
     const blob = await put(`${userId}/${safeName}`, file, {
       access: "public",

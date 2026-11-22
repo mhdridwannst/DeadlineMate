@@ -6,7 +6,8 @@ import { z } from "zod";
 import { del } from "@vercel/blob";
 import { db } from "@/lib/db";
 import { ambilModel } from "@/lib/ai/model";
-import { getDemoUser } from "@/server/demo-user";
+import { getCurrentUser } from "@/lib/session";
+import { urlLampiranMilikUser } from "@/lib/attachment-url";
 import { dayKey, hariKe, keDueAt, tambahHari, jamKey } from "@/lib/waktu";
 import { cekRateLimit } from "@/lib/rate-limit";
 
@@ -87,7 +88,7 @@ export async function simpanTugas(
     };
   }
 
-  const user = await getDemoUser();
+  const user = await getCurrentUser();
   if (!user) {
     return { ok: false, error: "Sesi berakhir. Silakan login ulang." };
   }
@@ -103,6 +104,15 @@ export async function simpanTugas(
   const notesValue = data.catatan?.trim() || null;
   const attachmentUrlValue = data.attachmentUrl || null;
   const attachmentNameValue = data.attachmentName || null;
+
+  // Lampiran hanya boleh berupa file Vercel Blob milik user ini.
+  // Tanpa ini, URL sembarang bisa tersimpan lalu ikut terhapus atau dirender sebagai link.
+  if (
+    attachmentUrlValue &&
+    !urlLampiranMilikUser(attachmentUrlValue, user.id)
+  ) {
+    return { ok: false, error: "Lampiran tidak valid. Unggah ulang filenya." };
+  }
 
   try {
     if (data.id) {
@@ -159,7 +169,8 @@ export async function simpanTugas(
       // Hapus file lama hanya setelah database berhasil menunjuk file baru.
       if (
         existing.attachmentUrl &&
-        existing.attachmentUrl !== attachmentUrlValue
+        existing.attachmentUrl !== attachmentUrlValue &&
+        urlLampiranMilikUser(existing.attachmentUrl, user.id)
       ) {
         try {
           await del(existing.attachmentUrl);
@@ -710,7 +721,7 @@ export async function isiOtomatisTugasAI(
     };
   }
 
-  const user = await getDemoUser();
+  const user = await getCurrentUser();
   if (!user) {
     return {
       ok: false,
@@ -764,7 +775,7 @@ export async function isiOtomatisTugasAI(
 
 // ==================== UPDATE PROFIL ====================
 export async function ubahProfilPreferensi(formData: FormData) {
-  const user = await getDemoUser();
+  const user = await getCurrentUser();
   if (!user) return;
 
   const namaBaru = String(formData.get("nama") ?? "").trim();

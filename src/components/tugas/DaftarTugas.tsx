@@ -250,9 +250,11 @@ export default function DaftarTugas({
               }`}
             >
               {floatingXP[t.id] && (
-                <span className="absolute top-2 right-12 text-biru font-black text-sm animate-bounce z-10 pointer-events-none drop-shadow-md">
-                  +10 EXP ✨
-                </span>
+                <div className="absolute top-4 right-12 z-20 pointer-events-none animate-stamp">
+                  <span className="inline-block border-4 border-[color:var(--bahaya)] text-[color:var(--bahaya)] font-black tracking-widest text-xl px-3 py-1 uppercase bg-card/60 backdrop-blur-sm">
+                    Selesai
+                  </span>
+                </div>
               )}
 
               <div className="flex flex-col gap-3">

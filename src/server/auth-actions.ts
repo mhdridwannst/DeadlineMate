@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { signIn } from "@/auth";
 import { kirimEmailResetPassword } from "@/lib/email";
 import { cekRateLimit } from "@/lib/rate-limit";
+import { ambilIpKlien } from "@/lib/request-ip";
 
 export type HasilAuth = { error?: string; ok?: boolean; pesan?: string } | null;
 
@@ -24,17 +25,34 @@ export async function loginDenganCredentials(
   const password = String(formData.get("password") ?? "");
   const mode = String(formData.get("mode") ?? "login");
 
-  const loginLimit = await cekRateLimit(
-    mode === "register" ? "register" : "login",
-    email,
-    mode === "register" ? 5 : 10,
-    15 * 60 * 1000,
+  const adalahRegister = mode === "register";
+  const ip = await ambilIpKlien();
+  const jendela = 15 * 60 * 1000;
+  const pesanTerlaluBanyak =
+    "Terlalu banyak percobaan. Coba lagi dalam 15 menit.";
+
+  // Lapis 1: per IP, supaya spam dengan email acak tidak menumpuk baris rate limit.
+  const batasIp = await cekRateLimit(
+    adalahRegister ? "register-ip" : "login-ip",
+    ip,
+    adalahRegister ? 10 : 40,
+    jendela,
   );
-  if (!loginLimit.allowed) {
-    return { error: "Terlalu banyak percobaan. Coba lagi dalam 15 menit." };
+  if (!batasIp.allowed) return { error: pesanTerlaluBanyak };
+
+  if (!email || email.length > 254 || !email.includes("@")) {
+    return { error: "Email tidak valid." };
   }
 
-  if (!email || !email.includes("@")) return { error: "Email tidak valid." };
+  // Lapis 2: per kombinasi IP + email. Tidak lagi per email saja, jadi orang lain
+  // tidak bisa mengunci akun korban dari IP berbeda.
+  const batasEmail = await cekRateLimit(
+    adalahRegister ? "register" : "login",
+    `${ip}:${email}`,
+    adalahRegister ? 5 : 10,
+    jendela,
+  );
+  if (!batasEmail.allowed) return { error: pesanTerlaluBanyak };
   if (mode === "register" && password.length < 8) {
     return { error: "Password minimal 8 karakter." };
   }
@@ -97,22 +115,8 @@ export async function kirimLinkResetPassword(
     .trim()
     .toLowerCase();
 
-  if (!email || !email.includes("@")) {
+  if (!email || email.length > 254 || !email.includes("@")) {
     return { error: "Email tidak valid." };
-  }
-
-  const resetLimit = await cekRateLimit(
-    "forgot-password",
-    email,
-    3,
-    60 * 60 * 1000,
-  );
-  if (!resetLimit.allowed) {
-    return {
-      ok: true,
-      pesan:
-        "Kalau email kamu terdaftar, kami sudah kirim link reset. Cek inbox (atau folder spam) dalam 1-2 menit.",
-    };
   }
 
   const pesanSukses = {
@@ -120,6 +124,23 @@ export async function kirimLinkResetPassword(
     pesan:
       "Kalau email kamu terdaftar, kami sudah kirim link reset. Cek inbox (atau folder spam) dalam 1-2 menit.",
   };
+
+  // Batas per IP mencegah satu pihak membanjiri banyak alamat email dengan link reset.
+  const batasIp = await cekRateLimit(
+    "forgot-password-ip",
+    await ambilIpKlien(),
+    10,
+    60 * 60 * 1000,
+  );
+  if (!batasIp.allowed) return pesanSukses;
+
+  const resetLimit = await cekRateLimit(
+    "forgot-password",
+    email,
+    3,
+    60 * 60 * 1000,
+  );
+  if (!resetLimit.allowed) return pesanSukses;
 
   const user = await db.user.findUnique({ where: { email } });
   if (!user?.password) return pesanSukses;
@@ -177,7 +198,11 @@ export async function resetPasswordBaru(
   const sekarang = new Date();
   const berhasil = await db.$transaction(async (tx) => {
     const tokenTerpakai = await tx.passwordResetToken.updateMany({
-      where: { token: hashResetToken(token), usedAt: null, expires: { gt: sekarang } },
+      where: {
+        token: hashResetToken(token),
+        usedAt: null,
+        expires: { gt: sekarang },
+      },
       data: { usedAt: sekarang },
     });
     if (tokenTerpakai.count !== 1) return false;
