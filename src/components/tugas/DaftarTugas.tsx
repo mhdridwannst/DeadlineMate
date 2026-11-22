@@ -232,7 +232,7 @@ export default function DaftarTugas({
         </div>
       )}
 
-      <ul className="space-y-3">
+      <ul className="space-y-4">
         {items.map((t) => {
           const sel = on(t.id, t.selesai);
           const dari = t.langkah.filter((l) => on(l.id, l.selesai)).length;
@@ -245,14 +245,12 @@ export default function DaftarTugas({
           return (
             <li
               key={t.id}
-              className={`kartu p-4 transition-all relative group ${AKSEN_PRIORITAS[t.prioritas]} ${
-                sel
-                  ? "opacity-60 grayscale-[0.3]"
-                  : "hover:-translate-y-0.5 hover:shadow-[0_6px_0_var(--sh)]"
+              className={`kartu p-4 transition-opacity relative ${AKSEN_PRIORITAS[t.prioritas]} ${
+                sel ? "opacity-55" : ""
               }`}
             >
               {floatingXP[t.id] && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-biru font-black text-sm animate-bounce z-10 pointer-events-none drop-shadow-md">
+                <span className="absolute top-2 right-12 text-biru font-black text-sm animate-bounce z-10 pointer-events-none drop-shadow-md">
                   +10 EXP ✨
                 </span>
               )}
@@ -265,28 +263,18 @@ export default function DaftarTugas({
                     label={`Tandai selesai: ${t.judul}`}
                   />
 
-                  <div className="min-w-0 flex-1 pt-0.5">
-                    <div className="flex items-start justify-between gap-2">
-                      <p
-                        className={`text-[15px] font-bold leading-snug ${
-                          sel ? "line-through text-muted" : "text-ink"
-                        }`}
-                      >
-                        <span className="mr-1.5 font-mono text-xs text-biru/70">
-                          #{t.no}
-                        </span>
-                        {t.judul}
-                      </p>
-
-                      {/* Tag Prioritas dipindah ke kanan atas biar rapi */}
-                      <span
-                        className={`tag tag-${t.prioritas} shrink-0 scale-90`}
-                      >
-                        {LABEL[t.prioritas]}
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className={`text-base font-bold leading-snug ${
+                        sel ? "line-through text-muted" : "text-ink"
+                      }`}
+                    >
+                      <span className="mr-1.5 font-extrabold text-biru">
+                        #{t.no}
                       </span>
-                    </div>
-
-                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-medium text-muted">
+                      {t.judul}
+                    </p>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
                       <span
                         className={
                           t.telat && !sel
@@ -298,39 +286,52 @@ export default function DaftarTugas({
                       </span>
                       {t.kategori && (
                         <>
-                          <span className="opacity-50">•</span>
+                          <span>•</span>
                           <span>{t.kategori}</span>
                         </>
                       )}
                       {t.estimasi && (
                         <>
-                          <span className="opacity-50">•</span>
+                          <span>•</span>
                           <span>{t.estimasi}</span>
                         </>
                       )}
                     </div>
 
                     {t.catatan && (
-                      <div className="mt-2.5 rounded-lg border-2 border-[color:var(--line)]/20 bg-[color:var(--surface-2)] px-3 py-2">
-                        <p className="text-[11px] font-medium leading-relaxed text-ink/80 whitespace-pre-wrap line-clamp-2">
-                          {t.catatan}
-                        </p>
+                      <div className="mt-2.5 rounded-lg border-2 border-[color:var(--line)]/30 bg-[color:var(--warn)]/30 px-3 py-2">
+                        <div className="flex items-start gap-2">
+                          <Icon
+                            name="mail"
+                            className="size-3.5 shrink-0 mt-0.5 text-ink/70"
+                          />
+                          <p className="text-[11px] font-semibold leading-relaxed text-ink/80 whitespace-pre-wrap line-clamp-3">
+                            {t.catatan}
+                          </p>
+                        </div>
                       </div>
                     )}
 
                     {t.attachmentUrl && (
                       <a
-                        href={`/api/attachment?url=${encodeURIComponent(t.attachmentUrl)}`}
+                        href={t.attachmentUrl} // <--- LANGSUNG KE URL BLOB
                         target="_blank"
                         rel="noopener noreferrer"
-                        download={t.attachmentName ?? undefined}
-                        className="mt-2 inline-flex items-center gap-1.5 rounded-lg border-2 border-[color:var(--line)]/20 bg-[color:var(--card)] px-2.5 py-1 text-[10px] font-bold text-ink transition-all hover:border-[color:var(--line)]"
+                        // Hapus atribut download agar bisa dilihat langsung di browser
+                        className="mt-2 inline-flex items-center gap-1.5 rounded-lg border-2 border-[color:var(--line)]/30 bg-[color:var(--biru-soft)] px-2.5 py-1 text-[11px] font-black text-biru transition-all hover:-translate-y-0.5 hover:shadow-[0_2px_0_var(--sh)]"
                       >
-                        <IkonKecil
-                          d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"
-                          className="size-3"
-                        />
-                        <span className="truncate max-w-[150px]">
+                        <svg
+                          viewBox="0 0 24 24"
+                          className="size-3 shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={2.5}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                        </svg>
+                        <span className="truncate max-w-[180px]">
                           {t.attachmentName ?? "Lampiran"}
                         </span>
                       </a>
@@ -338,26 +339,29 @@ export default function DaftarTugas({
                   </div>
                 </div>
 
+                {/* BAGIAN BAWAH KARTU (TAG & TOMBOL) */}
                 <div className="flex flex-wrap items-center justify-between gap-2 border-t-2 border-[color:var(--line)]/10 pt-3 mt-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    {/* Streak Tag */}
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className={`tag tag-${t.prioritas}`}>
+                      {LABEL[t.prioritas]}
+                    </span>
+
                     {!sel && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-oranye">
-                        <Icon name="flame" className="size-3" />
+                      <span className="tag tag-exp flex items-center gap-1">
+                        <Icon name="flame" className="size-3 text-oranye" />
                         +1 streak
                       </span>
                     )}
 
-                    {/* AI / Langkah Button */}
                     {sedangAI ? (
-                      <div className="inline-flex min-h-7 items-center gap-2 rounded-md border border-[color:var(--line)]/30 bg-[color:var(--surface-2)] px-2.5 py-1">
+                      <div className="inline-flex min-h-7 items-center gap-2 rounded-full border-2 border-[color:var(--line)] bg-[color:var(--ai-bg)] px-3 py-1">
                         <div className="flex space-x-1 animate-pulse">
-                          <div className="size-1 bg-[color:var(--ink)] rounded-full"></div>
-                          <div className="size-1 bg-[color:var(--ink)] rounded-full"></div>
-                          <div className="size-1 bg-[color:var(--ink)] rounded-full"></div>
+                          <div className="size-1.5 bg-[color:var(--ai-ink)] rounded-full"></div>
+                          <div className="size-1.5 bg-[color:var(--ai-ink)] rounded-full"></div>
+                          <div className="size-1.5 bg-[color:var(--ai-ink)] rounded-full"></div>
                         </div>
-                        <span className="text-[10px] font-bold text-ink">
-                          Menyusun...
+                        <span className="text-[11px] font-bold text-[color:var(--ai-ink)]">
+                          Mate menyusun...
                         </span>
                       </div>
                     ) : t.langkah.length > 0 ? (
@@ -368,52 +372,56 @@ export default function DaftarTugas({
                           sfxClick();
                           setBuka((s) => ({ ...s, [t.id]: !s[t.id] }));
                         }}
-                        className="inline-flex min-h-7 items-center gap-1.5 rounded-md border-2 border-[color:var(--line)]/30 bg-[color:var(--surface)] px-2.5 py-0.5 text-[10px] font-bold text-ink transition hover:border-[color:var(--line)] hover:bg-lime-soft"
+                        className="inline-flex min-h-7 items-center gap-1 rounded-full border-2 border-[color:var(--line)] bg-[color:var(--surface-2)] px-2.5 py-0.5 text-[11px] font-bold text-ink transition hover:bg-lime-soft"
                       >
                         <span>
                           {dari}/{t.langkah.length} langkah
                         </span>
-                        <span className="text-[8px] opacity-70">
-                          {buka[t.id] ? "▲" : "▼"}
-                        </span>
+                        <span>{buka[t.id] ? "▴" : "▾"}</span>
                       </button>
                     ) : (
                       !sel && (
                         <button
                           type="button"
                           onClick={() => jalankanPecahAI(t)}
-                          className="inline-flex min-h-7 items-center gap-1.5 rounded-md border border-[color:var(--ai-ink)]/30 bg-[color:var(--ai-bg)] px-2.5 py-0.5 text-[10px] font-bold text-[color:var(--ai-ink)] transition hover:bg-[color:var(--ai-bg)]/80"
+                          className="inline-flex min-h-7 items-center gap-1 rounded-full border-2 border-[color:var(--line)] bg-[color:var(--ai-bg)] px-2.5 py-0.5 text-[11px] font-bold text-[color:var(--ai-ink)] transition hover:opacity-90"
                         >
                           <Icon name="sparkle" className="size-3" />
-                          <span>Pecah AI</span>
+                          <span>Pecah Langkah AI</span>
                         </button>
                       )
                     )}
                   </div>
 
-                  {/* IKON EDIT & HAPUS (Lebih Clean) */}
-                  <div className="flex items-center gap-1">
+                  {/* TOMBOL EDIT & HAPUS GEDE (DESAIN ASLI LU) */}
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => bukaEdit(t)}
                       aria-label={`Edit ${t.judul}`}
-                      className="grid size-8 place-items-center rounded-md border-2 border-transparent text-muted transition-all hover:border-[color:var(--line)]/20 hover:bg-[color:var(--surface-2)] hover:text-ink"
+                      className="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg border-2 border-[#111] bg-lime px-3 py-1 text-xs font-extrabold text-[#111] shadow-[0_2px_0_var(--sh)] transition active:translate-y-0.5 active:shadow-none"
                     >
                       <IkonKecil
                         d="M4 20h4L19 9l-4-4L4 16v4zM13 7l4 4"
-                        className="size-4"
+                        className="size-3.5"
                       />
+                      <span>Edit</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => mintaHapus(t)}
                       aria-label={`Hapus ${t.judul}`}
-                      className="grid size-8 place-items-center rounded-md border-2 border-transparent text-muted transition-all hover:border-[color:var(--bahaya)]/20 hover:bg-[color:var(--bahaya-bg)] hover:text-[color:var(--bahaya)]"
+                      className="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg border-2 border-[#111] px-3 py-1 text-xs font-extrabold shadow-[0_2px_0_var(--sh)] transition active:translate-y-0.5 active:shadow-none"
+                      style={{
+                        background: "var(--bahaya-bg)",
+                        color: "var(--bahaya)",
+                      }}
                     >
                       <IkonKecil
                         d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"
-                        className="size-4"
+                        className="size-3.5"
                       />
+                      <span>Hapus</span>
                     </button>
                   </div>
                 </div>
@@ -421,12 +429,12 @@ export default function DaftarTugas({
 
               {/* Banner Info AI */}
               {infoAI[t.id] && (
-                <div className="mt-3 flex items-start gap-2 rounded-lg border border-[color:var(--warn-line)]/50 bg-[color:var(--warn)]/50 px-3 py-2">
+                <div className="mt-3 flex items-start gap-2 rounded-lg border-2 border-[color:var(--warn-line)] bg-[color:var(--warn)] px-3 py-2">
                   <Icon
                     name="sparkle"
                     className="size-3.5 shrink-0 mt-0.5 text-[color:var(--warn-ink)]"
                   />
-                  <p className="text-[11px] font-semibold text-[color:var(--warn-ink)]">
+                  <p className="text-xs font-bold text-[color:var(--warn-ink)]">
                     {infoAI[t.id]}
                   </p>
                 </div>
@@ -434,55 +442,56 @@ export default function DaftarTugas({
 
               {/* Sub-langkah AI */}
               {buka[t.id] && t.langkah.length > 0 && (
-                <div className="mt-4 rounded-xl border-2 border-[color:var(--line)]/20 bg-[color:var(--surface-2)] p-3.5">
+                <div className="mt-4 rounded-xl border-2 border-[color:var(--line)]/30 bg-[color:var(--surface-2)] p-3.5">
                   <div className="mb-3 flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-black text-muted uppercase tracking-wider">
-                      Progres Sub-langkah
+                    <span className="text-xs font-extrabold text-muted uppercase tracking-wide">
+                      Sub-langkah AI · {dari}/{t.langkah.length} ·{" "}
+                      {persenLangkah}%
                     </span>
                     {!sel && !sedangAI && (
                       <button
                         type="button"
                         onClick={() => jalankanPecahAI(t)}
-                        className="inline-flex items-center gap-1 text-[10px] font-bold text-biru hover:underline"
+                        className="inline-flex items-center gap-1 rounded-md border-2 border-[color:var(--line)]/40 bg-card px-2 py-0.5 text-[10px] font-bold text-ink transition hover:border-[color:var(--line)] hover:bg-lime-soft"
                       >
-                        Susun ulang
+                        <Icon name="sparkle" className="size-2.5" />
+                        <span>Susun ulang</span>
                       </button>
                     )}
                   </div>
-
-                  {/* Progress bar tipis */}
-                  <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-[color:var(--line)]/10">
+                  <div className="mb-4 h-2 overflow-hidden rounded-full border border-[color:var(--line)] bg-[color:var(--surface)]">
                     <div
                       className="h-full bg-lime transition-all duration-300"
                       style={{ width: `${persenLangkah}%` }}
                     />
                   </div>
-
                   <ol className="space-y-2">
                     {t.langkah.map((l) => {
                       const ls = on(l.id, l.selesai);
                       return (
                         <li
                           key={l.id}
-                          className={`flex items-start gap-2 rounded-lg px-1 py-1 transition-all ${ls ? "opacity-60" : ""}`}
+                          className="flex items-start justify-between gap-2 rounded-xl border border-[color:var(--line)]/25 bg-[color:var(--surface)] px-3 py-2"
                         >
-                          <Kotak
-                            kecil
-                            on={ls}
-                            onClick={() => ganti(l.id, l.selesai, t.id)}
-                            label={`Tandai selesai: ${l.judul}`}
-                          />
-                          <div className="min-w-0 flex-1 pt-0.5">
-                            <p
-                              className={`text-xs font-bold leading-snug sm:text-[13px] ${
-                                ls ? "line-through text-muted" : "text-ink"
-                              }`}
-                            >
-                              {l.judul}
-                            </p>
-                            <p className="text-[10px] font-medium text-muted mt-0.5">
-                              {l.info}
-                            </p>
+                          <div className="flex min-w-0 flex-1 items-start gap-2">
+                            <Kotak
+                              kecil
+                              on={ls}
+                              onClick={() => ganti(l.id, l.selesai, t.id)}
+                              label={`Tandai selesai: ${l.judul}`}
+                            />
+                            <div className="min-w-0 flex-1">
+                              <p
+                                className={`text-xs font-bold leading-snug sm:text-sm ${
+                                  ls ? "line-through text-muted" : "text-ink"
+                                }`}
+                              >
+                                {l.judul}
+                              </p>
+                              <p className="text-[11px] text-muted mt-0.5">
+                                {l.info}
+                              </p>
+                            </div>
                           </div>
                         </li>
                       );

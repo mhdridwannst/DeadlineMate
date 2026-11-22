@@ -27,8 +27,8 @@
   --sedang: #855500;
   --santai-bg: #d6f5dc;
   --santai: #156c36;
-  --ai-bg: #f3e8ff;
-  --ai-ink: #6b21a8;
+  --ai-bg: #f9e8a2;
+  --ai-ink: #111111;
 }
 
 [data-theme="dark"] {
@@ -58,8 +58,8 @@
   --sedang: #fcd34d;
   --santai-bg: #133321;
   --santai: #86efac;
-  --ai-bg: #2e1d4a;
-  --ai-ink: #e9d5ff;
+  --ai-bg: #3b2e11;
+  --ai-ink: #fcd34d;
   color-scheme: dark;
 }
 

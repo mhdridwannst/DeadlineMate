@@ -19,6 +19,20 @@ const HURUF_HARI_ID = ["M", "S", "S", "R", "K", "J", "S"];
 const HURUF_HARI_EN = ["S", "M", "T", "W", "T", "F", "S"];
 const waktu = (d: Date | null) => (d ? d.getTime() : 8.64e15);
 
+function hitungPrioritasDinamis(
+  dueAt: Date | null,
+  prioritasAsli: "HIGH" | "MEDIUM" | "LOW",
+  now: Date,
+): "HIGH" | "MEDIUM" | "LOW" {
+  if (!dueAt) return prioritasAsli; // Jika tidak ada deadline, pakai prioritas asli
+
+  const selisihJam = (dueAt.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+  if (selisihJam <= 24) return "HIGH"; // Kurang dari 24 jam
+  if (selisihJam <= 48) return "MEDIUM"; // 1 - 2 hari
+  return "LOW"; // Lebih dari 2 hari
+}
+
 function pesanDefaultMate(
   judulTerdekat: string | undefined,
   jumlahAktif: number,
@@ -58,13 +72,15 @@ export default async function TodayPage() {
       ? `${m} ${lang === "en" ? "min" : "menit"}`
       : `${Math.ceil(m / 60)} ${lang === "en" ? "hr" : "jam"}`;
 
+  // PERBAIKAN 1: Gunakan hitungPrioritasDinamis untuk sorting
   const aktifPrisma = induk
     .filter((item) => item.status !== "DONE")
-    .sort(
-      (a, b) =>
-        BOBOT[a.priority] - BOBOT[b.priority] ||
-        waktu(a.dueAt) - waktu(b.dueAt),
-    );
+    .sort((a, b) => {
+      const prioA = hitungPrioritasDinamis(a.dueAt, a.priority, now);
+      const prioB = hitungPrioritasDinamis(b.dueAt, b.priority, now);
+
+      return BOBOT[prioA] - BOBOT[prioB] || waktu(a.dueAt) - waktu(b.dueAt);
+    });
 
   const sudahPrisma = induk
     .filter((item) => item.status === "DONE")
@@ -86,6 +102,7 @@ export default async function TodayPage() {
     const menit =
       item.estimateMin ??
       item.subtasks.reduce((n, s) => n + (s.estimateMin ?? 0), 0);
+
     return {
       id: item.id,
       no,
@@ -94,7 +111,10 @@ export default async function TodayPage() {
       attachmentUrl: item.attachmentUrl ?? null,
       attachmentName: item.attachmentName ?? null,
       selesai: item.status === "DONE",
-      prioritas: item.priority,
+
+      // PERBAIKAN 2: Gunakan hitungPrioritasDinamis untuk mapping data ke UI
+      prioritas: hitungPrioritasDinamis(item.dueAt, item.priority, now),
+
       kategori: item.category,
       estimasi: menit ? `≤${fmtMenit(menit)}` : null,
       estimasiJam: menit ? Math.max(1, Math.round(menit / 60)) : 2,
