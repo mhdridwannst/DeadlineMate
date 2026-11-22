@@ -2,6 +2,7 @@
 
 Asisten tugas untuk mahasiswa yang memecah tenggat besar menjadi langkah kecil, lalu mengingatkan sebelum terlambat.
 
+https://github.com/user-attachments/assets/c5281401-ae19-4b42-9ad7-7ecf6e416751
 ![DeadlineMate Banner](./docs/banner.png)
 
 ## Latar Belakang
