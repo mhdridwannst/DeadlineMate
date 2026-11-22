@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getBahasa } from "@/server/demo-user";
+import { getBahasa } from "@/lib/session";
 import { Icon } from "@/components/ui/Icon";
 import LoginThemeToggle from "@/components/shell/LoginThemeToggle";
 import LoginForm from "@/components/shell/LoginForm";

@@ -1,22 +1,24 @@
 import { db } from "@/lib/db";
-import { getBahasa, getDemoUser } from "@/server/demo-user";
+import { getBahasa, getCurrentUser } from "@/lib/session";
 import { ambilRingkasan } from "@/lib/stats";
 import { hariKe, tambahHari } from "@/lib/waktu";
 import { DICT, t as translate } from "@/lib/i18n";
 import StatKartu from "@/components/tugas/StatKartu";
+import { Icon } from "@/components/ui/Icon"; // <-- Tambahan import Icon
 import { redirect } from "next/navigation";
 
 const HARI_ID = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 const HARI_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default async function ProgressPage() {
-  const [user, lang] = await Promise.all([getDemoUser(), getBahasa()]);
+  const [user, lang] = await Promise.all([getCurrentUser(), getBahasa()]);
 
   if (!user) redirect("/login");
 
   const t = DICT[lang];
   const r = await ambilRingkasan(user.id);
 
+  // Ambil data untuk On-Time Rate
   const semuaTask = await db.task.findMany({
     where: { userId: user.id, parentId: null },
     select: { status: true, dueAt: true, doneAt: true },
@@ -36,6 +38,7 @@ export default async function ProgressPage() {
   const maks = Math.max(3, ...nilai);
   const labelHari = lang === "en" ? HARI_EN : HARI_ID;
 
+  // Logika Rapor (Gamifikasi)
   const nilaiRapor =
     total7Hari >= 10 || r.streak >= 5
       ? {
@@ -86,7 +89,77 @@ export default async function ProgressPage() {
         lang={lang}
       />
 
+      {/* ================= PANEL MISI AKTIF (GAMIFIKASI BARU) ================= */}
+      <section className="kartu p-5 sm:p-6 bg-card border-2 border-[color:var(--line)] shadow-[0_4px_0_var(--sh)] relative overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          style={{
+            backgroundImage: "radial-gradient(#111 2px, transparent 2px)",
+            backgroundSize: "16px 16px",
+          }}
+        ></div>
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="grid size-8 place-items-center rounded-lg border-2 border-[color:var(--line)] bg-[color:var(--warn)] text-[color:var(--warn-ink)] shadow-[0_2px_0_var(--sh)]">
+              <Icon name="target" className="size-5" />
+            </span>
+            <h2 className="text-lg font-black text-ink uppercase tracking-wider">
+              Misi Aktif
+            </h2>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            {/* Misi 1: Naik Level */}
+            <div className="rounded-xl border-2 border-[color:var(--line)] bg-[color:var(--surface-2)] p-3 relative overflow-hidden">
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <p className="text-xs font-black text-ink">
+                    Kejar Level {r.level + 1}
+                  </p>
+                  <p className="text-[10px] font-bold text-muted mt-0.5">
+                    Kumpulkan {100 - r.expLevel} XP lagi
+                  </p>
+                </div>
+                <span className="text-[10px] font-black bg-[color:var(--biru-soft)] text-biru px-2 py-0.5 rounded border border-biru/30">
+                  {r.expLevel}/100
+                </span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-[color:var(--line)]/10 overflow-hidden">
+                <div
+                  className="h-full bg-biru transition-all"
+                  style={{ width: `${r.expLevel}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Misi 2: Jaga Streak */}
+            <div className="rounded-xl border-2 border-[color:var(--line)] bg-[color:var(--surface-2)] p-3 relative overflow-hidden">
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <p className="text-xs font-black text-ink">
+                    Pertahankan Streak
+                  </p>
+                  <p className="text-[10px] font-bold text-muted mt-0.5">
+                    Selesaikan 1 tugas tepat waktu hari ini
+                  </p>
+                </div>
+                <span className="text-[10px] font-black bg-[#fdba74]/20 text-[#ea580c] px-2 py-0.5 rounded border border-[#fdba74]/50 flex items-center gap-1">
+                  <Icon name="flame" className="size-3" /> {r.streak} Hari
+                </span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-[color:var(--line)]/10 overflow-hidden">
+                <div
+                  className="h-full bg-[#fdba74] transition-all"
+                  style={{ width: r.hariIniSelesai > 0 ? "100%" : "15%" }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
+        {/* KARTU KIRI: Grafik & EXP */}
         <div className="space-y-6">
           <section className="kartu p-5 sm:p-6 bg-card border-2 border-[color:var(--line)] shadow-[0_4px_0_var(--sh)]">
             <div className="flex items-center justify-between text-sm mb-4">
@@ -97,28 +170,44 @@ export default async function ProgressPage() {
                 {r.expLevel} / 100 XP
               </p>
             </div>
-            <div className="flex gap-1.5 h-6">
-              {Array.from({ length: 10 }).map((_, i) => (
-                <div
-                  key={i}
-                  className={`flex-1 border-2 border-[color:var(--line)] rounded-sm transition-all duration-500 ${
-                    i < Math.floor(r.expLevel / 10)
-                      ? "bg-lime shadow-[0_2px_0_var(--sh)]"
-                      : "bg-[color:var(--surface-2)]"
-                  }`}
-                />
-              ))}
+            {/* PENGgaris EXP (Physical Stationery Vibe) */}
+            <div className="relative w-full h-10 border-2 border-[color:var(--line)] bg-[color:var(--surface-2)] rounded-xl overflow-hidden shadow-[inset_0_2px_4px_rgba(0,0,0,0.05),0_3px_0_var(--sh)] mb-2 mt-2">
+              {/* Isi Stabilo (Lime) */}
+              <div
+                className="absolute top-0 left-0 h-full bg-lime border-r-4 border-[color:var(--line)] transition-all duration-700 ease-out z-10"
+                style={{ width: `${r.expLevel}%` }}
+              />
+
+              {/* Garis-Garis Penggaris (Ticks) */}
+              <div className="absolute inset-0 flex justify-between items-end pb-0.5 px-2 z-20 pointer-events-none">
+                {Array.from({ length: 21 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-0.5 bg-[color:var(--line)]/40 ${
+                      i % 5 === 0 ? "h-4" : "h-2" // Garis panjang tiap 25%
+                    }`}
+                  />
+                ))}
+              </div>
+
+              {/* Teks EXP di Tengah */}
+              <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
+                <span className="text-[11px] font-black tracking-widest text-[#111] uppercase drop-shadow-[0_1px_0_rgba(255,255,255,0.8)]">
+                  {r.expLevel} / 100 XP
+                </span>
+              </div>
             </div>
 
             <div className="mt-8 flex items-center justify-between border-b-2 border-[color:var(--line)]/20 pb-2">
               <h2 className="text-sm font-extrabold text-ink">
                 {t.weeklyChart}
               </h2>
-              <span className="rounded-full border-2 border-[color:var(--line)] bg-lime px-3 py-1 text-xs font-extrabold text-[#111] shadow-[0_2px_0_var(--sh)]">
+              <span className="rounded-full border-2 border-[#111] bg-lime px-3 py-1 text-xs font-extrabold text-[#111] shadow-[0_2px_0_var(--sh)]">
                 {translate(lang, "weeklyTotalTasks", { count: total7Hari })}
               </span>
             </div>
 
+            {/* Grafik Batang Custom */}
             <div
               className="mt-4 grid h-56 grid-cols-7 items-end gap-2 sm:gap-4"
               role="img"
@@ -143,13 +232,13 @@ export default async function ProgressPage() {
                     <div
                       className={`w-full rounded-t-lg border-2 transition-all duration-300 relative ${
                         nilai[i] > 0
-                          ? "border-[color:var(--line)] bg-[color:var(--lime)] shadow-[0_2px_0_var(--sh)]"
+                          ? "border-[#111] bg-[color:var(--lime)] shadow-[0_2px_0_var(--sh)]"
                           : "border-dashed border-[color:var(--line)]/30 bg-transparent"
                       }`}
                       style={{ height: `${tinggiPx}px` }}
                     >
                       {apakahHariIni && (
-                        <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-ink" />
+                        <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-[#111]" />
                       )}
                     </div>
                     <span
@@ -163,6 +252,7 @@ export default async function ProgressPage() {
             </div>
           </section>
 
+          {/* Ketepatan penyelesaian tugas bertenggat */}
           <section className="kartu p-5 sm:p-6 flex flex-col sm:flex-row items-center gap-5 bg-card border-2 border-[color:var(--line)] shadow-[0_4px_0_var(--sh)]">
             <div className="relative size-24 shrink-0">
               {selesaiBertenggat.length > 0 ? (
@@ -215,12 +305,19 @@ export default async function ProgressPage() {
                     })
                   : t.onTimeRateNoDataDescription}
               </p>
+              {selesaiBertenggat.length > 0 && (
+                <p className="mt-1 text-sm font-semibold text-muted">
+                  {onTimeRate >= 80
+                    ? t.onTimeRatePositive
+                    : t.onTimeRateImprove}
+                </p>
+              )}
             </div>
           </section>
         </div>
 
+        {/* KARTU KANAN: Rapor & Kategori */}
         <div className="space-y-4">
-          {/* FIX KOTAK RAPOR: Ganti bg-white jadi bg-card, tambah border tebal biar kelihatan di dark mode */}
           <section
             className={`kartu p-5 border-2 border-[color:var(--line)] shadow-[0_4px_0_var(--sh)] ${nilaiRapor.warna}`}
           >
@@ -233,7 +330,7 @@ export default async function ProgressPage() {
                   {nilaiRapor.predikat}
                 </p>
               </div>
-              <span className="grid size-14 shrink-0 place-items-center rounded-2xl border-2 border-[color:var(--line)] bg-card text-3xl font-extrabold text-ink shadow-[0_3px_0_var(--sh)]">
+              <span className="grid size-14 shrink-0 place-items-center rounded-2xl border-2 border-[#111] bg-white text-3xl font-extrabold shadow-[0_3px_0_var(--sh)]">
                 {nilaiRapor.huruf}
               </span>
             </div>
@@ -257,7 +354,15 @@ export default async function ProgressPage() {
                     <div className="flex justify-between text-xs font-bold mb-1.5">
                       <span className="text-ink flex items-center gap-1.5">
                         <span
-                          className={`size-2 rounded-full ${item.kat === "Kuliah" ? "bg-biru" : item.kat === "Organisasi" ? "bg-oranye" : "bg-[color:var(--santai)]"}`}
+                          className="size-2 rounded-full"
+                          style={{
+                            backgroundColor:
+                              item.kat === "Kuliah"
+                                ? "var(--biru)"
+                                : item.kat === "Organisasi"
+                                  ? "#fdba74"
+                                  : "var(--santai)",
+                          }}
                         />
                         {item.kat === "Kuliah"
                           ? t.catStudy
@@ -269,11 +374,18 @@ export default async function ProgressPage() {
                         {item.beres}/{item.total} ({persen}%)
                       </span>
                     </div>
-                    {/* FIX PROGRESS BAR: Ganti border-[#111] ke var(--line) */}
-                    <div className="h-3 overflow-hidden rounded-full border-2 border-[color:var(--line)] bg-[color:var(--surface-2)]">
+                    <div className="h-3 overflow-hidden rounded-full border-2 border-[#111] bg-[color:var(--surface-2)]">
                       <div
-                        className={`h-full transition-all duration-500 ${item.kat === "Kuliah" ? "bg-biru" : item.kat === "Organisasi" ? "bg-oranye" : "bg-[color:var(--santai)]"}`}
-                        style={{ width: `${persen}%` }}
+                        className="h-full transition-all duration-500"
+                        style={{
+                          width: `${persen}%`,
+                          backgroundColor:
+                            item.kat === "Kuliah"
+                              ? "var(--biru)"
+                              : item.kat === "Organisasi"
+                                ? "#fdba74"
+                                : "var(--santai)",
+                        }}
                       />
                     </div>
                   </li>

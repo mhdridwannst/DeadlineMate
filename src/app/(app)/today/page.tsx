@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { getBahasa, getDemoUser } from "@/server/demo-user";
+import { getBahasa, getCurrentUser } from "@/lib/session";
 import { ambilRingkasan } from "@/lib/stats";
 import {
   dayKey,
@@ -49,7 +49,7 @@ function pesanDefaultMate(
 }
 
 export default async function TodayPage() {
-  const [user, lang] = await Promise.all([getDemoUser(), getBahasa()]);
+  const [user, lang] = await Promise.all([getCurrentUser(), getBahasa()]);
 
   if (!user) redirect("/login");
   const now = new Date();

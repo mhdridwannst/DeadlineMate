@@ -1,44 +1,17 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
 import { del } from "@vercel/blob";
 import { db } from "@/lib/db";
-import { getDemoUser } from "./demo-user";
-
-const buatSchema = z.object({
-  title: z.string().trim().min(1).max(120),
-  dueAt: z.string().min(1),
-});
-
-export async function buatTugas(formData: FormData) {
-  const parsed = buatSchema.safeParse({
-    title: formData.get("title"),
-    dueAt: formData.get("dueAt"),
-  });
-  if (!parsed.success) return;
-
-  const user = await getDemoUser();
-  if (!user) throw new Error("Unauthorized");
-
-  await db.task.create({
-    data: {
-      userId: user.id,
-      title: parsed.data.title,
-      dueAt: new Date(parsed.data.dueAt),
-    },
-  });
-
-  revalidatePath("/today");
-  revalidatePath("/progress");
-}
+import { getCurrentUser } from "@/lib/session";
+import { urlLampiranMilikUser } from "@/lib/attachment-url";
 
 export async function ubahStatus(
   id: string,
   selesai: boolean,
   parentId?: string | null,
 ) {
-  const user = await getDemoUser();
+  const user = await getCurrentUser();
   if (!user) throw new Error("Unauthorized");
 
   const status = selesai ? "DONE" : "TODO";
@@ -82,10 +55,10 @@ export async function ubahStatus(
 }
 
 export async function hapusTugas(id: string) {
-  const user = await getDemoUser();
+  const user = await getCurrentUser();
   if (!user) throw new Error("Unauthorized");
 
-  // 1. Ambil data tugas dulu buat tau URL attachment-nya
+  // 1. Ambil URL lampiran dulu (subtask ikut terhapus lewat cascade).
   const task = await db.task.findUnique({
     where: { id, userId: user.id },
     select: {
@@ -94,26 +67,27 @@ export async function hapusTugas(id: string) {
     },
   });
 
-  // 2. Hapus file dari Vercel Blob (kalau ada)
+  // 2. Hapus dari database lebih dulu: kalau gagal, file belum ikut hilang.
+  await db.task.deleteMany({ where: { id, userId: user.id } });
+
+  // 3. Hapus file dari Vercel Blob. Hanya URL milik user ini yang disentuh.
   if (task) {
-    const urlsToDelete: string[] = [];
-    if (task.attachmentUrl) urlsToDelete.push(task.attachmentUrl);
-    task.subtasks.forEach((sub) => {
-      if (sub.attachmentUrl) urlsToDelete.push(sub.attachmentUrl);
-    });
+    const urlsToDelete = [
+      task.attachmentUrl,
+      ...task.subtasks.map((sub) => sub.attachmentUrl),
+    ].filter(
+      (url): url is string => !!url && urlLampiranMilikUser(url, user.id),
+    );
 
     if (urlsToDelete.length > 0) {
       try {
         await del(urlsToDelete);
       } catch (e) {
+        // File yatim lebih ringan daripada tugas yang gagal dihapus.
         console.warn("[blob] Gagal hapus file:", e);
-        // Jangan block proses hapus DB kalau file gagal dihapus
       }
     }
   }
-
-  // 3. Hapus dari database
-  await db.task.deleteMany({ where: { id, userId: user.id } });
 
   revalidatePath("/today");
   revalidatePath("/progress");

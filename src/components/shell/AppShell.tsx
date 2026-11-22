@@ -11,7 +11,7 @@ import {
 } from "react";
 import { RencanaForm } from "@/components/paper/RencanaForm";
 import FormTugas from "@/components/tugas/FormTugas";
-import { setBahasa } from "@/server/demo-user";
+import { setBahasa } from "@/server/actions";
 import { keluarAkunBaru } from "@/server/auth-actions";
 import { isSfxEnabled, sfxClick, toggleSfx } from "@/lib/sfx";
 import { DICT, type Lang } from "@/lib/i18n";

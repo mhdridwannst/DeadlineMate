@@ -2,12 +2,12 @@ import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { ambilRingkasan } from "@/lib/stats";
 import { durasi } from "@/lib/waktu";
-import { getBahasa, getDemoUser } from "@/server/demo-user";
+import { getBahasa, getCurrentUser } from "@/lib/session";
 import AppShell from "@/components/shell/AppShell";
 import type { ItemNotif } from "@/components/shell/DeadlineNotifier";
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
-  const [user, lang] = await Promise.all([getDemoUser(), getBahasa()]);
+  const [user, lang] = await Promise.all([getCurrentUser(), getBahasa()]);
 
   if (!user) {
     redirect("/login");

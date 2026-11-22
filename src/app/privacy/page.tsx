@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import LegalPage from "@/components/shell/LegalPage";
-import { getBahasa } from "@/server/demo-user";
+import { getBahasa } from "@/lib/session";
 
 export const metadata: Metadata = {
   title: "Kebijakan Privasi | DeadlineMate",

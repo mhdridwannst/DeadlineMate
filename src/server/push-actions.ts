@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { getDemoUser } from "@/server/demo-user";
+import { getCurrentUser } from "@/lib/session";
 
 export type SubscribeInput = {
   endpoint: string;
@@ -13,7 +13,7 @@ export type SubscribeInput = {
 };
 
 export async function simpanSubscription(sub: SubscribeInput) {
-  const user = await getDemoUser();
+  const user = await getCurrentUser();
   if (!user) return { ok: false, error: "Unauthorized" };
 
   try {
@@ -42,7 +42,7 @@ export async function simpanSubscription(sub: SubscribeInput) {
 }
 
 export async function hapusSubscription(endpoint: string) {
-  const user = await getDemoUser();
+  const user = await getCurrentUser();
   if (!user) return { ok: false };
 
   await db.pushSubscription.deleteMany({
@@ -53,7 +53,7 @@ export async function hapusSubscription(endpoint: string) {
 }
 
 export async function cekSubscription() {
-  const user = await getDemoUser();
+  const user = await getCurrentUser();
   if (!user) return { ada: false, total: 0 };
 
   const total = await db.pushSubscription.count({

@@ -1,5 +1,6 @@
 import { ambilRingkasan } from "@/lib/stats";
-import { getBahasa, getDemoUser, setBahasa } from "@/server/demo-user";
+import { getBahasa, getCurrentUser } from "@/lib/session";
+import { setBahasa } from "@/server/actions"; 
 import { ubahProfilPreferensi } from "@/server/tugas-form";
 import { DICT } from "@/lib/i18n";
 import ThemeSwitch from "@/components/shell/ThemeSwitch";
@@ -9,7 +10,7 @@ import { redirect } from "next/navigation";
 import ZonaBahaya from "@/components/shell/ZonaBahaya";
 
 export default async function ProfilPage() {
-  const [user, lang] = await Promise.all([getDemoUser(), getBahasa()]);
+  const [user, lang] = await Promise.all([getCurrentUser(), getBahasa()]);
 
   if (!user) {
     redirect("/login");
@@ -22,34 +23,140 @@ export default async function ProfilPage() {
   const inisial = nama.slice(0, 1).toUpperCase();
   const pakaiAkunPribadi = user.email !== "demo@deadlinemate.app";
 
+  // SISTEM QUEST: LENCANA BERTINGKAT (LOGIKA DIPERBAIKI)
   const lencana = [
-    {
-      ikon: "target" as const,
-      judul: t.badgeFirstStepTitle,
-      ket: t.badgeFirstStepDesc,
-      progres: `${Math.min(1, r.totalSelesai)}/1`,
-      angkaProgres: Math.min(1, r.totalSelesai),
-      target: 1,
-      terbuka: r.totalSelesai >= 1,
-    },
-    {
-      ikon: "flame" as const,
-      judul: t.badgeConsistentTitle,
-      ket: t.badgeConsistentDesc,
-      progres: `${Math.min(3, r.rekor)}/3`,
-      angkaProgres: Math.min(3, r.rekor),
-      target: 3,
-      terbuka: r.rekor >= 3,
-    },
-    {
-      ikon: "zap" as const,
-      judul: t.badgeAntiSksTitle,
-      ket: t.badgeAntiSksDesc,
-      progres: `${Math.min(100, r.exp)}/100`,
-      angkaProgres: Math.min(100, r.exp),
-      target: 100,
-      terbuka: r.exp >= 100,
-    },
+    // 1. Quest Penyelesaian Tugas (Target Maksimal: 100 Tugas)
+    r.totalSelesai < 1
+      ? {
+          ikon: "target" as const,
+          judul: "Langkah Pertama",
+          ket: "Selesaikan 1 tugas pertamamu.",
+          progres: `${r.totalSelesai}/1`,
+          angkaProgres: r.totalSelesai,
+          target: 1,
+          terbuka: false,
+        }
+      : r.totalSelesai < 10
+        ? {
+            ikon: "target" as const,
+            judul: "Produktif Muda",
+            ket: "Selesaikan 10 tugas.",
+            progres: `${r.totalSelesai}/10`,
+            angkaProgres: r.totalSelesai,
+            target: 10,
+            terbuka: false,
+          }
+        : r.totalSelesai < 50
+          ? {
+              ikon: "target" as const,
+              judul: "Mesin Produktif",
+              ket: "Selesaikan 50 tugas.",
+              progres: `${r.totalSelesai}/50`,
+              angkaProgres: r.totalSelesai,
+              target: 50,
+              terbuka: false,
+            }
+          : r.totalSelesai < 100
+            ? {
+                ikon: "target" as const,
+                judul: "Si paling Rajin",
+                ket: "Selesaikan 100 tugas.",
+                progres: `${r.totalSelesai}/100`,
+                angkaProgres: r.totalSelesai,
+                target: 100,
+                terbuka: false,
+              }
+            : {
+                ikon: "target" as const,
+                judul: "Legenda Tugas",
+                ket: "Selesaikan 100 tugas.",
+                progres: `${r.totalSelesai}/100`,
+                angkaProgres: r.totalSelesai,
+                target: 100,
+                terbuka: true,
+              },
+
+    // 2. Quest Streak (Target Maksimal: 30 Hari)
+    r.rekor < 3
+      ? {
+          ikon: "flame" as const,
+          judul: "Pejuang Konsisten",
+          ket: "Capai streak 3 hari.",
+          progres: `${r.rekor}/3`,
+          angkaProgres: r.rekor,
+          target: 3,
+          terbuka: false,
+        }
+      : r.rekor < 7
+        ? {
+            ikon: "flame" as const,
+            judul: "Konsisten Terus",
+            ket: "Capai streak 7 hari.",
+            progres: `${r.rekor}/7`,
+            angkaProgres: r.rekor,
+            target: 7,
+            terbuka: false,
+          }
+        : r.rekor < 30
+          ? {
+              ikon: "flame" as const,
+              judul: "Tak Terbendung",
+              ket: "Capai streak 30 hari.",
+              progres: `${r.rekor}/30`,
+              angkaProgres: r.rekor,
+              target: 30,
+              terbuka: false,
+            }
+          : {
+              ikon: "flame" as const,
+              judul: "Legenda Konsisten",
+              ket: "Capai streak 30 hari.",
+              progres: `${r.rekor}/30`,
+              angkaProgres: r.rekor,
+              target: 30,
+              terbuka: true,
+            },
+
+    // 3. Quest Level / EXP (Target Maksimal: 2000 XP)
+    r.exp < 100
+      ? {
+          ikon: "zap" as const,
+          judul: "Anti-SKS Club",
+          ket: "Kumpulkan 100 XP.",
+          progres: `${r.exp}/100`,
+          angkaProgres: r.exp,
+          target: 100,
+          terbuka: false,
+        }
+      : r.exp < 500
+        ? {
+            ikon: "zap" as const,
+            judul: "Mahasiswa Elite",
+            ket: "Kumpulkan 500 XP.",
+            progres: `${r.exp}/500`,
+            angkaProgres: r.exp,
+            target: 500,
+            terbuka: false,
+          }
+        : r.exp < 2000
+          ? {
+              ikon: "zap" as const,
+              judul: "Dewa Deadline",
+              ket: "Kumpulkan 2000 XP.",
+              progres: `${r.exp}/2000`,
+              angkaProgres: r.exp,
+              target: 2000,
+              terbuka: false,
+            }
+          : {
+              ikon: "zap" as const,
+              judul: "Mythic Scholar",
+              ket: "Kumpulkan 2000 XP.",
+              progres: `${r.exp}/2000`,
+              angkaProgres: r.exp,
+              target: 2000,
+              terbuka: true,
+            },
   ];
 
   return (
