@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { MateLogo } from "@/components/ui/MateLogo";
 
 export default function LegalPage({
   title,
@@ -20,7 +21,11 @@ export default function LegalPage({
     <main className="min-h-dvh bg-bg text-ink">
       <header className="border-b-2 border-[color:var(--line)]/15">
         <div className="mx-auto flex min-h-16 max-w-3xl items-center justify-between gap-4 px-4 sm:px-6">
-          <Link href="/login" className="font-extrabold text-ink">
+          <Link
+            href="/login"
+            className="flex items-center gap-2 font-extrabold text-ink"
+          >
+            <MateLogo size={28} />
             DeadlineMate
           </Link>
           <Link

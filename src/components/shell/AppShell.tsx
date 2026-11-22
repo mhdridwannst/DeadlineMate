@@ -18,6 +18,7 @@ import { DICT, type Lang } from "@/lib/i18n";
 import DeadlineNotifier, { type ItemNotif } from "./DeadlineNotifier";
 import { useTema } from "./tema";
 import { Icon } from "@/components/ui/Icon";
+import { MateLogo } from "@/components/ui/MateLogo";
 import { PwaInstallButton } from "./PwaInstall";
 
 const IKON: Record<string, string> = {
@@ -161,9 +162,7 @@ export default function AppShell({
             prefetch={false}
             className="flex items-center gap-2.5 px-1 py-2"
           >
-            <span className="grid size-10 place-items-center rounded-xl border-2 border-[#141513] bg-lime text-lg font-extrabold text-[#111310] shadow-[0_3px_0_var(--sh)]">
-              D
-            </span>
+            <MateLogo size={40} />
             <div className="leading-tight">
               <span className="block text-lg font-extrabold tracking-tight text-ink">
                 DeadlineMate

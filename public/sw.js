@@ -1,5 +1,5 @@
 // public/sw.js
-const VERSION = "deadlinemate-v3.0.3";
+const VERSION = "deadlinemate-v3.0.4";
 const LEGACY_CACHES = ["v3.0.2"];
 
 self.addEventListener("install", () => {
@@ -83,7 +83,7 @@ self.addEventListener("push", (event) => {
     title: "DeadlineMate",
     body: "Ada pengingat baru buat kamu!",
     url: "/today",
-    icon: "/icon-192.svg",
+    icon: "/icon-192.png",
     tag: "default",
   };
 
@@ -100,7 +100,7 @@ self.addEventListener("push", (event) => {
     self.registration.showNotification(data.title, {
       body: data.body,
       icon: data.icon,
-      badge: data.icon,
+      badge: "/badge-96.png",
       tag: data.tag,
       data: { url: data.url },
       vibrate: [200, 100, 200],
