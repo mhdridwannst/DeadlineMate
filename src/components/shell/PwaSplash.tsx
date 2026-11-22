@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { MateLogo } from "@/components/ui/MateLogo";
 
 export default function PwaSplash() {
   const [isLoading, setIsLoading] = useState(true);
@@ -46,9 +47,7 @@ export default function PwaSplash() {
       <div className="relative flex flex-col items-center z-10">
         {/* Logo dengan animasi bounce CSS */}
         <div className="relative">
-          <span className="grid size-28 place-items-center rounded-3xl border-4 border-[#111] bg-lime text-6xl font-black text-[#111] shadow-[0_8px_0_var(--sh)] animate-bounce">
-            D
-          </span>
+          <MateLogo size={128} priority className="animate-bounce" />
           <span className="absolute -bottom-3 -right-3 rotate-6 rounded-lg border-2 border-[#111] bg-white px-3 py-1 text-sm font-black text-[#111] shadow-[0_3px_0_var(--sh)]">
             BETA
           </span>

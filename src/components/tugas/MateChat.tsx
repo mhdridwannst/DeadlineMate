@@ -1,17 +1,15 @@
 import { TypingText } from "./TypingText";
-import { Icon } from "../ui/Icon";
+import { MateLogo } from "../ui/MateLogo";
 
 export function MateChat({ text, title }: { text: string; title: string }) {
   return (
     <div className="relative flex items-start gap-3 mt-4">
       {/* Maskot Mate: Kotak dengan animasi melayang */}
-      <div className="relative shrink-0 z-10">
-        <div
-          className="w-12 h-12 bg-lime border-2 border-[color:var(--line)] shadow-[0_3px_0_var(--sh)] rounded-xl flex items-center justify-center text-[#111]"
-          style={{ animation: "float 3s ease-in-out infinite" }}
-        >
-          <Icon name="bot" className="size-5" strokeWidth={2.5} />
-        </div>
+      <div
+        className="relative shrink-0 z-10"
+        style={{ animation: "float 3s ease-in-out infinite" }}
+      >
+        <MateLogo size={52} alt="Mate" />
       </div>
 
       {/* Speech Bubble */}

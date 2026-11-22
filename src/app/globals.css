@@ -327,3 +327,24 @@ nextjs-portal {
 .animate-stamp {
   animation: stamp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
+
+/* Maskot Mate: tampil sebagai stiker (outline putih) di tema gelap */
+.mate-gelap {
+  display: none;
+}
+[data-theme="dark"] .mate-terang {
+  display: none;
+}
+[data-theme="dark"] .mate-gelap {
+  display: inline-block;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}

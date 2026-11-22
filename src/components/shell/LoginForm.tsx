@@ -8,6 +8,7 @@ import {
   type HasilAuth,
 } from "@/server/auth-actions";
 import { Icon } from "@/components/ui/Icon";
+import { MateLogo } from "@/components/ui/MateLogo";
 import type { Lang } from "@/lib/i18n";
 
 export default function LoginForm({ lang }: { lang: Lang }) {
@@ -71,9 +72,12 @@ export default function LoginForm({ lang }: { lang: Lang }) {
     <div className="kartu p-6 sm:p-8 relative">
       <div className="mb-6 flex flex-col items-center gap-2 text-center">
         <div className="relative">
-          <span className="grid size-20 -rotate-3 cursor-default place-items-center rounded-2xl border-2 border-[#111] bg-lime text-4xl font-black text-[#111] shadow-[0_4px_0_var(--sh)] transition-transform hover:rotate-0">
-            D
-          </span>
+          <MateLogo
+            size={88}
+            priority
+            alt="Mate"
+            className="transition-transform hover:scale-105"
+          />
           <span className="absolute -bottom-2 -right-3 rotate-6 rounded-lg border-2 border-[#111] bg-white px-2 py-0.5 text-xs font-black text-[#111] shadow-[0_2px_0_var(--sh)]">
             BETA
           </span>
