@@ -7,17 +7,16 @@ export function MateChat({ text, title }: { text: string; title: string }) {
       {/* Maskot Mate: Kotak dengan animasi melayang */}
       <div className="relative shrink-0 z-10">
         <div
-          className="w-12 h-12 bg-lime border-2 border-ink shadow-[0_3px_0_var(--sh)] rounded-xl flex items-center justify-center text-2xl"
+          className="w-12 h-12 bg-lime border-2 border-[color:var(--line)] shadow-[0_3px_0_var(--sh)] rounded-xl flex items-center justify-center text-[#111]"
           style={{ animation: "float 3s ease-in-out infinite" }}
         >
-          <Icon name="bot" className="size-4" strokeWidth={2.5} />
+          <Icon name="bot" className="size-5" strokeWidth={2.5} />
         </div>
       </div>
 
-      {/* Speech Bubble dengan efek Sticky Note */}
-      <div className="relative flex-1 bg-card border-2 border-ink shadow-[0_4px_0_var(--sh)] p-4 rounded-2xl rounded-tl-sm sticky-note">
-        {/* Ekor Gelembung Bicara (Pakai CSS Border Segitiga) */}
-        <div className="absolute -top-[10px] left-3 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-b-[10px] border-b-ink"></div>
+      {/* Speech Bubble */}
+      <div className="relative flex-1 bg-card border-2 border-[color:var(--line)] shadow-[0_4px_0_var(--sh)] p-4 rounded-2xl rounded-tl-sm sticky-note">
+        <div className="absolute -top-[10px] left-3 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-b-[10px] border-b-[color:var(--line)]"></div>
         <div className="absolute -top-[7px] left-[14px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[8px] border-b-card"></div>
 
         <div className="flex items-center justify-between gap-2 mb-2">
@@ -26,7 +25,6 @@ export function MateChat({ text, title }: { text: string; title: string }) {
           </span>
         </div>
 
-        {/* Teks ngetik */}
         <div className="text-sm font-semibold leading-relaxed text-ink min-h-[3rem]">
           “<TypingText text={text} />”
         </div>

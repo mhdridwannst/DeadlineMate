@@ -97,7 +97,7 @@ export async function POST(request: Request) {
     const userId = session.user.id;
 
     const blob = await put(`${userId}/${safeName}`, file, {
-      access: "private",
+      access: "public",
       addRandomSuffix: true,
     });
 
