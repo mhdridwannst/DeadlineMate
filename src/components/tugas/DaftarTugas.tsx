@@ -152,24 +152,31 @@ export default function DaftarTugas({
     sfxCheck(nilai);
 
     if (nilai && !parentId) {
-      confetti({
-        particleCount: 80,
-        spread: 60,
-        origin: { y: 0.7 },
-        colors: ["#a8f000", "#111111", "#ffffff", "#2563eb"],
-        disableForReducedMotion: true,
-      });
+      const sisa = items.filter(
+        (x) => x.id !== id && !on(x.id, x.selesai),
+      ).length;
+
       setFloatingXP((prev) => ({ ...prev, [id]: true }));
       setTimeout(() => {
         setFloatingXP((prev) => ({ ...prev, [id]: false }));
       }, 1000);
+
+      if (sisa === 0) {
+        confetti({
+          particleCount: 50,
+          spread: 60,
+          origin: { y: 0.7 },
+          colors: ["#a8f000", "#ffe58a", "#f7a8a6"],
+          disableForReducedMotion: true,
+        });
+      }
     }
 
     mulai(async () => {
       setPeta({ id, nilai });
       await ubahStatus(id, nilai, parentId);
     });
-  }
+  } // <--- KURUNG KURAWAL DIPINDAH KE SINI BRO!
 
   function mintaHapus(t: Item) {
     sfxClick();
@@ -250,8 +257,8 @@ export default function DaftarTugas({
               }`}
             >
               {floatingXP[t.id] && (
-                <div className="absolute top-4 right-12 z-20 pointer-events-none animate-stamp">
-                  <span className="inline-block border-4 border-[color:var(--bahaya)] text-[color:var(--bahaya)] font-black tracking-widest text-xl px-3 py-1 uppercase bg-card/60 backdrop-blur-sm">
+                <div className="absolute top-3 right-4 sm:top-4 sm:right-12 z-20 pointer-events-none animate-stamp">
+                  <span className="inline-block border-4 border-[color:var(--santai)] text-[color:var(--santai)] font-black tracking-widest text-base sm:text-xl px-3 py-1 uppercase bg-card/60 backdrop-blur-sm">
                     Selesai
                   </span>
                 </div>
@@ -316,10 +323,9 @@ export default function DaftarTugas({
 
                     {t.attachmentUrl && (
                       <a
-                        href={t.attachmentUrl} // <--- LANGSUNG KE URL BLOB
+                        href={t.attachmentUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        // Hapus atribut download agar bisa dilihat langsung di browser
                         className="mt-2 inline-flex items-center gap-1.5 rounded-lg border-2 border-[color:var(--line)]/30 bg-[color:var(--biru-soft)] px-2.5 py-1 text-[11px] font-black text-biru transition-all hover:-translate-y-0.5 hover:shadow-[0_2px_0_var(--sh)]"
                       >
                         <svg
@@ -395,7 +401,7 @@ export default function DaftarTugas({
                     )}
                   </div>
 
-                  {/* TOMBOL EDIT & HAPUS GEDE (DESAIN ASLI LU) */}
+                  {/* TOMBOL EDIT & HAPUS GEDE */}
                   <div className="flex items-center gap-2">
                     <button
                       type="button"

@@ -7,13 +7,11 @@ export default function ServiceWorkerRegister() {
     if (typeof window === "undefined") return;
     if (!("serviceWorker" in navigator)) return;
 
-    // Hanya register. Jangan paksa reload saat update, 
+    // Hanya register. Jangan paksa reload saat update,
     // biar gak nabrak proses login/redirect.
-    navigator.serviceWorker
-      .register("/sw.js", { scope: "/" })
-      .catch((err) => {
-        console.error("[sw] Gagal register:", err);
-      });
+    navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch((err) => {
+      console.error("[sw] Gagal register:", err);
+    });
   }, []);
 
   return null;
