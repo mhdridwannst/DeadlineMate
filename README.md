@@ -10,7 +10,7 @@ Mahasiswa jarang gagal karena tidak mampu. Mereka gagal karena tidak tahu harus 
 
 DeadlineMate menjawabnya dengan tiga pendekatan. AI Task Breakdown memecah tugas menjadi sub-langkah yang jelas. Gamifikasi dengan sistem Shield menjaga streak tetap adil. Push notification mengingatkan secara proaktif sebelum tenggat, bukan setelahnya.
 
-## Screenshots
+## Screenshots (v1.0)
 
 ### Halaman Login
 
