@@ -195,13 +195,6 @@ Dikembangkan oleh Kelompok 2 dari UKM Software Development 2026:
       Hacker
     </td>
     <td align="center">
-      <a href="https://github.com/ridho-novianto">
-        <img src="https://github.com/ridho-novianto.png" width="100" style="border-radius:50%" alt="Muhammad Slamet Ridho"/><br />
-        <sub><b>Muhammad Slamet Ridho</b></sub>
-      </a><br />
-      Hipster
-    </td>
-    <td align="center">
       <a href="https://github.com/username3">
         <img src="https://github.com/username3.png" width="100" style="border-radius:50%" alt="Hervina Alivia Fitri"/><br />
         <sub><b>Hervina Alivia Fitri</b></sub>
@@ -209,11 +202,11 @@ Dikembangkan oleh Kelompok 2 dari UKM Software Development 2026:
       Hustler
     </td>
     <td align="center">
-      <a href="https://github.com/M-Zaki-Edi">
-        <img src="https://github.com/M-Zaki-Edi.png" width="100" style="border-radius:50%" alt="M Zaki Edi"/><br />
-        <sub><b>M Zaki Edi</b></sub>
+      <a href="https://github.com/ridho-novianto">
+        <img src="https://github.com/ridho-novianto.png" width="100" style="border-radius:50%" alt="Muhammad Slamet Ridho"/><br />
+        <sub><b>Muhammad Slamet Ridho</b></sub>
       </a><br />
-      Hacker
+      Hipster
     </td>
     <td align="center">
       <a href="https://github.com/username6">
@@ -224,6 +217,13 @@ Dikembangkan oleh Kelompok 2 dari UKM Software Development 2026:
     </td>
   </tr>
 </table>
+    <td align="center">
+      <a href="https://github.com/M-Zaki-Edi">
+        <img src="https://github.com/M-Zaki-Edi.png" width="100" style="border-radius:50%" alt="M Zaki Edi"/><br />
+        <sub><b>M Zaki Edi</b></sub>
+      </a><br />
+      Hacker
+    </td>
 
 
 ## Lisensi
