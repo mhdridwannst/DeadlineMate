@@ -216,7 +216,6 @@ Dikembangkan oleh Kelompok 2 dari UKM Software Development 2026:
       Hustler
     </td>
   </tr>
-</table>
     <td align="center">
       <a href="https://github.com/M-Zaki-Edi">
         <img src="https://github.com/M-Zaki-Edi.png" width="100" style="border-radius:50%" alt="M Zaki Edi"/><br />
@@ -224,6 +223,7 @@ Dikembangkan oleh Kelompok 2 dari UKM Software Development 2026:
       </a><br />
       Hacker
     </td>
+</table>
 
 
 ## Lisensi
