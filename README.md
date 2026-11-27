@@ -218,13 +218,6 @@ Dikembangkan oleh Kelompok 2 dari UKM Software Development 2026:
       Hacker
     </td>
     <td align="center">
-      <a href="https://github.com/username5">
-        <img src="https://github.com/username5.png" width="100" style="border-radius:50%" alt="Fahry Ibrahim"/><br />
-        <sub><b>Fahry Ibrahim</b></sub>
-      </a><br />
-      Hipster
-    </td>
-    <td align="center">
       <a href="https://github.com/username6">
         <img src="https://github.com/username6.png" width="100" style="border-radius:50%" alt="Hamzah Asadullah"/><br />
         <sub><b>Hamzah Asadullah</b></sub>
